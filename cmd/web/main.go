@@ -8,7 +8,9 @@ import (
 
 // This is what the frontend will modify.
 func Frontend(a *pff.App) {
-
+	a.RegisterTemplate("", "index/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
 }
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
