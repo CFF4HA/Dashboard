@@ -11,6 +11,18 @@ func Frontend(a *pff.App) {
 	a.RegisterTemplate("", "index/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
+
+	a.RegisterTemplate("/login", "login/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
+
+	a.RegisterTemplate("/navbar", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/gabe2", "gabe2/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
 }
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
