@@ -20,7 +20,7 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: false,
 	})
 
-	a.RegisterTemplate("/gabe2", "gabe2/page.html", pff.TemplateRegistrationOpts{
+	a.RegisterTemplate("/home", "dashboard/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
 }
