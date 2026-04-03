@@ -20,7 +20,15 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: false,
 	})
 
+	a.RegisterTemplate("/searchbar", "components/searchbar.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
 	a.RegisterTemplate("/home", "dashboard/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
+
+	a.RegisterTemplate("/settings", "settings/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
 }
