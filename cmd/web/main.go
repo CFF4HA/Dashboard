@@ -20,7 +20,7 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: false,
 	})
 
-	a.RegisterTemplate("/searchbar", "components/searchbar.html", pff.TemplateRegistrationOpts{
+	a.RegisterTemplate("/searchbar", "components/searchbar/searchbar.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
 	})
 
@@ -29,6 +29,10 @@ func Frontend(a *pff.App) {
 	})
 
 	a.RegisterTemplate("/settings", "settings/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
+
+	a.RegisterTemplate("/admin", "admin/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
 }
