@@ -13,5 +13,6 @@ type Product struct {
 	Name    string    `json:"name" gorm:"type:varchar(255);not null;"`
 	Origin  string    `json:"origin" gorm:"type:varchar(255);default:'None'"`
 
+	UserUid     uuid.UUID    `json:"user_uid" gorm:"type:uuid;"`
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:product_ingredients;"`
 }

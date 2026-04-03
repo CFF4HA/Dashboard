@@ -60,6 +60,25 @@ func main() {
 		Handler:  routes.ProductDELETE,
 	})
 
+	// Base User Routes
+	r.Add(pbf.RouteOptions{
+		Method:   http.MethodPost,
+		Endpoint: "/session",
+		Handler:  routes.HandleSessionPOST,
+	})
+
+	r.Add(pbf.RouteOptions{
+		Method:   http.MethodPost,
+		Endpoint: "/user",
+		Handler:  routes.HandleUserPOST,
+	})
+
+	r.Add(pbf.RouteOptions{
+		Method:   http.MethodPut,
+		Endpoint: "/user",
+		Handler:  routes.HandleUserPUT,
+	})
+
 	// Starting!
 	core.Logger.Info("the backend is starting", "address", r.Address, "port", r.Port, "link", fmt.Sprintf("http://%s:%d", r.Address, r.Port))
 	if err := r.Start(); err != nil {
