@@ -1,0 +1,20 @@
+{{ define "component-searchbar" }}
+<!-- Search Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <input type="text" class="form-control form-control-lg" placeholder="Search ingredients..." value="Limonene">
+        <div class="mt-2">
+            <button class="btn btn-sm btn-secondary me-2 mb-2">
+                Limonene <small class="text-muted fst-italic">Chemical</small>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                Linalool <small class="text-muted fst-italic">Chemical</small>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary me-2 mb-2">
+                Citronellol <small class="text-muted fst-italic">Chemical</small>
+            </button>
+        </div>
+    </div>
+</div>
+{{ end }}
+{{ template "component-searchbar" . }}

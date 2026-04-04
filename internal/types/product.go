@@ -8,7 +8,7 @@ import (
 )
 
 type Product struct {
-	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Created time.Time `json:"created" gorm:"type:timestamp;not null;default:current_timestamp"`
 	Updated time.Time `json:"updated" gorm:"type:timestamp;not null;default:current_timestamp"`
 	Name    string    `json:"name" gorm:"type:varchar(255);not null;"`
