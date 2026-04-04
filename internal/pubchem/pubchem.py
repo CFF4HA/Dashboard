@@ -1,4 +1,4 @@
-# import types
+import models
 import warnings
 import pubchempy as pcp
 import requests
@@ -39,7 +39,10 @@ def jsonFromCompoundName(compound):
     return response.json()
 
 
-def Ingredient(name):
+def Ingredient(name) -> (list[str], list[models.Label]):
+    ingredient_names = []
+    ingredient_labels = []
+
     data = jsonFromCompoundName(name)
     if not data:
         return None
@@ -60,7 +63,10 @@ def Ingredient(name):
                 synonyms = depositors.get("Information", [])[0].get(
                     "Value", {}).get("StringWithMarkup", [{}])
 
-                print(f"Synonyms: {synonyms}")
+                for synonym in synonyms:
+                    ingredient_names.append(synonym.get("String"))
+
+                print(f"Synonyms: {ingredient_names}")
 
     toxicity = findSectionByHeading(sections, "TOCHeading", "Toxicity")
     if toxicity:
@@ -72,15 +78,33 @@ def Ingredient(name):
                 toxicology_info.get("Section", []), "TOCHeading", "Signs and Symptoms")
             adverse_effects = findSectionByHeading(
                 toxicology_info.get("Section", []), "TOCHeading", "Adverse Effects")
-            ongoing_test_stat = findSectionByHeading(
-                toxicology_info.get("Section", []), "TOCHeading", "Ongoing Test Status")
 
-            print(f"signs and symptoms: {signs_symptoms}")
-            print(f"adverse effects: {adverse_effects}")
-            print(f"ongoing test status: {ongoing_test_stat}")
+            for symptom_type in signs_symptoms.get("Information", []):
+                for s in symptom_type.get("Value", {}).get("StringWithMarkup", [{}]):
+                    context = s.get("String", "")
+                    ingredient_labels.append(models.Symptom(context))
+
+            for effect_type in adverse_effects.get("Information", []):
+                for e in effect_type.get("Value", {}).get("StringWithMarkup", [{}]):
+                    context = e.get("String", "")
+                    ingredient_labels.append(models.Effect(context))
 
     safety = findSectionByHeading(sections, "TOCHeading", "Safety and Hazards")
     if safety:
+        hazards = findSectionByHeading(
+            safety.get("Section", []), "TOCHeading", "Hazards Identification")
+        if hazards:
+            ghs = findSectionByHeading(
+                hazards.get("Section", []), "TOCHeading", "GHS Classification")
+
+            classifications = findSectionByHeading(
+                ghs.get("Information", []), "Name", "GHS Hazard Statements").get("Value", {}).get("StringWithMarkup", [])
+
+            # This is where we actually add it to the label list
+            for classification in classifications:
+                context = classification.get("String", "")
+                ingredient_labels.append(models.Hazard(context))
+
         regulatory_info = findSectionByHeading(
             safety.get("Section", []), "TOCHeading", "Regulatory Information")
 
@@ -88,6 +112,9 @@ def Ingredient(name):
             cscp = findSectionByHeading(regulatory_info.get(
                 "Information"), "Name", "California Safe Cosmetics Program (CSCP) Reportable Ingredient")
 
-            print(f"CSCP: {cscp}")
+            for c in cscp.get("Value", {}).get("StringWithMarkup", []):
+                context = c.get("String", "")
 
-    return None
+                ingredient_labels.append(models.RegulatoryStatus(context))
+
+    return ingredient_names, ingredient_labels

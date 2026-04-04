@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import text
+import pubchem
 import uvicorn
 
 parser = argparse.ArgumentParser(description="Ingredient Server")
@@ -46,20 +46,24 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(
             status_code=400, detail="Name parameter is required")
 
-    # Boilerplate example: Execute a simple raw SQL query to test the connection
-    try:
-        result = await db.execute(text("SELECT 1"))
-        db_alive = result.scalar() == 1
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Database connection failed: {str(e)}")
+    names, labels = pubchem.Ingredient(name)
+    print(f"Ingredient names: {names}")
+    print(f"Ingredient labels: {labels}")
 
-    return {
-        "status": "success",
-        "name": name,
-        "database_connected": db_alive,
-        "message": "Ready to implement ORM models or complex queries"
-    }
+    # Boilerplate example: Execute a simple raw SQL query to test the connection
+    # try:
+    #     result = await db.execute(text("SELECT 1"))
+    #     db_alive = result.scalar() == 1
+    # except Exception as e:
+    #     raise HTTPException(
+    #         status_code=500, detail=f"Database connection failed: {str(e)}")
+
+    # return {
+    #     "status": "success",
+    #     "name": name,
+    #     "database_connected": db_alive,
+    #     "message": "Ready to implement ORM models or complex queries"
+    # }
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=args.port, reload=True)
+    uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
