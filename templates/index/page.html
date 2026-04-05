@@ -1,2 +1,27 @@
 {{ define "content" }}
+    
+    <div class="" hx-get="/navbar" hx-trigger="load, every 1s">
+        <div id="navbar"></div>
+    </div>
+
+    <nav>
+        <ul>
+            <li><a href="/homepage">Home</a></li>
+            <li><a href="/chiagoziem">Chiagoziem</a></li>
+            <li><a href="/chiagoziem2">Chiagoziem2</a></li>
+        </ul>
+    </nav>
+
+
+
+    //This is the main page of the dashboard.
+
+    <h1>Welcome to the Fragrance Free Dashboard</h1>
+
+    <p>This dashboard provides insights into the fragrance-free products available in the market. 
+        Explore our collection of products, their ingredients, and user reviews to make informed 
+        decisions about your purchases.</p>
+    
+    
+
 {{ end }}

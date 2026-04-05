@@ -8,19 +8,19 @@ import (
 
 // This is what the frontend will modify.
 func Frontend(a *pff.App) {
-	a.RegisterTemplate("", "index/page.html", pff.TemplateRegistrationOpts{
+	a.RegisterTemplate("/homepage", "index/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
 
-	a.RegisterTemplate("/chiagoziem", "chiagoziem/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
+	// a.RegisterTemplate("/chiagoziem", "chiagoziem/page.html", pff.TemplateRegistrationOpts{
+	// 	IncludeBaseTemplate: true,
+	// })
 
-	a.RegisterTemplate("/chiagoziem2", "chiagoziem2/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
+	// a.RegisterTemplate("/chiagoziem2", "chiagoziem2/page.html", pff.TemplateRegistrationOpts{
+	// 	IncludeBaseTemplate: true,
+	// })
 
-	a.RegisterTemplate("", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
+	a.RegisterTemplate("/navbar", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
 	})
 
