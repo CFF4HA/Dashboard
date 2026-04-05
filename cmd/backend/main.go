@@ -41,6 +41,12 @@ func main() {
 		Handler:  routes.IngredientGET,
 	})
 
+	r.Add(pbf.RouteOptions{
+		Method:   http.MethodGet,
+		Endpoint: "/ingredient/search",
+		Handler:  routes.IngredientSEARCH,
+	})
+
 	// Base Product Routes
 	r.Add(pbf.RouteOptions{
 		Method:   http.MethodGet,

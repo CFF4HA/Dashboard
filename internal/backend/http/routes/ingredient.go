@@ -38,17 +38,53 @@ func syncDatabaseWithIngredient(name string) {
 // This is different than GET since GET is the route used to
 // get an exact name. This will always return a list of ingredients.
 func IngredientSEARCH(w http.ResponseWriter, r *http.Request) error {
+	db := database.Database()
+	var ingredient []types.Ingredient
 
-	return nil
+	chemical_name := r.FormValue("name")
+	if chemical_name == "" {
+		return json.NewEncoder(w).Encode(ingredient)
+	}
+
+	// chemical_name = "Acid"
+	searchTerm := "%" + chemical_name + "%"
+
+	err := db.Model(&types.Ingredient{}).
+		// 1. Join the Names table to filter by name text
+		Joins("JOIN names ON names.ingredient_id = ingredients.id").
+		// 2. Filter using ILIKE
+		Where("names.text ILIKE ?", searchTerm).
+		// 3. Ensure we only get unique Ingredient records
+		Distinct("ingredients.*").
+		// 4. Limit to top 5
+		Limit(5).
+		// 5. Optionally Preload all names for those ingredients
+		Preload("Names").
+		Find(&ingredient).Error
+
+	if err != nil {
+		return json.NewEncoder(w).Encode(ingredient)
+	}
+
+	return json.NewEncoder(w).Encode(ingredient)
 }
 
 func IngredientGET(w http.ResponseWriter, r *http.Request) error {
 	var ingredient *types.Ingredient
 	name := new(types.Name)
+	db := database.Database()
+
+	if formValue := r.FormValue("id"); formValue != "" {
+		var ingredient types.Ingredient
+		if tx := db.Preload("Labels").Preload("Names").First(&ingredient, "id = ?", formValue); tx.Error != nil {
+			return tx.Error
+		}
+
+		return json.NewEncoder(w).Encode(ingredient)
+	}
 
 	// HANDLE USER AUTH RELATED PIECES HERE IF NEEDED
 	// we assume that the user exists, and is in the system.
-	db := database.Database()
 	chemical_name := r.FormValue("name")
 	found := false
 	timeout := false
@@ -66,7 +102,7 @@ func IngredientGET(w http.ResponseWriter, r *http.Request) error {
 		case <-ticker.C:
 			core.Logger.Debug("checking for ingredient", "chemical_name", chemical_name)
 
-			if tx := db.Model(&types.Name{}).Where("text = ?", chemical_name).Preload("Ingredient").First(name); tx.Error != nil {
+			if tx := db.Model(&types.Name{}).Where("text ILIKE ?", "%"+chemical_name+"%").Preload("Ingredient").First(name); tx.Error != nil {
 				continue
 			}
 
