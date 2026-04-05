@@ -1,0 +1,22 @@
+# This is your Caddy configuration. This default config
+# opens a port and serves a static site from the www folder.
+# Edit this file according to your needs.
+
+# Remember, Railway terminates TLS before it gets to Caddy.
+{
+    # Railway terminates SSL at the edge
+    auto_https off
+}
+
+# Bind to the dynamic port provided by Railway
+:9000 {
+    # Strip /api and proxy to backend
+    handle_path /api/* {
+        reverse_proxy localhost:8081
+    }
+
+    # Proxy everything else to the Go frontend
+    handle {
+        reverse_proxy localhost:8080
+    }
+}

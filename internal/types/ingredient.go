@@ -46,7 +46,7 @@ var (
 // An Ingredient can have multiple names, multiple hazards, etc. We will
 // generally access ingredients by looking up the mapping in a name table.
 type Ingredient struct {
-	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Created time.Time `json:"created" gorm:"type:timestamp;not null;default:current_timestamp"`
 	Updated time.Time `json:"updated" gorm:"type:timestamp;not null;default:current_timestamp"`
 
@@ -60,8 +60,10 @@ func (i Ingredient) Data(w http.ResponseWriter, r *http.Request) (any, error) {
 
 // This is the Name table, which is how we will access ingredients.
 type Name struct {
-	Text       string     `json:"text" gorm:"type:text;not null;primaryKey;unique;"`
-	Ingredient Ingredient `json:"ingredient" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Text string `json:"text" gorm:"type:text;not null;primaryKey;unique;"`
+
+	IngredientId uuid.UUID  `json:"ingredient_id" gorm:"type:uuid;not null;index;"`
+	Ingredient   Ingredient `json:"ingredient" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (n Name) Data(w http.ResponseWriter, r *http.Request) (any, error) {
@@ -76,7 +78,7 @@ func (n Name) Data(w http.ResponseWriter, r *http.Request) (any, error) {
 // If we need more information, we can add it to a metadata table. This generalization
 // should suffice for now.
 type Label struct {
-	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:uuid_generate_v4()"`
+	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Type    string    `json:"type" gorm:"type:varchar(255);not null;check:type IN ('hazard', 'symptom', 'general', 'effect', 'regulation');default:'general';"`
 	Payload string    `json:"name" gorm:"type:varchar(255);not null"`
 	Origin  string    `json:"origin" gorm:"type:varchar(255);not null"`
