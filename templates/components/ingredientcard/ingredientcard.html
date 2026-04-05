@@ -1,7 +1,9 @@
 {{ define "component-ingredientcard" }}
 
+<html lang="en">
+
+<div class="col-lg-8">
 <!-- Ingredient Overview Card -->
-<div hx-get="/ingredientcard" hx-trigger="load"></div>
 <div class="card mb-4 border-2">
     <div class="card-header bg-white border-bottom">
         <div class="d-flex justify-content-between align-items-center">
@@ -149,6 +151,9 @@
         </div>
     </div>
 </div>
+</div>
+
+</html>
 
 {{ end }}
 {{ template "component-ingredientcard" . }}
