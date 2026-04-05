@@ -1,0 +1,154 @@
+{{ define "component-ingredientcard" }}
+
+<!-- Ingredient Overview Card -->
+<div hx-get="/ingredientcard" hx-trigger="load"></div>
+<div class="card mb-4 border-2">
+    <div class="card-header bg-white border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="h5 mb-0">Ingredient Overview Card: Limonene</h3>
+            <button class="btn btn-sm btn-outline-primary" id="exportBtn">Export/Share</button>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Overview Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Common Use</th>
+                        <th>Risk Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Fragrance / Solvent</td>
+                        <td>Citrus scent, cleaning agent</td>
+                        <td>
+                            <span class="badge bg-warning">⚠️ Moderate</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Key Insights -->
+        <div class="card mb-3 bg-light">
+            <div class="card-body">
+                <h4 class="h6 mb-3">Key Insights</h4>
+                <ul class="mb-0">
+                    <li class="mb-1">May oxidize and cause allergic reactions</li>
+                    <li class="mb-1">Linked to skin irritation in sensitive individuals</li>
+                    <li class="mb-1">Risk increases when exposed to air</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Risk Summary -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <h4 class="h6 mb-3">Risk Summary</h4>
+                <p class="mb-3">Limonene is a common fragrance ingredient found in citrus oils. While generally safe, it can oxidize when exposed to air, which may cause allergic reactions or skin irritation in sensitive individuals.</p>
+                
+                <h5 class="h6 mb-2">Tags</h5>
+                <div class="mb-3">
+                    <span class="badge bg-secondary me-2 mb-2">Allergen</span>
+                    <span class="badge bg-secondary me-2 mb-2">Skin Irritant</span>
+                    <span class="badge bg-secondary me-2 mb-2">Oxidation Risk</span>
+                    <span class="badge bg-secondary me-2 mb-2">Fragrance Sensitivity Trigger</span>
+                </div>
+
+                <h5 class="h6 mb-2">Flagged By</h5>
+                <ul class="mb-3">
+                    <li class="small">European Cosmetic Regulation</li>
+                    <li class="small">Environmental Working Group (EWG)</li>
+                    <li class="small">IFRA (International Fragrance Association)</li>
+                </ul>
+
+                <h5 class="h6 mb-2">Function</h5>
+                <p class="mb-3"><span class="badge bg-info">Fragrance</span></p>
+
+                <h5 class="h6 mb-2">Risk Level</h5>
+                <span class="badge bg-warning">🟡 Moderate</span>
+
+                <h5 class="h6 mb-2 mt-3">Sources</h5>
+                <ul class="list-unstyled mb-0">
+                    <li>
+                        <a href="#" class="text-decoration-none small">
+                            🔗 EWG Skin Deep Database
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="text-decoration-none small">
+                            🔗 EU Cosmetic Ingredient Database
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="text-decoration-none small">
+                            🔗 IFRA Standards
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Personal Annotations Section -->
+        <div class="card mt-3 border-primary">
+            <div class="card-header bg-primary bg-opacity-10 border-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="h6 mb-1">
+                            <span class="badge bg-primary me-2">Personal</span>
+                            My Annotations
+                        </h4>
+                        <small class="text-muted">Add your own hazard ratings and notes</small>
+                    </div>
+                    <button class="btn btn-sm btn-primary" id="editAnnotationBtn">
+                        Edit
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Display Mode -->
+                <div id="annotationDisplay">
+                    <p class="text-muted mb-0">
+                        <em>No personal annotations yet. Click "Edit" to add your own hazard rating and notes.</em>
+                    </p>
+                </div>
+
+                <!-- Edit Form (hidden by default) -->
+                <div id="annotationForm" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">My Hazard Rating</label>
+                        <select class="form-select" id="personalRating">
+                            <option value="low">Low - Safe for me</option>
+                            <option value="moderate" selected>Moderate - Use with caution</option>
+                            <option value="high">High - Avoid this ingredient</option>
+                        </select>
+                        <small class="text-muted">Based on your personal experience and sensitivities</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">My Personal Notes</label>
+                        <textarea class="form-control" rows="4" id="personalNotes" placeholder="Add your observations, reactions, or reminders about this ingredient..."></textarea>
+                        <small class="text-muted">
+                            Examples: "Caused rash when used in XYZ product" or "No issues when concentration is low"
+                        </small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-sm" id="saveAnnotationBtn">
+                            Save Annotation
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="cancelAnnotationBtn">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ end }}
+{{ template "component-ingredientcard" . }}
