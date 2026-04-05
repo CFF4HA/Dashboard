@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
 	"github.com/CFF4HA/Dashboard/internal/backend/http/routes"
@@ -15,7 +16,12 @@ func main() {
 	address := flag.String("address", "localhost", "the address to listen on")
 	port := flag.Int("port", 8080, "the port to listen on")
 	db := flag.String("db", "postgres://user:password@localhost:5432/database?sslmode=disable", "the database connection string")
+	pubchem_scraping_backend := flag.String("pubchem", "http://localhost:8082", "the address of the pubchem scraping backend")
 	flag.Parse()
+
+	if *pubchem_scraping_backend != "" {
+		*pubchem_scraping_backend = strings.TrimRight(*pubchem_scraping_backend, "/")
+	}
 
 	r := pbf.CreateRouter()
 

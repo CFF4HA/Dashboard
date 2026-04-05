@@ -17,6 +17,23 @@ const (
 	DB_TIMEOUT_SECONDS = 20
 )
 
+var (
+	IngredientScrapingBackend = "http://localhost:8082"
+)
+
+func syncDatabaseWithIngredient(name string) {
+	request, err := http.NewRequest("GET", IngredientScrapingBackend+"/ingredient?name="+name, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+}
+
 // This route will be used to search based on names and labels.
 // This is different than GET since GET is the route used to
 // get an exact name. This will always return a list of ingredients.
@@ -41,6 +58,8 @@ func IngredientGET(w http.ResponseWriter, r *http.Request) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(DB_TIMEOUT_SECONDS)*time.Second)
 	defer cancel()
 
+	go syncDatabaseWithIngredient(chemical_name)
+
 	// Ping the database, or timeout.
 	for !found && !timeout {
 		select {
@@ -52,6 +71,7 @@ func IngredientGET(w http.ResponseWriter, r *http.Request) error {
 			}
 
 			ingredient = &name.Ingredient
+			db.Preload("Labels").Preload("Names").Find(ingredient)
 			found = true
 		case <-ctx.Done():
 			core.Logger.Debug("ingredient search timed out", "chemical_name", chemical_name)
