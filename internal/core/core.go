@@ -6,6 +6,6 @@ import (
 )
 
 var (
-	Logger         = slog.New(slog.NewJSONHandler(log.Writer(), nil))
+	Logger         = slog.New(slog.NewJSONHandler(log.Writer(), &slog.HandlerOptions{Level: slog.LevelDebug}))
 	BackendAddress = "http://localhost:8081"
 )

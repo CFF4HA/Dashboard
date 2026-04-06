@@ -1,0 +1,5 @@
+{{ define "content" }}
+<input id="ingredients" name="ingredients" type="textarea" class="form-control mb-4" placeholder="Search products...">
+<div hx-include="#ingredients" hx-get="/component/product/draft" hx-trigger="load, every 3s"></div>
+{{ end }}
+{{ template "content" . }}

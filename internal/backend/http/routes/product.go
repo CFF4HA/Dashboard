@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
@@ -11,6 +12,35 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/google/uuid"
 )
+
+func ProductIngredientListGET(w http.ResponseWriter, r *http.Request) error {
+	db := database.Database()
+	draft := &types.ProductDraft{}
+
+	for _, ingredient := range strings.Split(r.FormValue("ingredients"), ",") {
+		if strings.Trim(ingredient, " \t\r") == "" {
+			continue
+		}
+
+		var count int64
+		name := strings.Trim(ingredient, " \t\r\n")
+		tx := db.Model(&types.Name{}).Where("text ILIKE ?", name).Count(&count)
+		if tx.Error != nil {
+			return tx.Error
+		}
+
+		if count == 0 {
+			go syncDatabaseWithIngredient(name)
+		}
+
+		draft.Ingredients = append(draft.Ingredients, types.ProductDraftIngredient{
+			Name:   ingredient,
+			Exists: count > 0,
+		})
+	}
+
+	return json.NewEncoder(w).Encode(draft)
+}
 
 func ProductGET(w http.ResponseWriter, r *http.Request) error {
 	name := r.FormValue("name")

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
@@ -22,7 +23,7 @@ var (
 )
 
 func syncDatabaseWithIngredient(name string) {
-	request, err := http.NewRequest("GET", IngredientScrapingBackend+"/ingredient?name="+name, nil)
+	request, err := http.NewRequest("GET", IngredientScrapingBackend+"/ingredient?name="+url.QueryEscape(name), nil)
 	if err != nil {
 		panic(err)
 	}

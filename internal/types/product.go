@@ -7,6 +7,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type ProductDraftIngredient struct {
+	Id     uuid.UUID `json:"id"`
+	Name   string    `json:"name"`
+	Exists bool      `json:"exists"`
+}
+
+type ProductDraft struct {
+	Ingredients []ProductDraftIngredient `json:"ingredients"`
+}
+
 type Product struct {
 	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Created time.Time `json:"created" gorm:"type:timestamp;not null;default:current_timestamp"`
