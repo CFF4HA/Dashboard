@@ -2,7 +2,10 @@ package main
 
 import (
 	"flag"
+	"strings"
 
+	"github.com/CFF4HA/Dashboard/internal/bridges"
+	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/pff"
 )
 
@@ -22,6 +25,10 @@ func Frontend(a *pff.App) {
 	})
 
 	//components
+	a.RegisterTemplate("/login", "login/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
+
 	a.RegisterTemplate("/navbar", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
 	})
@@ -34,6 +41,24 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: false,
 	})
 
+	a.RegisterTemplate("/searchbar", "components/searchbar/searchbar.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	search_ingredients := a.RegisterTemplate("/component/search/ingredient", "components/searchbar/ingredients.html", pff.TemplateRegistrationOpts{})
+	search_ingredients.RegisterBridge("Ingredients", bridges.SearchIngredients{})
+
+	a.RegisterTemplate("/home", "dashboard/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
+
+	a.RegisterTemplate("/settings", "settings/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
+
+	a.RegisterTemplate("/admin", "admin/page.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: true,
+	})
 }
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
@@ -43,7 +68,10 @@ func main() {
 	address := flag.String("address", "127.0.0.1", "the address to bind the server to")
 	port := flag.Int("port", 8080, "the port to bind the server to")
 	live := flag.Bool("reload", true, "whether to do live reloads on the template files")
+	backend := flag.String("backend", "http://localhost:8081", "the address of the backend server")
 	flag.Parse()
+
+	core.BackendAddress = strings.TrimRight(*backend, "/")
 
 	app := pff.CreateApp(pff.Configuration{
 		TemplateDirectoryPath: *templateDir,
