@@ -3,22 +3,44 @@ import pubchem
 from collections import Counter, defaultdict
 
 # Get ingredient names; will be used through the file.
-ing1 = input("What is the first ingredient?\n")
-ing2 = input("What is the second ingredient?\n")
+ing1 = ["benzoin", "limonene"]
+ing2 = ["Citral", "linalool", "formaldehyde"]
 
 """
-Takes in the names of two ingredients and queries them in Pubchem using our Ingredient function.
-Parameters: Names of the two ingredients
-Returns: List of all Labels associated with the ingredient, and a count of how many times
-each label type appears.
+Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
+Parameters: Name of an ingredient
+Returns: List of all Labels associated with the ingredient, and a List comprised of the Types
+of Labels
 """
-def getLabelTypesList(ing1, ing2) -> tuple[list, list, dict, dict]:
-    _, firstLabels = pubchem.Ingredient(ing1)
-    _, secondLabels = pubchem.Ingredient(ing2)
-    types1 = [label.Type for label in firstLabels]
-    types1 = dict(Counter(label.Type for label in firstLabels))
-    types2 = dict(Counter(label.Type for label in secondLabels))
-    return firstLabels, secondLabels, types1, types2
+def getLabelTypesList(ing) -> tuple[list, list]:
+    _, labels = pubchem.Ingredient(ing)
+    types = [label.Type for label in labels]
+    return labels, types
+
+"""
+Takes in a list of ingredient names and queries them in Pubchem using Ingredient function
+Parameters: List of names of ingredients
+Returns: A List comprised of each ingredient's List of Labels, and a List of the Types of Labels
+present for all ingredients
+"""
+def massGetLabelTypesList(ings) -> tuple[list[list], list]:
+    listLabels = []
+    types = None
+    for ingredient in ings:
+        result = pubchem.Ingredient(ingredient)
+        if result is None:
+            print(f"Warning: No data found for {ingredient}")
+            continue
+        _, labels = result
+        listLabels.append(labels)
+        if (types is None):
+            types = [label.Type for label in labels]
+        else:
+            moreTypes = [label.Type for label in labels]
+            for type in moreTypes:
+                types.append(type)
+    types = sorted(types)
+    return listLabels, types
 
 # Compares the number of unique symptom entries for each ingredient.
 def compareSymptomNumber(ing1, ing2, types1, types2):
@@ -32,6 +54,22 @@ def compareSymptomNumber(ing1, ing2, types1, types2):
         print(str(numSymptoms2)+" > "+str(numSymptoms1))
     else:
         print(ing1+" and "+ing2+" have the same number of defined symptoms.")
+        print(str(numSymptoms1)+" = "+str(numSymptoms2))
+
+# Compares number of defined symptoms for two lists of ingredients.
+def massCompareSymptomNumber(ingList1, ingList2, types1, types2):
+    numSymptoms1 = types1['symptom']
+    numSymptoms2 = types2['symptom']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numSymptoms1 > numSymptoms2):
+        print("The first ingredient list has more defined symptoms.")
+        print(str(numSymptoms1)+" > "+str(numSymptoms2))
+    elif (numSymptoms1 < numSymptoms2):
+        print("The second ingredient list has more defined symptoms.")
+        print(str(numSymptoms2)+" > "+str(numSymptoms1))
+    else:
+        print("Both ingredient lists have the same number of defined symptoms.")
         print(str(numSymptoms1)+" = "+str(numSymptoms2))
 
 # Compares the number of unique effect entries of each ingredient.
@@ -48,6 +86,22 @@ def compareEffectNumber(ing1, ing2, types1, types2):
         print(ing1+" and "+ing2+" have the same number of defined effects.")
         print(str(numEffects1)+" = "+str(numEffects2))
 
+# Compares the number of effect entries for two lists of ingredients.
+def massCompareEffectNumber(ingList1, ingList2, types1, types2):
+    numEffects1 = types1['effect']
+    numEffects2 = types2['effect']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numEffects1 > numEffects2):
+        print("The first ingredient list has more defined effects.")
+        print(str(numEffects1)+" > "+str(numEffects2))
+    elif (numEffects1 < numEffects2):
+        print("The second ingredient list has more defined effects.")
+        print(str(numEffects2)+" > "+str(numEffects1))
+    else:
+        print("Both ingredient lists have the same number of defined effects.")
+        print(str(numEffects1)+" = "+str(numEffects2))
+
 # Compares the nubmer of unique hazard entries of each ingredient.
 def compareHazardNumber(types1, types2):
     numHazards1 = types1['hazard']
@@ -62,6 +116,22 @@ def compareHazardNumber(types1, types2):
         print(ing1+" and "+ing2+" have the same number of defined hazards.")
         print(str(numHazards1)+" = "+str(numHazards2))
 
+# Compares the number of defined hazards for two lists of ingredients.
+def massCompareHazardNumber(ingList1, ingList2, types1, types2):
+    numHazards1 = types1['hazard']
+    numHazards2 = types2['hazard']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numHazards1 > numHazards2):
+        print("The first ingredient list has more defined hazards.")
+        print(str(numHazards1)+" > "+str(numHazards2))
+    elif (numHazards1 < numHazards2):
+        print("The second ingredient list has more defined hazards.")
+        print(str(numHazards2)+" > "+str(numHazards1))
+    else:
+        print("Both ingredient lists have the same number of defined hazards.")
+        print(str(numHazards1)+" = "+str(numHazards2))
+        
 # Compares the number of unique regulation entries of each ingredient.
 def compareRegulationNumber(types1, types2):
     numRegulations1 = types1['regulation']
@@ -74,6 +144,22 @@ def compareRegulationNumber(types1, types2):
         print(str(numRegulations2)+" > "+str(numRegulations1))
     else:
         print(ing1+" and "+ing2+" have the same number of defined regulations.")
+        print(str(numRegulations1)+" = "+str(numRegulations2))
+
+# Compares the number of regulation entries for two lists of ingredients.
+def massCompareRegulationNumber(ingList1, ingList2, types1, types2):
+    numRegulations1 = types1['regulation']
+    numRegulations2 = types2['regulation']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numRegulations1 > numRegulations2):
+        print("The first ingredient list has more defined regulations.")
+        print(str(numRegulations1)+" > "+str(numRegulations2))
+    elif (numRegulations1 < numRegulations2):
+        print("The second ingredient list has more defined regulations.")
+        print(str(numRegulations2)+" > "+str(numRegulations1))
+    else:
+        print("Both ingredient lists have the same number of defined regulations.")
         print(str(numRegulations1)+" = "+str(numRegulations2))
 
 # Takes in a list of Labels and returns a list of all symptoms defined in that list.
@@ -103,6 +189,33 @@ def compareSymptoms(ing1, ing2, list1, list2):
     print("Unique to "+ing1+": ", uniqueSymptoms1 if uniqueSymptoms1 else "None")
     print("Unique to "+ing2+": ", uniqueSymptoms2 if uniqueSymptoms2 else "None")
 
+"""
+Compares symptoms from two lists of ingredient names. Prints out symptoms that are:
+1. Common to both ingredients lists.
+2. Unique to the first ingredient list.
+3. Unique to the second ingredient list.
+"""
+def massCompareSymptoms(ingList1, ingList2):
+    symptomList1 = []
+    symptomList2 = []
+    for ing in ingList1:
+        symptoms = getSymptomList(getLabelTypesList(ing)[0])
+        symptomList1.extend(symptoms)
+    for ing in ingList2:
+        symptoms = getSymptomList(getLabelTypesList(ing)[0])
+        symptomList2.extend(symptoms)
+
+    set1 = set(symptomList1)
+    set2 = set(symptomList2)
+
+    commonSymptoms = set1 & set2
+    uniqueSymptoms1 = set1 - set2
+    uniqueSymptoms2 = set2 - set1
+
+    print("Common Symptoms:", commonSymptoms if commonSymptoms else "None")
+    print("Unique to Ingredient List 1: ", uniqueSymptoms1 if uniqueSymptoms1 else "None")
+    print("Unique to Ingredient List 2: ", uniqueSymptoms2 if uniqueSymptoms2 else "None")
+
 # Takes in a list of Labels and returns a list of all hazards defined in that list.
 def getHazardList(labelList) -> list:
     payloads_by_type = defaultdict(list)
@@ -129,6 +242,29 @@ def compareHazards(ing1, ing2, list1, list2):
     print("Common Hazards:", commonHazards if commonHazards else "None")
     print("Unique to "+ing1+": ", uniqueHazards1 if uniqueHazards1 else "None")
     print("Unique to "+ing2+": ", uniqueHazards2 if uniqueHazards2 else "None")
+
+def massCompareHazards(ingList1, ingList2):
+    hazardList1 = []
+    hazardList2 = []
+
+    for ing in ingList1:
+        hazards = getHazardList(getLabelTypesList(ing)[0])
+        hazardList1.extend(hazards)
+
+    for ing in ingList2:
+        hazards = getHazardList(getLabelTypesList(ing)[0])
+        hazardList2.extend(hazards)
+
+    set1 = set(hazardList1)
+    set2 = set(hazardList2)
+
+    commonHazards = set1 & set2
+    uniqueHazards1 = set1 - set2
+    uniqueHazards2 = set2 - set1
+
+    print("Common Hazards:", commonHazards if commonHazards else "None")
+    print("Unique to Ingredient List 1:", uniqueHazards1 if uniqueHazards1 else "None")
+    print("Unique to Ingredient List 2:", uniqueHazards2 if uniqueHazards2 else "None")
 
 # Takes in a list of Labels and returns a list of all effects defined in that list.
 def getEffectList(labelList) -> list:
@@ -157,6 +293,32 @@ def compareEffects(ing1, ing2, list1, list2):
     print("Unique to "+ing1+": ", uniqueEffects1 if uniqueEffects1 else "None")
     print("Unique to "+ing2+": ", uniqueEffects2 if uniqueEffects2 else "None")
 
+"""
+Comopares the combined effect lists from two lists of ingredient names.
+"""
+def massCompareEffects(ingList1, ingList2):
+    effectList1 = []
+    effectList2 = []
+
+    for ing in ingList1:
+        effects = getEffectList(getLabelTypesList(ing)[0])
+        effectList1.extend(effects)
+
+    for ing in ingList2:
+        effects = getEffectList(getLabelTypesList(ing)[0])
+        effectList2.extend(effects)
+
+    set1 = set(effectList1)
+    set2 = set(effectList2)
+
+    commonEffects = set1 & set2
+    uniqueEffects1 = set1 - set2
+    uniqueEffects2 = set2 - set1
+
+    print("Common Effects:", commonEffects if commonEffects else "None")
+    print("Unique to Ingredient List 1: ", uniqueEffects1 if uniqueEffects1 else "None")
+    print("Unique to Ingredient List 2: ", uniqueEffects2 if uniqueEffects2 else "None")
+
 # Takes in a list of Labels and returns a list of all regulations defined in that list.
 def getRegulationList(labelList) -> list:
     payloads_by_type = defaultdict(list)
@@ -183,3 +345,26 @@ def compareRegulations(ing1, ing2, list1, list2):
     print("Common Regulations:", commonRegulations if commonRegulations else "None")
     print("Unique to "+ing1+": ", uniqueRegulations1 if uniqueRegulations1 else "None")
     print("Unique to "+ing2+": ", uniqueRegulations2 if uniqueRegulations2 else "None")
+
+def massCompareRegulations(ingList1, ingList2):
+    regulationList1 = []
+    regulationList2 = []
+
+    for ing in ingList1:
+        regulations = getRegulationList(getLabelTypesList(ing)[0])
+        regulationList1.extend(regulations)
+
+    for ing in ingList2:
+        regulations = getRegulationList(getLabelTypesList(ing)[0])
+        regulationList2.extend(regulations)
+
+    set1 = set(regulationList1)
+    set2 = set(regulationList2)
+
+    commonRegulations = set1 & set2
+    uniqueRegulations1 = set1 - set2
+    uniqueRegulations2 = set2 - set1
+
+    print("Common Regulations:", commonRegulations if commonRegulations else "None")
+    print("Unique to Ingredient List 1:", uniqueRegulations1 if uniqueRegulations1 else "None")
+    print("Unique to Ingredient List 2:", uniqueRegulations2 if uniqueRegulations2 else "None")
