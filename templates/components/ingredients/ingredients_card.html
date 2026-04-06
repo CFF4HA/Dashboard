@@ -1,0 +1,23 @@
+{{define "ingredients"}}
+    <div class="ingredients">
+        <h2>Ingredients</h2>
+        <ul>
+            {{range .Ingredients}}
+                <li>{{.}}</li>
+            {{end}}
+        </ul>
+    </div>
+
+    <div class="name">
+        <h2>Name</h2>
+        <p>{{ .Name }}</p>
+    </div>
+
+    <div class="label">
+        <h2>Label</h2>
+        <p>{{ .Label }}</p>
+    </div>
+{{end}}
+
+
+{{template "ingredients" .}}

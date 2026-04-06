@@ -1,0 +1,13 @@
+{{ define "product_card" }}
+    <div class="product-card">
+        <h2>{{ .Name }}</h2>
+        <p>{{ .Description }}</p>
+        <p>Price: ${{ .Price }}</p>
+        
+    </div>
+
+    
+{{ end }}
+
+{{ template "product_card" .}}
+
