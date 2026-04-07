@@ -1,0 +1,24 @@
+{{ define "component-keydifferences" }}
+
+<div class="card bg-white mt-3" style="border-radius: 8px; border: 1px solid #ddd;">
+    <div class="card-body p-4">
+        <h4 class="h6 mb-3" style="font-weight: 600;">📊 Key Differences</h4>
+        <div style="font-size: 0.95rem; line-height: 1.8;">
+            <div class="mb-2">
+                <strong>Common Ingredients:</strong> Water, Glycerin, Phenoxyethanol (3 shared)
+            </div>
+            <div class="mb-2">
+                <strong>Unique to CeraVe:</strong> Contains ceramides and cholesterol for barrier repair
+            </div>
+            <div class="mb-2">
+                <strong>Unique to Neutrogena:</strong> Contains fragrance compounds (Fragrance, Limonene, Linalool)
+            </div>
+            <div>
+                <strong>Risk Assessment:</strong> CeraVe has only 1 moderate-risk ingredient, while Neutrogena has 4
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ end }}
+{{ template "component-keydifferences" . }}

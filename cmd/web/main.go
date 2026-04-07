@@ -84,6 +84,21 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: false, 
 	})
 
+	a.RegisterTemplate("/sharedingredients", "components/productcomparison/sharedingredients.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false, 
+	})
+
+	a.RegisterTemplate("/safetyscore", "components/productcomparison/safetyscore.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false, 
+	})
+
+	a.RegisterTemplate("/winnerbanner", "components/productcomparison/winnerbanner.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false, 
+	})
+
+	a.RegisterTemplate("/keydifferences", "components/productcomparison/keydifferences.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false, 
+	})
 
 }
 
