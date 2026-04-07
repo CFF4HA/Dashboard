@@ -72,6 +72,12 @@ func main() {
 		Handler:  routes.ProductDELETE,
 	})
 
+	r.Add(pbf.RouteOptions{
+		Method:   http.MethodGet,
+		Endpoint: "/product/draft",
+		Handler:  routes.ProductIngredientListGET,
+	})
+
 	// Base User Routes
 	r.Add(pbf.RouteOptions{
 		Method:   http.MethodPost,
