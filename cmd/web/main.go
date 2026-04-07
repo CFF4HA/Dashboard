@@ -45,7 +45,6 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: false,
 	})
 
-<<<<<<< HEAD
 	a.RegisterTemplate("/products", "components/products/product_card.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
 	}).RegisterBridge("product", &types.Product{})
@@ -65,9 +64,6 @@ func Frontend(a *pff.App) {
 	search_ingredients := a.RegisterTemplate("/component/search/ingredient", "components/searchbar/ingredients.html", pff.TemplateRegistrationOpts{})
 	search_ingredients.RegisterBridge("Ingredients", bridges.SearchIngredients{})
 
-	//-------------------//
-
-=======
 	a.RegisterTemplate("/product", "product/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	}).RegisterBridge("Products", bridges.ProductList{})
@@ -82,7 +78,8 @@ func Frontend(a *pff.App) {
 		RegisterBridge("Products", bridges.ProductList{})
 
 	a.RegisterTemplate("/component/search/product", "components/product/search.html", pff.TemplateRegistrationOpts{})
->>>>>>> origin/main
+
+	//-------------------//
 }
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
