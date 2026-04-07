@@ -50,6 +50,7 @@ class Name:
 @ dataclass
 class Ingredient:
     Id: str
+    Labels: list
 
 
 def Hazard(context: str):

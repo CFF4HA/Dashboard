@@ -66,7 +66,7 @@ def Ingredient(name) -> (list[str], list[models.Label]):
                 for synonym in synonyms:
                     ingredient_names.append(synonym.get("String"))
 
-                print(f"Synonyms: {ingredient_names}")
+                #print(f"Synonyms: {ingredient_names}")
     else:
         ingredient_names.append(name)
 
