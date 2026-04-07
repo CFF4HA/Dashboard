@@ -1,128 +1,105 @@
 {{ define "content" }}
+<!-- Custom Styles -->
+<style>
+    body {
+        background-color: #ecedec;
+    }
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    /* Logo */
+    .logo-text {
+        font-weight: bold;
+    }
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    .logo-light {
+        font-weight: normal;
+    }
 
-    <!-- Custom Styles -->
-    <style>
-        body {
-            background-color: #ecedec;
-        }
+    /* Dark gray login card */
+    .login-card {
+        background-color: #2c2c2c;
+        border-radius: 15px;
+        width: 350px;
+        color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
 
-        /* Logo */
-        .logo-text {
-            font-weight: bold;
-        }
+    /* Labels */
+    .form-label {
+        color: #e0e0e0;
+    }
 
-        .logo-light {
-            font-weight: normal;
-        }
+    /* Inputs */
+    .form-control {
+        background-color: #444;
+        border: none;
+        color: white;
+    }
 
-        /* Dark gray login card */
-        .login-card {
-            background-color: #2c2c2c;
-            border-radius: 15px;
-            width: 350px;
-            color: white;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
+    .form-control::placeholder {
+        color: #bbb;
+    }
 
-        /* Labels */
-        .form-label {
-            color: #e0e0e0;
-        }
+    /* Buttons */
+    .sign-in-btn {
+        font-weight: 500;
+    }
 
-        /* Inputs */
-        .form-control {
-            background-color: #444;
-            border: none;
-            color: white;
-        }
+    .create-account-btn {
+        width: 350px;
+    }
 
-        .form-control::placeholder {
-            color: #bbb;
-        }
+    .btn-success {
+        background-color: #bff8d4;
+        border-color: #a3d9b2;
+        color: #000000;
+    }
+</style>
 
-        /* Buttons */
-        .sign-in-btn {
-            font-weight: 500;
-        }
+<div class="min-vh-100 d-flex flex-column align-items-center justify-content-center">
 
-        .create-account-btn {
-            width: 350px;
-        }
-
-        .btn-success {
-            background-color: #bff8d4;
-            border-color: #a3d9b2;
-            color: #000000;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="min-vh-100 d-flex flex-column align-items-center justify-content-center">
-
-        <!-- Logo -->
-        <div class="text-center mb-4">
-            <h1 class="logo-text">
-                Fragrance<span class="logo-light"><i>free</i></span>
-            </h1>
-        </div>
-
-        <!-- Login Card -->
-        <div class="login-card p-4 mb-4">
-            <h2 class="text-center mb-4">Login</h2>
-            
-            <!-- Form starts here -->
-            <form action="/home">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" placeholder="Enter username">
-                </div>
-            
-                <div class="mb-4">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Enter password">
-                </div>
-            
-                <button type="submit" class="btn btn-light w-100 sign-in-btn">
-                    Sign In
-                </button>
-            </form>
-            <!-- Form ends here -->
-        </div>
-
-        <!-- Create Account Section -->
-        <div class="text-center">
-            <p class="mb-1 fw-semibold">New to Fragrance Free?</p>
-            <p class="mb-3">Create an account for personalized results.</p>
-            
-            <button class="btn btn-success mb-3 create-account-btn">
-                Create Account
-            </button>
-            
-            <p class="text-muted mb-0">
-                Or 
-                <a href="/" class="text-decoration-none text-dark">
-                    continue as a guest
-                </a>
-            </p>
-        </div>
-
+    <!-- Logo -->
+    <div class="text-center mb-4">
+        <h1 class="logo-text">
+            Fragrance<span class="logo-light"><i>free</i></span>
+        </h1>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Login Card -->
+    <div class="login-card p-4 mb-4">
+        <h2 class="text-center mb-4">Login</h2>
+        
+        <!-- Form starts here -->
+        <form action="/home">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter username">
+            </div>
+        
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter password">
+            </div>
+        
+            <button type="submit" class="btn btn-light w-100 sign-in-btn">
+                Sign In
+            </button>
+        </form>
+        <!-- Form ends here -->
+    </div>
 
-</body>
-</html>
+    <!-- Create Account Section -->
+    <div class="text-center">
+        <p class="mb-1 fw-semibold">New to Fragrance Free?</p>
+        
+        <p class="text-muted mb-0">
+            <a href="/api/user/anonymous" class="text-decoration-none text-dark">
+                Continue as a Guest
+            </a>
+        </p>
+    </div>
+</div>
 
+<script>
+
+</script>
 {{ end }}

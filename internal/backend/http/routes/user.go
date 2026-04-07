@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -14,8 +15,35 @@ import (
 )
 
 var (
+	AnonymousUser = uuid.New()
+)
+
+var (
 	Sessions = make(map[uuid.UUID]uuid.UUID)
 )
+
+func HandleUserAnonymousGET(w http.ResponseWriter, r *http.Request) error {
+	_, err := r.Cookie("session")
+	if err != nil {
+		if !errors.Is(err, http.ErrNoCookie) {
+			return err
+		}
+
+		session := uuid.New()
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "session",
+			Value:    session.String(),
+			HttpOnly: true,
+			Secure:   true,
+			Expires:  time.Now().AddDate(0, 0, 7), // Expires in 7 days
+			Path:     "/",
+		})
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	return nil
+}
 
 func HandleSessionPOST(w http.ResponseWriter, r *http.Request) error {
 	var session types.Session
@@ -73,6 +101,7 @@ func HandleUserPOST(w http.ResponseWriter, r *http.Request) error {
 		Path:     "/",
 	})
 
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return nil
 }
 
@@ -116,5 +145,6 @@ func HandleUserPUT(w http.ResponseWriter, r *http.Request) error {
 		Path:     "/",
 	})
 
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return nil
 }

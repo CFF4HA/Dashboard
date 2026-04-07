@@ -97,6 +97,12 @@ func main() {
 		Handler:  routes.HandleUserPUT,
 	})
 
+	r.Add(pbf.RouteOptions{
+		Method:   http.MethodGet,
+		Endpoint: "/user/anonymous",
+		Handler:  routes.HandleUserAnonymousGET,
+	})
+
 	// Starting!
 	core.Logger.Info("the backend is starting", "address", r.Address, "port", r.Port, "link", fmt.Sprintf("http://%s:%d", r.Address, r.Port))
 	if err := r.Start(); err != nil {
