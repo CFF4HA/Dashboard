@@ -44,13 +44,16 @@ func Frontend(a *pff.App) {
 
 	a.RegisterTemplate("/product", "product/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
-	})
+	}).RegisterBridge("Products", bridges.ProductList{})
 
 	product_draft := a.RegisterTemplate("/component/product/draft", "components/product/product.build.html", pff.TemplateRegistrationOpts{})
 	product_draft.RegisterBridge("Product", bridges.DraftProduct{})
 
 	a.RegisterTemplate("/component/product/draft/ingredient", "components/product/product.draft.ingredient.html", pff.TemplateRegistrationOpts{}).
 		RegisterBridge("Ingredient", bridges.DraftProductIngredient{})
+
+	a.RegisterTemplate("/component/product/recent", "components/product/product.html", pff.TemplateRegistrationOpts{}).
+		RegisterBridge("Products", bridges.ProductList{})
 
 	a.RegisterTemplate("/component/search/product", "components/product/search.html", pff.TemplateRegistrationOpts{})
 }

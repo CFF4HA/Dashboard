@@ -50,7 +50,11 @@ function createProduct() {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(productData)
-  }).then(response => response.json());
+  }).then(
+    () => {
+      document.getElementById('builder-ingredient-list').innerHTML = '';
+    }
+  );
 }
 </script>
 

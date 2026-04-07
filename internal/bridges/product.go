@@ -64,3 +64,25 @@ func (c CreateProduct) Data(w http.ResponseWriter, r *http.Request) (any, error)
 
 	return nil, nil
 }
+
+type ProductList struct{}
+
+func (p ProductList) Data(w http.ResponseWriter, r *http.Request) (any, error) {
+	var products []types.Product
+
+	req, err := http.NewRequest("GET", core.BackendAddress+"/product", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&products); err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
