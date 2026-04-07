@@ -1,10 +1,7 @@
 # Imports
 import pubchem
 from collections import Counter, defaultdict
-
-# Get ingredient names; will be used through the file.
-ing1 = ["benzoin", "limonene"]
-ing2 = ["Citral", "linalool", "formaldehyde"]
+import models
 
 """
 Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
@@ -163,12 +160,21 @@ def massCompareRegulationNumber(ingList1, ingList2, types1, types2):
         print(str(numRegulations1)+" = "+str(numRegulations2))
 
 # Takes in a list of Labels and returns a list of all symptoms defined in that list.
-def getSymptomList(label1) -> list:
+def getSymptomList(label1) -> set[str]:
     payloads_by_type = defaultdict(list)
     for label in label1:
         payloads_by_type[label.Type].append(label.Payload)
     symptoms = payloads_by_type['symptom']
-    return symptoms
+    return set(symptoms)
+
+# Takes in a list of Ingredient objects and returns Set of their combined symptoms
+def getMassSymptomList(ings : list[models.Ingredient]) -> set[str]:
+    symptomSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'symptom':
+                symptomSet.add(label.Payload)
+    return symptomSet
 
 """
 Compares two symptom lists from getSymptomList and prints out symptoms that are: 
@@ -224,6 +230,15 @@ def getHazardList(labelList) -> list:
     hazards = payloads_by_type['hazard']
     return hazards
 
+# Takes in a list of Ingredient objects and returns Set of their combined hazards
+def getMassHazardList(ings : list[models.Ingredient]) -> set[str]:
+    hazardSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'hazard':
+                hazardSet.add(label.Payload)
+    return hazardSet
+
 """
 Compares two hazard lists from getHazardList and prints out hazards that are: 
 1. Common to both ingredients listed.
@@ -274,6 +289,14 @@ def getEffectList(labelList) -> list:
     effects = payloads_by_type['effect']
     return effects
 
+# Takes in a list of Ingredient objects and returns Set of their combined effects
+def getMassEffectList(ings : list[models.Ingredient]) -> set[str]:
+    effectSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'effect':
+                effectSet.add(label.Payload)
+    return effectSet
 """
 Compares two effect lists from getEffectList and prints out effects that are: 
 1. Common to both ingredients listed.
@@ -327,6 +350,15 @@ def getRegulationList(labelList) -> list:
     regulations = payloads_by_type['regulation']
     return regulations
 
+# Takes in a list of Ingredient objects and returns a list of their combined regulations
+def getMassRegulationList(ings : list[models.Ingredient]) -> set[str]:
+    regSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'regulation':
+                regSet.add(label.Payload)
+    return regSet
+
 """
 Compares two regulation lists from getRegulationList and prints out regulations that are: 
 1. Common to both ingredients listed.
@@ -368,3 +400,4 @@ def massCompareRegulations(ingList1, ingList2):
     print("Common Regulations:", commonRegulations if commonRegulations else "None")
     print("Unique to Ingredient List 1:", uniqueRegulations1 if uniqueRegulations1 else "None")
     print("Unique to Ingredient List 2:", uniqueRegulations2 if uniqueRegulations2 else "None")
+

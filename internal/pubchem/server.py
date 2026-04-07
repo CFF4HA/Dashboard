@@ -14,6 +14,7 @@ parser.add_argument("--port", type=int, default=8000, help="Server port")
 parser.add_argument("--db-url", type=str, required=True, help="Postgres URL")
 args, _ = parser.parse_known_args()
 
+cache = {}
 
 AsyncSessionLocal = None
 
@@ -49,9 +50,12 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(
             status_code=400, detail="Name parameter is required")
 
+    if name in cache:
+        return cache[name]
+    
     names, labels = pubchem.Ingredient(name)
 
-    ingredient = models.Ingredient(Id=(uuid.uuid4()))
+    ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
 
     # Boilerplate example: Execute a simple raw SQL query to test the connection
     try:
@@ -90,6 +94,29 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         await db.rollback()
         raise e
+    cache[name] = ingredient
+
+@app.get("/ingredient/compare")
+async def compare_products(product1: list[str], product2: list[str], db: AsyncSession = Depends(get_db)):
+    ingredients1 : list[models.Ingredient] = []
+    ingredients2 : list[models.Ingredient] = []
+    for ing in product1:
+        ingredient = cache[ing]
+        if ingredient:
+            ingredients1.append(ingredient)
+        else:
+            _, labels = pubchem.Ingredient(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients1.append(ingredient)
+    for ing in product2:
+        ingredient = cache[ing]
+        if ingredient:
+            ingredients2.append(ingredient)
+        else:
+            _, labels = pubchem.Ingredient(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients2.append(ingredient)
+    
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
