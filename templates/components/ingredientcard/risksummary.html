@@ -1,0 +1,25 @@
+{{ define "component-risksummary"}}
+
+<div class="card bg-white" style="border-radius: 8px; border: 1px solid #ddd;">
+    <div class="card-body p-4">
+        <h4 class="h6 mb-3" style="font-weight: 600;">Risk Summary</h4>
+        <p class="mb-4">Limonene is a common fragrance ingredient found in citrus oils. While generally safe, it can oxidize when exposed to air, which may cause allergic reactions or skin irritation in sensitive individuals.</p>
+
+        <h5 class="h6 mb-2" style="font-weight: 600;">Tags</h5>
+        <div class="mb-4" style="line-height: 1.8;">
+            <div>Allergen</div>
+            <div>Skin Irritant</div>
+            <div>Oxidation Risk</div>
+            <div>Fragrance Sensitivity Trigger</div>
+        </div>
+
+        <h5 class="h6 mb-2" style="font-weight: 600;">Risk Level</h5>
+        <div class="d-flex align-items-center">
+            <span style="color: #f59e0b; font-size: 1.2rem; margin-right: 8px;">●</span>
+            <span style="font-weight: 500;">Moderate</span>
+        </div>
+    </div>
+</div>
+
+{{ end }}
+{{ template "component-risksummary" . }}

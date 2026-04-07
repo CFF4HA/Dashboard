@@ -36,13 +36,55 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: true,
 	})
 
-	a.RegisterTemplate("/ingredientcard", "components/ingredientcard/ingredientcard.html", pff.TemplateRegistrationOpts{
+	a.RegisterTemplate("/overviewtable", "components/ingredientcard/overviewtable.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
 	})
 
-	a.RegisterTemplate("/comparison", "components/comparison/comparison.html", pff.TemplateRegistrationOpts{
+	a.RegisterTemplate("/keyinsights", "components/ingredientcard/keyinsights.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
 	})
+
+	a.RegisterTemplate("/risksummary", "components/ingredientcard/risksummary.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/personalproducts", "components/myproductscard/personalproducts.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/communityproducts", "components/myproductscard/communityproducts.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/saveproduct", "components/myproductscard/saveproduct.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/product1", "components/productcomparison/product1.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/product2", "components/productcomparison/product2.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/totalingredients", "components/productcomparison/totalingredients.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/lowriskcount", "components/productcomparison/lowriskcount.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	a.RegisterTemplate("/moderateriskcount", "components/productcomparison/moderateriskcount.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false, 
+	})
+
+	a.RegisterTemplate("/highriskcount", "components/productcomparison/highriskcount.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false, 
+	})
+
+
 }
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.

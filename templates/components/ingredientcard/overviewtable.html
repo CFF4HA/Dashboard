@@ -1,0 +1,28 @@
+{{ define "component-overviewtable" }}
+
+<div class="card mb-4 bg-white" style="border-radius: 8px; border: 1px solid #ddd;">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead style="background-color: #f8f9fa;">
+                <tr>
+                    <th class="py-3" style="font-weight: 600;">Category</th>
+                    <th class="py-3" style="font-weight: 600;">Common Use</th>
+                    <th class="py-3" style="font-weight: 600;">Risk Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="py-3">Fragrance / Solvent</td>
+                    <td class="py-3">Citrus scent, cleaning agent</td>
+                    <td class="py-3">
+                        <span style="color: #f59e0b; margin-right: 6px;">⚠️</span>
+                        <span style="font-weight: 500;">Moderate</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{ end }}
+{{ template "component-overviewtable" . }}
