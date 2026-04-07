@@ -4,6 +4,8 @@ import (
 	"flag"
 	"strings"
 
+	"github.com/CFF4HA/Dashboard/internal/types"
+
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/pff"
@@ -11,7 +13,8 @@ import (
 
 // This is what the frontend will modify.
 func Frontend(a *pff.App) {
-	//pages
+
+	//PAGES//########//
 	a.RegisterTemplate("", "index/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
@@ -24,29 +27,9 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: true,
 	})
 
-	//components
 	a.RegisterTemplate("/login", "login/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
-
-	a.RegisterTemplate("/navbar", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-
-	a.RegisterTemplate("/products", "components/products/product_card.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-
-	a.RegisterTemplate("/ingredients", "components/ingredients/ingredients_card.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-
-	a.RegisterTemplate("/searchbar", "components/searchbar/searchbar.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-
-	search_ingredients := a.RegisterTemplate("/component/search/ingredient", "components/searchbar/ingredients.html", pff.TemplateRegistrationOpts{})
-	search_ingredients.RegisterBridge("Ingredients", bridges.SearchIngredients{})
 
 	a.RegisterTemplate("/home", "dashboard/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
@@ -55,10 +38,34 @@ func Frontend(a *pff.App) {
 	a.RegisterTemplate("/settings", "settings/page.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: true,
 	})
+	//-------------------//
 
-	a.RegisterTemplate("/admin", "admin/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
+	//COMPONENTS//########//
+	a.RegisterTemplate("/navbar", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
 	})
+
+	a.RegisterTemplate("/products", "components/products/product_card.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	}).RegisterBridge("product", &types.Product{})
+
+	a.RegisterTemplate("/ingredients", "components/ingredients/ingredients_card.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	}).RegisterBridge("ingredient", &types.Ingredient{})
+
+	a.RegisterTemplate("/product-comparator", "components/products/product_comparator.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	}).RegisterBridge("product_comparator", &types.Product{})
+
+	a.RegisterTemplate("/searchbar", "components/searchbar/searchbar.html", pff.TemplateRegistrationOpts{
+		IncludeBaseTemplate: false,
+	})
+
+	search_ingredients := a.RegisterTemplate("/component/search/ingredient", "components/searchbar/ingredients.html", pff.TemplateRegistrationOpts{})
+	search_ingredients.RegisterBridge("Ingredients", bridges.SearchIngredients{})
+
+	//-------------------//
+
 }
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.

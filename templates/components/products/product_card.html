@@ -1,11 +1,41 @@
 {{ define "product_card" }}
     <div class="product-card">
-        <h2>{{ .Name }}</h2>
-        <p>{{ .Description }}</p>
-        <p>Price: ${{ .Price }}</p>
+        <h1>Product Information</h1>
+
+        <div class="name">
+            <h2>Name</h2>
+            <p>{{ .product.Name}}</p>
+        </div>
+
+        <div class="origin">
+            <h2>Origin</h2>
+            <p>{{ .product.Origin }}</p>
+        </div>
+
+        <div>
+            <h2>Ingredients</h2>
+            {{range .product.Ingredients}}
+                <p>{{.Labels}}</p>
+            {{end}}
+        </div>
+        
         
     </div>
 
+    <style>
+        .product-card {
+            border: 1px solid #000000;
+            padding: 10px;
+            margin: 1px auto;
+            background-color: lightblue;
+        }
+
+        .name, .origin {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
     
 {{ end }}
 

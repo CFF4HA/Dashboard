@@ -1,28 +1,42 @@
 {{define "ingredients"}}
     <div class="ingredients">
-        <h2>Ingredients</h2>
-        <ul>
-            {{range .Ingredients}}
-                <li>{{.}}</li>
+        <h1>Ingredient Information</h1>
+        
+        <div class="name">
+            <h2>Name</h2>
+            <p>{{ (index .ingredient.Names 0).Text }}</p>
+        </div>
+
+        <div class="label">
+            <h2>Label</h2>
+            {{range .ingredient.Labels}}
+            <h4>{{.Type}}</h4>
+            <p>{{.Payload}}</p>
             {{end}}
-        </ul>
+        </div>
     </div>
 
-    <div class="name">
+    <!-- <div class="name">
         <h2>Name</h2>
-        <p>{{ .Name }}</p>
+        <p>{{ (index .ingredient.Names 0).Text }}</p>
     </div>
 
     <div class="label">
         <h2>Label</h2>
-        <p>{{ .Label }}</p>
-    </div>
+        {{range .ingredient.Labels}}
+            <p>{{.Type}}</p>
+            <p>{{.Payload}}</p>
+        {{end}}
+         
+    </div> -->
 
     <style>
+
         .ingredients {
-            border: 1px solid #ccc;
+            border: 1px solid #000000;
             padding: 10px;
-            margin: 10px 0;
+            margin: 1px auto;
+            background-color: bisque;
         }
 
         .name {
@@ -36,6 +50,7 @@
             padding: 10px;
             margin: 10px 0;
         }
+
 
     </style>
 {{end}}
