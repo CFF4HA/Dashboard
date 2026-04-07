@@ -38,3 +38,26 @@ func (s SearchIngredients) Data(w http.ResponseWriter, r *http.Request) (any, er
 
 	return ingredients, nil
 }
+
+type IngredientBridge struct{}
+
+func (i IngredientBridge) Data(w http.ResponseWriter, r *http.Request) (any, error) {
+	id := strings.Trim(r.FormValue("id"), " \r\n\t")
+
+	req, err := http.NewRequest("GET", core.BackendAddress+"/ingredient?id="+url.QueryEscape(id), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var Ingredient types.Ingredient
+	if err := json.NewDecoder(resp.Body).Decode(&Ingredient); err != nil {
+		return nil, err
+	}
+
+	return Ingredient, nil
+}

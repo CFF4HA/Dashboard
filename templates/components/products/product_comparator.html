@@ -1,73 +1,31 @@
-{{ define "product_comparator" }}
+{{ define "product_comparator-t" }}
+
+<div class="card h-100" style="border-radius: 8px; border: 2px solid #10b981; background-color: #f0fdf4;">
+        
+</div>
+
+<div class="text-center p-3" style="background-color: #fef2f2; border-radius: 8px;">
+    <div style="font-size: 0.75rem; color: #666; text-transform: uppercase; margin-bottom: 8px;">High Risk Ingredients</div>
+    <div class="d-flex justify-content-center align-items-center gap-3">
+        <div>
+        {{ range .Count.Hazards }}
+        <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;">{{ . }}</div>
+        </div>
+    {{ end }}
+        <div style="font-size: 1.2rem; color: #ccc;">vs</div>
+        <div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;">0</div>
+            <div style="font-size: 0.7rem; color: #999;">Neutrogena</div>
+        </div>
+    </div>
+    </div>
+
 <div class="product-comparator">
     <div class="comparison-container">
         <!-- Product 1 -->
-        <div class="product-comparison-card">
-            <div class="product-header">
-                <h3>{{ .product.Name }}</h3>
-            </div>
-            
-            <div class="comparison-section">
-                <h4 class="section-title">Hazards</h4>
-                <ul class="hazard-list">
-                    {{range .product.Ingredients}}
-                        <p>{{.Labels}}</p>
-                    {{end}}
-                </ul>
-            </div>
-
-            <div class="comparison-section">
-                <h4 class="section-title">Symptoms</h4>
-                <ul class="symptom-list">
-                    {{range .product.Ingredients}}
-                        <p>{{.Labels}}</p>
-                    {{end}}
-                </ul>
-            </div>
-
-            <div class="comparison-section">
-                <h4 class="section-title">Effects</h4>
-                <ul class="effect-list">
-                   {{range .product.Ingredients}}
-                        <p>{{.Labels}}</p>
-                    {{end}}
-                </ul>
-            </div>
-        </div>
-
-        <!-- Product 2 -->
-        <div class="product-comparison-card">
-            <div class="product-header">
-                <h3 class="product-name">{{ .product.Name }}</h3>
-            </div>
-            
-            <div class="comparison-section">
-                <h4 class="section-title">Hazards</h4>
-                <ul class="hazard-list">
-                    {{range .product.Ingredients}}
-                        <p>{{.Labels}}</p>
-                    {{end}}
-                </ul>
-            </div>
-
-            <div class="comparison-section">
-                <h4 class="section-title">Symptoms</h4>
-                <ul class="symptom-list">
-                    {{range .product.Ingredients}}
-                        <p>{{.Labels}}</p>
-                    {{end}}
-                </ul>
-            </div>
-
-            <div class="comparison-section">
-                <h4 class="section-title">Effects</h4>
-                <ul class="effect-list">
-                    {{range .product.Ingredients}}
-                        <p>{{.Labels}}</p>
-                    {{end}}
-                </ul>
-            </div>
-        </div>
+        {{ range .product_comparator }}
+          <div hx-get="/products?id={{ . }}" hx-trigger="load"></div> 
+        {{ end }}
     </div>
 </div>
 
@@ -139,6 +97,7 @@
     }
 </style>
 
-{{end}}
+{{ end }}
 
-{{ template "product_comparator" .}}
+{{ template "product_comparator-t" . }}
+

@@ -35,6 +35,7 @@ func ProductIngredientListGET(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		draft.Ingredients = append(draft.Ingredients, types.ProductDraftIngredient{
+			Id:     ingredient_name_first.Ingredient.Id,
 			Name:   ingredient,
 			Exists: true,
 			Failed: ingredient_name_first.Ingredient.Failed,
@@ -60,6 +61,11 @@ func ProductGET(w http.ResponseWriter, r *http.Request) error {
 
 		if tx := db.Where("id = ?", product_id).Preload("Ingredients").First(&product); tx.Error != nil {
 			return tx.Error
+		}
+
+		for i, _ := range product.Ingredients {
+			db.Model(&product.Ingredients[i]).Association("Names").Find(&product.Ingredients[i].Names)
+			db.Model(&product.Ingredients[i]).Association("Labels").Find(&product.Ingredients[i].Labels)
 		}
 
 		return json.NewEncoder(w).Encode(&product)

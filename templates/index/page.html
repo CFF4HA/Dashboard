@@ -1,30 +1,11 @@
 {{ define "content" }}
+ 
 
-    <div class="" hx-get="/navbar" hx-trigger="load, every 1s">
-        <div id="navbar"></div>
-    </div>
-
-
-    <!-- This is the main page of the dashboard. -->
-
-    <h1>Welcome to the Fragrance Free Dashboard</h1>
-
-    <p>This dashboard provides insights into the fragrance-free products available in the market. 
-        Explore our collection of products, their ingredients, and user reviews to make informed 
-        decisions about your purchases.</p>
-    
-    <div class="" hx-get="/ingredients" hx-trigger="load"></div>
-
-    <div class="" hx-get="/products" hx-trigger="load"></div>
-
-    <div class="" hx-get="/product-comparator" hx-trigger="load"></div>
-    
 <div class="sidebar">
   <div class="position-absolute top-10 start-10" id="sidebar-toggle-badge">
     <div class="d-flex flex-row gap-2">
       
       <a href='/product'><span class="d-md-block badge rounded-pill bg-dark text-light" style="cursor: pointer;">Products</span></a>
-      <span class="d-md-block badge rounded-pill bg-dark text-light" style="cursor: pointer;">User</span>
     </div>
   </div>
 </div>
@@ -46,6 +27,9 @@
       <div id="search-results"></div>
     </div>
   </div>
+</div>
+
+<div id="modal-container">
 </div>
 
 <style>

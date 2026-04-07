@@ -5,6 +5,10 @@
      hx-get="/component/product/draft/ingredient?name={{ .Ingredient.Name }}" 
      hx-trigger="load, every 5s" 
      hx-swap="outerHTML" 
+    {{ else }}
+      hx-get="/ingredients?id={{ .Ingredient.Id }}"
+      hx-trigger="click"
+      hx-target="#modal-container"
      {{ end }}>
 
   <input type="hidden" class="input-ingredient_name" value="{{ .Ingredient.Name }}">

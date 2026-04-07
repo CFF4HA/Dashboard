@@ -4,8 +4,6 @@ import (
 	"flag"
 	"strings"
 
-	"github.com/CFF4HA/Dashboard/internal/types"
-
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/pff"
@@ -47,15 +45,17 @@ func Frontend(a *pff.App) {
 
 	a.RegisterTemplate("/products", "components/products/product_card.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
-	}).RegisterBridge("product", &types.Product{})
+	}).RegisterBridge("product", &bridges.ProductBridge{})
 
 	a.RegisterTemplate("/ingredients", "components/ingredients/ingredients_card.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
-	}).RegisterBridge("ingredient", &types.Ingredient{})
+	}).RegisterBridge("ingredient", &bridges.IngredientBridge{})
 
-	a.RegisterTemplate("/product-comparator", "components/products/product_comparator.html", pff.TemplateRegistrationOpts{
+	comparator := a.RegisterTemplate("/product-comparator", "components/products/product_comparator.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,
-	}).RegisterBridge("product_comparator", &types.Product{})
+	})
+	comparator.RegisterBridge("product_comparator", &bridges.ProductComparator{})
+	comparator.RegisterBridge("Count", &bridges.ProductCount{})
 
 	a.RegisterTemplate("/searchbar", "components/searchbar/searchbar.html", pff.TemplateRegistrationOpts{
 		IncludeBaseTemplate: false,

@@ -1,26 +1,40 @@
 {{ define "content" }}
 
+<div class="sidebar">
+  <div class="position-absolute top-10 start-10" id="sidebar-toggle-badge">
+    <div class="d-flex flex-row gap-2">
+      
+      <a href='/'><span class="d-md-block badge rounded-pill bg-dark text-light" style="cursor: pointer;">Search</span></a>
+    </div>
+  </div>
+</div>
+
+
 <div class="container-fluid p-4 bg-light min-vh-100">
   <div class="mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="fw-bold">Product Catalog</h4>
-      <input type="text" class="form-control w-25" placeholder="Search ingredients or products...">
+    <h4>Product Catalog</h4>
+    <div class="alert alert-info mb-3" style="font-size: 0.85rem;">
+        <input type="hidden" id="comparison-ids" name="ids" value="">
+        <strong>🔒 Privacy Protected:</strong> All shared products are anonymous. User information is never displayed.
     </div>
-    
     <div class="d-flex flex-nowrap overflow-auto gap-3 pb-3" style="scrollbar-width: thin;">
 
       {{ range .Products }}
-      <div class="card flex-shrink-0 border-0 shadow-sm" style="width: 220px;">
-        <div class="card-body">
-          <input type="hidden" class="product-id" value="{{ .Id }}">
-          <h6 class="fw-bold text-truncate">{{ .Name }}</h6>
-          {{ if eq (len .Origin) 0 }}
-          Origin is unknown.
-          {{ else }}
+      <div class="card flex-shrink-0 border-0 shadow-sm" 
+        style="width: 220px; cursor: pointer;"
+        hx-get="/product-comparator" 
+        hx-target="#comparison-results" 
+        hx-include="#comparison-ids"
+        onclick="updateIdList('{{ .Id }}')">
+      <div class="card-body">
+        <h6 class="fw-bold text-truncate">{{ .Name }}</h6>
+        {{ if eq (len .Origin) 0 }}
+          <span class="small text-muted">Origin unknown</span>
+        {{ else }}
           <a href="{{ .Origin }}" class="small text-muted mb-0">View @Source</a>
-          {{ end }}
-        </div>
+        {{ end }}
       </div>
+    </div>
       {{ end }}
  
     </div>
@@ -30,73 +44,33 @@
     <div class="d-flex justify-content-between align-items-end mb-4">
       <div>
         <h3 class="fw-bold mb-1">Comparison Stage</h3>
-        <p class="text-muted small">Comparing 3 selected items</p>
       </div>
       <button class="btn btn-sm btn-outline-secondary">Clear All</button>
     </div>
 
-    <div class="d-flex flex-nowrap overflow-auto gap-4 pb-4">
-      <div class="bg-white border rounded shadow-sm p-4" style="min-width: 320px;">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-          <h5 class="fw-bold m-0">Organic Whole Milk</h5>
-          <button class="btn-close small"></button>
-        </div>
-        <div class="mb-4">
-          <small class="text-uppercase fw-bold text-muted d-block mb-1">Metadata</small>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="small">Origin</span><span class="small fw-bold">New Zealand</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="small">Updated</span><span class="small fw-bold">Oct 12, 2025</span></div>
-        </div>
-        <small class="text-uppercase fw-bold text-muted d-block mb-2">Ingredients</small>
-        <div class="p-2 mb-2 border border-dark rounded" style="font-size: 0.8rem; background: #f8f9fa;">
-          <div class="fw-bold">RAW MILK</div>
-          <div class="text-muted x-small">REGISTERED</div>
-        </div>
-        <div class="p-2 mb-2 border border-dark rounded" style="font-size: 0.8rem; background: #f8f9fa;">
-          <div class="fw-bold">VITAMIN D3</div>
-          <div class="text-muted x-small">REGISTERED</div>
-        </div>
-      </div>
-
-      <div class="bg-white border rounded shadow-sm p-4" style="min-width: 320px;">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-          <h5 class="fw-bold m-0">Almond Protein Base</h5>
-          <button class="btn-close small"></button>
-        </div>
-        <div class="mb-4">
-          <small class="text-uppercase fw-bold text-muted d-block mb-1">Metadata</small>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="small">Origin</span><span class="small fw-bold">California, USA</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="small">Updated</span><span class="small fw-bold">Jan 04, 2026</span></div>
-        </div>
-        <small class="text-uppercase fw-bold text-muted d-block mb-2">Ingredients</small>
-        <div class="p-2 mb-2 border border-dark rounded" style="font-size: 0.8rem; background: #f8f9fa;">
-          <div class="fw-bold">ALMOND FLOUR</div>
-          <div class="text-muted x-small">REGISTERED</div>
-        </div>
-        <div class="p-2 mb-2 border border-danger rounded" style="font-size: 0.8rem; background: #fef2f2;">
-          <div class="fw-bold text-danger">ETHYLENE OXIDE</div>
-          <div class="text-danger x-small fw-bold">FAILED - BANNED SUBSTANCE</div>
-        </div>
-      </div>
-
-      <div class="bg-white border rounded shadow-sm p-4" style="min-width: 320px;">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-          <h5 class="fw-bold m-0">Creatine Monohydrate</h5>
-          <button class="btn-close small"></button>
-        </div>
-        <div class="mb-4">
-          <small class="text-uppercase fw-bold text-muted d-block mb-1">Metadata</small>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="small">Origin</span><span class="small fw-bold">Germany</span></div>
-          <div class="d-flex justify-content-between border-bottom py-1"><span class="small">Updated</span><span class="small fw-bold">Apr 01, 2026</span></div>
-        </div>
-        <small class="text-uppercase fw-bold text-muted d-block mb-2">Ingredients</small>
-        <div class="p-2 mb-2 border border-dashed rounded text-muted" style="font-size: 0.8rem;">
-          <div class="fw-bold">CREATINE PURE</div>
-          <div class="x-small">PENDING_REVIEW</div>
-        </div>
-      </div>
+    
+    <div id="comparison-results" class="d-flex flex-direction-column flex-nowrap overflow-auto gap-4 pb-4"> 
     </div>
   </div>
 </div>
 
+<div id="modal-container">
+</div>
+
+<script>
+function updateIdList(id) {
+    const input = document.getElementById('comparison-ids');
+    let ids = input.value ? input.value.split(',') : [];
+    
+    const index = ids.indexOf(id);
+    if (index > -1) {
+        ids.splice(index, 1); // Remove if already present
+    } else {
+        ids.push(id); // Add if new
+    }
+    
+    input.value = ids.join(',');
+}
+</script>
 {{ end }}
 {{ template "content" . }}
