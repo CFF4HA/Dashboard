@@ -57,3 +57,10 @@ func (d DraftProduct) Data(w http.ResponseWriter, r *http.Request) (any, error) 
 
 	return ProductDraft, nil
 }
+
+type CreateProduct struct{}
+
+func (c CreateProduct) Data(w http.ResponseWriter, r *http.Request) (any, error) {
+
+	return nil, nil
+}

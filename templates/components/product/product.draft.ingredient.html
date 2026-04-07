@@ -7,6 +7,8 @@
      hx-swap="outerHTML" 
      {{ end }}>
 
+  <input type="hidden" class="input-ingredient_name" value="{{ .Ingredient.Name }}">
+
   <div class="ingredient-card-item d-flex align-items-center justify-content-between p-3 mb-2 border {{ if .Ingredient.Failed }}border-danger{{ else if .Ingredient.Exists }}border-dark{{ else }}border-dashed{{ end }}" 
        style="border-radius: 1.25rem; transition: background 0.2s; background-color: {{ if .Ingredient.Failed }}#fef2f2{{ else }}transparent{{ end }};">
 

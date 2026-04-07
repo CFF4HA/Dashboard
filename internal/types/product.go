@@ -25,7 +25,6 @@ type Product struct {
 	Name    string    `json:"name" gorm:"type:varchar(255);not null;"`
 	Origin  string    `json:"origin" gorm:"type:varchar(255);default:'None'"`
 
-	UserUid     uuid.UUID    `json:"user_uid" gorm:"type:uuid;"`
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:product_ingredients;"`
 }
 
@@ -37,7 +36,6 @@ func (p Product) Data(w http.ResponseWriter, r *http.Request) (any, error) {
 		Updated: time.Now(),
 		Name:    "Example Product",
 		Origin:  "Example Origin",
-		UserUid: uuid.Nil,
 		Ingredients: []Ingredient{
 			ingredient,
 		},
