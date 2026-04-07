@@ -8,6 +8,8 @@ import models
 import uuid
 import pubchem
 import uvicorn
+import compareIngredients as comp
+import json
 
 parser = argparse.ArgumentParser(description="Ingredient Server")
 parser.add_argument("--port", type=int, default=8000, help="Server port")
@@ -52,9 +54,10 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
 
     if name in cache:
         return cache[name]
-
+    
     names, labels = pubchem.Ingredient(name)
-    ingredient = models.Ingredient(Id=(uuid.uuid4()))
+
+    ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
 
     try:
         # First insert, fetching the returned ID
@@ -105,6 +108,129 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         await db.rollback()
         raise e
+    cache[name] = ingredient
+
+@app.get("/ingredient/compare")
+async def compare_products(product1: list[str], product2: list[str], db: AsyncSession = Depends(get_db)):
+    ingredients1 : list[models.Ingredient] = []
+    ingredients2 : list[models.Ingredient] = []
+    for ing in product1:
+        ingredient = cache[ing]
+        if ingredient:
+            ingredients1.append(ingredient)
+        else:
+            _, labels = pubchem.Ingredient(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients1.append(ingredient)
+    for ing in product2:
+        ingredient = cache[ing]
+        if ingredient:
+            ingredients2.append(ingredient)
+        else:
+            _, labels = pubchem.Ingredient(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients2.append(ingredient)
+    # Symptom comparisons
+    symptoms1 = comp.getMassSymptomList(ingredients1)
+    symptoms2 = comp.getMassSymptomList(ingredients2)
+    commonSymptoms = symptoms1 & symptoms2
+    commonSymptomCount = len(commonSymptoms)
+    uniqueSymptoms1 = symptoms1 - symptoms2
+    uniqueSymptom1Count = len(uniqueSymptoms1)
+    uniqueSymptoms2 = symptoms2 - symptoms1
+    uniqueSymptom2Count = len(uniqueSymptoms2)
+
+    # Hazard comparisons
+    hazards1 = comp.getMassHazardList(ingredients1)
+    hazards2 = comp.getMassHazardList(ingredients2)
+    commonHazards = hazards1 & hazards2
+    commonHazardCount = len(commonHazards)
+    uniqueHazards1 = hazards1 - hazards2
+    uniqueHazard1Count = len(uniqueHazards1)
+    uniqueHazards2 = hazards2 - hazards1
+    uniqueHazard2Count = len(uniqueHazards2)
+
+    # Effect comparisons
+    effects1 = comp.getMassEffectList(ingredients1)
+    effects2 = comp.getMassEffectList(ingredients2)
+    commonEffects = effects1 & effects2
+    commonEffectCount = len(commonEffects)
+    uniqueEffects1 = effects1 - effects2
+    uniqueEffect1Count = len(uniqueEffects1)
+    uniqueEffects2 = effects2 - effects1
+    uniqueEffect2Count = len(uniqueEffects2)
+
+    # Regulation comparisons
+    reg1 = comp.getMassRegulationList(ingredients1)
+    reg2 = comp.getMassRegulationList(ingredients2)
+    commonRegs = reg1 - reg2
+    commonRegCount = len(commonRegs)
+    uniqueReg1 = reg1 - reg2
+    uniqueReg1Count = len(uniqueReg1)
+    uniqueReg2 = reg2 - reg1
+    uniqueReg2Count = len(uniqueReg2)
+
+    # Time to put it all into a json format
+    allInfo = {
+        "symptoms": {
+            "common": {
+                "data": list(commonSymptoms),
+                "count": commonSymptomCount
+            },
+            "unique1": {
+                "data": list(uniqueSymptoms1),
+                "count": uniqueSymptom1Count
+            },
+            "unique2": {
+                "data": list(uniqueSymptoms2),
+                "count": uniqueSymptom2Count
+            }
+        },
+        "hazards": {
+            "common": {
+                "data": list(commonHazards),
+                "count": commonHazardCount
+            },
+            "unique1": {
+                "data": list(uniqueHazards1),
+                "count": uniqueHazard1Count
+            },
+            "unique2": {
+                "data": list(uniqueHazards2),
+                "count": uniqueHazard2Count
+            }
+        },
+        "effects": {
+            "common": {
+                "data": list(commonEffects),
+                "count": commonEffectCount
+            },
+            "unique1": {
+                "data": list(uniqueEffects1),
+                "count": uniqueEffect1Count
+            },
+            "unique2": {
+                "data": list(uniqueEffects2),
+                "count": uniqueEffect2Count
+            }
+        },
+        "regulations": {
+            "common": {
+                "data": list(commonRegs),
+                "count": commonRegCount
+            },
+            "unique1": {
+                "data": list(uniqueReg1),
+                "count": uniqueReg1Count
+            },
+            "unique2": {
+                "data": list(uniqueReg2),
+                "count": uniqueReg2Count
+            }
+        }
+    }
+    allInfoJson = json.dumps(allInfo, indent=4)
+    return allInfoJson
 
     cache[name] = ingredient
 
