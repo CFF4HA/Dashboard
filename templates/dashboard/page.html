@@ -57,7 +57,7 @@
 
     <!-- Main Content -->
     <div class="container py-5">
-        <h2 class="mb-4" style="font-size: 1.75rem; font-weight: 400;">Hello, George</h2>
+        <h2 class="mb-4" style="font-size: 1.75rem; font-weight: 400;"><b>Hello, George</b></h2>
 
         <!-- Search Input -->
         <div hx-get="/searchbar" hx-trigger="load"></div>
@@ -78,10 +78,20 @@
             </div>
         </div>
 
-        <!-- Save Product Section -->
-        <div class="card shadow-sm mt-4" style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 12px;">
+       <!-- Save Product Section -->
+       <div class="card shadow-sm mt-4" style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 12px;">
+        <div class="card-body p-4">
             <div hx-get="/saveproduct" hx-trigger="load"></div>
+
+
+            <!-- Personal Products View -->
+            <div hx-get="/personalproducts" hx-trigger="load"></div>
+
+
+            <!-- Community Products View -->
+            <div hx-get="/communityproducts" hx-trigger="load"></div>
         </div>
+    </div>
 
         <!-- Product Comparison Section -->
         <div class="card shadow-sm mt-4" style="background-color: #e3f2fd; border: 2px solid #90caf9; border-radius: 12px;">

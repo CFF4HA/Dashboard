@@ -1,23 +1,15 @@
 {{ define "component-saveproduct" }}
 
-<div class="card-body p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="h5 mb-0" style="font-weight: 600;">📦 My Products (2)</h3>
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-warning" id="toggleCommunityBtn" onclick="toggleCommunityView()">
-                🌍 Browse Community
-            </button>
-            <button class="btn btn-sm btn-warning" onclick="showSaveModal()">
-                + Save New Product
-            </button>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="h5 mb-0" style="font-weight: 600;">📦 My Products (2)</h3>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-warning" id="toggleCommunityBtn" onclick="toggleCommunityView()">
+            🌍 Browse Community
+        </button>
+        <button class="btn btn-sm btn-warning" onclick="showSaveModal()">
+            + Save New Product
+        </button>
     </div>
-
-    <!-- Personal Products View -->
-    <div hx-get="/personalproducts" hx-trigger="load"></div>
-
-    <!-- Community Products View -->
-    <div hx-get="/communityproducts" hx-trigger="load"></div>
 </div>
 
 {{ end }}
