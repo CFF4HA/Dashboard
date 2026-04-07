@@ -232,11 +232,7 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
             }
         }
     }
-    allInfoJson = json.dumps(allInfo, indent=4)
-    return allInfoJson
-
-    cache[name] = ingredient
-
+    return allInfo
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
