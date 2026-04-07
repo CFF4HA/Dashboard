@@ -11,26 +11,7 @@
 
     <div id="builder-ingredient-list" class="mb-4" style="max-height: 400px; overflow-y: auto;">
         {{- range .Product.Ingredients }}
-        <div class="ingredient-card-item d-flex align-items-center justify-content-between p-3 mb-2 border {{ if .Exists }}border-dark{{ else }}border-dashed{{ end }}" 
-             style="border-radius: 1.25rem; transition: background 0.2s;">
-            
-            <div class="d-flex align-items-center gap-3">
-                <div class="status-dot {{ if .Exists }}bg-dark{{ else }}bg-light border border-dark{{ end }}" 
-                     style="width: 10px; height: 10px; border-radius: 50%;"></div>
-                <div>
-                    <div class="fw-bold text-uppercase" style="font-size: 0.8rem; letter-spacing: -0.01em;">{{ .Name }}</div>
-                    <div class="font-monospace text-muted" style="font-size: 0.6rem;">
-                        {{ if .Exists }}REGISTERED{{ else }}PENDING_REVIEW{{ end }}
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn-remove border-0 bg-transparent opacity-50" 
-                    hx-delete="/builder/ingredient/{{ .Name }}" 
-                    hx-target="#builder-ingredient-list">
-                <i class="bi bi-dash-circle"></i>
-            </button>
-        </div>
+        <div class="mt-2" hx-get="/component/product/draft/ingredient?name={{ .Name }}" hx-trigger="load" hx-swap="outerHTML"></div>
         {{- else }}
         <div class="text-center py-5 border border-dashed rounded-4">
             <p class="text-uppercase small tracking-widest text-muted m-0">No ingredients added to draft</p>
@@ -41,12 +22,16 @@
     <div class="px-2">
         <button class="btn-create-product w-100 py-3 text-uppercase fw-black tracking-widest border-0"
                 hx-post="/products/create"
-                hx-include="#builder-ingredient-list"
+                hx-trigger="click"
                 {{ if lt (len .Product.Ingredients) 1 }}disabled{{ end }}>
             Create Product Record
         </button>
     </div>
 </div>
+
+<script>
+
+</script>
 
 <style>
     .fw-black { font-weight: 900; }

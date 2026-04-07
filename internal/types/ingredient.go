@@ -49,6 +49,7 @@ type Ingredient struct {
 	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Created time.Time `json:"created" gorm:"type:timestamp;not null;default:current_timestamp"`
 	Updated time.Time `json:"updated" gorm:"type:timestamp;not null;default:current_timestamp"`
+	Failed  bool      `json:"failed" gorm:"type:boolean;not null;default:false"`
 
 	Labels []Label `json:"labels" gorm:"many2many:ingredient_labels;"`
 	Names  []Name  `json:"names" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
@@ -79,9 +80,9 @@ func (n Name) Data(w http.ResponseWriter, r *http.Request) (any, error) {
 // should suffice for now.
 type Label struct {
 	Id      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	Type    string    `json:"type" gorm:"type:varchar(255);not null;check:type IN ('hazard', 'symptom', 'general', 'effect', 'regulation');default:'general';"`
-	Payload string    `json:"name" gorm:"type:varchar(255);not null"`
-	Origin  string    `json:"origin" gorm:"type:varchar(255);not null"`
+	Type    string    `json:"type" gorm:"type:text;not null;check:type IN ('hazard', 'symptom', 'general', 'effect', 'regulation');default:'general';"`
+	Payload string    `json:"name" gorm:"type:text;not null"`
+	Origin  string    `json:"origin" gorm:"type:text;not null"`
 
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:ingredient_labels;"`
 }

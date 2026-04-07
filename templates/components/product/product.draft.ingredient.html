@@ -1,0 +1,38 @@
+{{ define "product-ingredient_draft" }}
+<div id="ingredient-{{ .Ingredient.Name }}" 
+     class="ingredient-wrapper"
+     {{ if and (not .Ingredient.Exists) (not .Ingredient.Failed) }} 
+     hx-get="/component/product/draft/ingredient?name={{ .Ingredient.Name }}" 
+     hx-trigger="load, every 5s" 
+     hx-swap="outerHTML" 
+     {{ end }}>
+
+  <div class="ingredient-card-item d-flex align-items-center justify-content-between p-3 mb-2 border {{ if .Ingredient.Failed }}border-danger{{ else if .Ingredient.Exists }}border-dark{{ else }}border-dashed{{ end }}" 
+       style="border-radius: 1.25rem; transition: background 0.2s; background-color: {{ if .Ingredient.Failed }}#fef2f2{{ else }}transparent{{ end }};">
+
+    <div class="d-flex align-items-center gap-3">
+      <div class="status-dot {{ if .Ingredient.Failed }}bg-danger{{ else if .Ingredient.Exists }}bg-dark{{ else }}bg-light border border-dark{{ end }}" 
+           style="width: 10px; height: 10px; border-radius: 50%;"></div>
+      <div>
+        <div class="fw-bold text-uppercase" style="font-size: 0.8rem; letter-spacing: -0.01em;">{{ .Ingredient.Name }}</div>
+        <div class="font-monospace {{ if .Ingredient.Failed }}text-danger{{ else }}text-muted{{ end }}" style="font-size: 0.6rem;">
+          {{ if .Ingredient.Failed }}
+            FAILED
+          {{ else if .Ingredient.Exists }}
+            REGISTERED
+          {{ else }}
+            PENDING_REVIEW
+          {{ end }}
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-remove border-0 bg-transparent opacity-50" 
+            hx-delete="/builder/ingredient/{{ .Ingredient.Name }}" 
+            hx-target="#builder-ingredient-list">
+      <i class="bi bi-dash-circle"></i>
+    </button>
+  </div>
+</div>
+{{ end }}
+{{ template "product-ingredient_draft" . }}

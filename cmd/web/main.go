@@ -46,8 +46,11 @@ func Frontend(a *pff.App) {
 		IncludeBaseTemplate: true,
 	})
 
-	product_draft := a.RegisterTemplate("/components/product/draft", "components/product/product.build.html", pff.TemplateRegistrationOpts{})
+	product_draft := a.RegisterTemplate("/component/product/draft", "components/product/product.build.html", pff.TemplateRegistrationOpts{})
 	product_draft.RegisterBridge("Product", bridges.DraftProduct{})
+
+	a.RegisterTemplate("/component/product/draft/ingredient", "components/product/product.draft.ingredient.html", pff.TemplateRegistrationOpts{}).
+		RegisterBridge("Ingredient", bridges.DraftProductIngredient{})
 
 	a.RegisterTemplate("/component/search/product", "components/product/search.html", pff.TemplateRegistrationOpts{})
 }

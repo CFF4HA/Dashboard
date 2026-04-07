@@ -45,7 +45,7 @@ def Ingredient(name) -> (list[str], list[models.Label]):
 
     data = jsonFromCompoundName(name)
     if not data:
-        return None
+        return None, None
     sections = data.get("Record", {}).get("Section", [])
 
     # Get the individual sections we care about.

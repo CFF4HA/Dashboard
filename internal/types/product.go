@@ -11,6 +11,7 @@ type ProductDraftIngredient struct {
 	Id     uuid.UUID `json:"id"`
 	Name   string    `json:"name"`
 	Exists bool      `json:"exists"`
+	Failed bool      `json:"failed" gorm:"type:boolean;not null;default:false"`
 }
 
 type ProductDraft struct {

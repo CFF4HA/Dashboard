@@ -22,20 +22,22 @@ func ProductIngredientListGET(w http.ResponseWriter, r *http.Request) error {
 			continue
 		}
 
-		var count int64
+		var ingredient_name_first types.Name
 		name := strings.Trim(ingredient, " \t\r\n")
-		tx := db.Model(&types.Name{}).Where("text ILIKE ?", name).Count(&count)
+		tx := db.Model(&types.Name{}).Where("text ILIKE ?", name).Preload("Ingredient").First(&ingredient_name_first)
 		if tx.Error != nil {
-			return tx.Error
-		}
-
-		if count == 0 {
-			go syncDatabaseWithIngredient(name)
+			if tx.Error.Error() == "record not found" {
+				syncDatabaseWithIngredient(name)
+				db.Model(&types.Name{}).Where("text ILIKE ?", name).Preload("Ingredient").First(&ingredient_name_first)
+			} else {
+				return tx.Error
+			}
 		}
 
 		draft.Ingredients = append(draft.Ingredients, types.ProductDraftIngredient{
 			Name:   ingredient,
-			Exists: count > 0,
+			Exists: true,
+			Failed: ingredient_name_first.Ingredient.Failed,
 		})
 	}
 
