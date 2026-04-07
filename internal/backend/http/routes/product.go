@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
@@ -12,6 +13,37 @@ import (
 	"github.com/google/uuid"
 )
 
+func ProductIngredientListGET(w http.ResponseWriter, r *http.Request) error {
+	db := database.Database()
+	draft := &types.ProductDraft{}
+
+	for _, ingredient := range strings.Split(r.FormValue("ingredients"), ",") {
+		if strings.Trim(ingredient, " \t\r") == "" {
+			continue
+		}
+
+		var ingredient_name_first types.Name
+		name := strings.Trim(ingredient, " \t\r\n")
+		tx := db.Model(&types.Name{}).Where("text ILIKE ?", name).Preload("Ingredient").First(&ingredient_name_first)
+		if tx.Error != nil {
+			if tx.Error.Error() == "record not found" {
+				syncDatabaseWithIngredient(name)
+				db.Model(&types.Name{}).Where("text ILIKE ?", name).Preload("Ingredient").First(&ingredient_name_first)
+			} else {
+				return tx.Error
+			}
+		}
+
+		draft.Ingredients = append(draft.Ingredients, types.ProductDraftIngredient{
+			Name:   ingredient,
+			Exists: true,
+			Failed: ingredient_name_first.Ingredient.Failed,
+		})
+	}
+
+	return json.NewEncoder(w).Encode(draft)
+}
+
 func ProductGET(w http.ResponseWriter, r *http.Request) error {
 	name := r.FormValue("name")
 	id := r.FormValue("id")
@@ -19,39 +51,58 @@ func ProductGET(w http.ResponseWriter, r *http.Request) error {
 	db := database.Database()
 	if id != "" {
 		// in this scenarios, we want to get a specific product by id.
-		var product *types.Product
+		var product types.Product
 
 		product_id, err := uuid.Parse(id)
 		if err != nil {
 			return err
 		}
 
-		if tx := db.Where("id = ?", product_id).First(&product); tx.Error != nil {
+		if tx := db.Where("id = ?", product_id).Preload("Ingredients").First(&product); tx.Error != nil {
 			return tx.Error
 		}
 
-		return json.NewDecoder(r.Body).Decode(&product)
+		return json.NewEncoder(w).Encode(&product)
 	}
 
 	// in this scenario we want to get all products matching a given name.
 	var products []*types.Product
-	if tx := db.Where("name LIKE ?", "%"+name+"%").Find(&products); tx.Error != nil {
+	if tx := db.Where("name LIKE ?", "%"+name+"%").Preload("Ingredients").Find(&products); tx.Error != nil {
 		core.Logger.Error("failed to query for products", "error", tx.Error, "name", name)
 		return tx.Error
 	}
 
-	return json.NewDecoder(r.Body).Decode(&products)
+	return json.NewEncoder(w).Encode(&products)
 }
 
 func ProductPUT(w http.ResponseWriter, r *http.Request) error {
-	if r.FormValue("name") == "" || r.FormValue("origin") == "" {
-		return errors.New("name and origin are required to create a product")
+	var request struct {
+		Name        string   `json:"name"`
+		Origin      string   `json:"origin"`
+		Ingredients []string `json:"ingredients"`
 	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return err
+	}
+
 	db := database.Database()
 
 	product := &types.Product{
-		Name:   r.FormValue("name"),
-		Origin: r.FormValue("origin"),
+		Name:   request.Name,
+		Origin: request.Origin,
+	}
+
+	for _, name := range request.Ingredients {
+		// we first want to get the ingredient that matches the name
+		var ingredientName types.Name
+		tx := db.Model(&types.Name{}).Where("text ILIKE ?", name).Preload("Ingredient").First(&ingredientName)
+		if tx.Error != nil {
+			return tx.Error
+		}
+
+		// we now want to add this ingredient to the list of the product
+		// ingredients.
+		product.Ingredients = append(product.Ingredients, ingredientName.Ingredient)
 	}
 
 	if tx := db.Create(product); tx.Error != nil {
@@ -60,6 +111,7 @@ func ProductPUT(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	core.Logger.Info("PUT /product")
+	w.WriteHeader(http.StatusCreated)
 	return nil
 }
 
