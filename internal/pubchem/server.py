@@ -118,21 +118,21 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
     ingredients1 : list[models.Ingredient] = []
     ingredients2 : list[models.Ingredient] = []
     for ing in product1:
-        ingredient = cache[ing]
-        if ingredient:
-            ingredients1.append(ingredient)
+        if ing in cache:
+            ingredients1.append(cache[ing])
         else:
             _, labels = pubchem.Ingredient(ing)
             ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
             ingredients1.append(ingredient)
+            cache[ing] = ingredient
     for ing in product2:
-        ingredient = cache[ing]
-        if ingredient:
-            ingredients2.append(ingredient)
+        if ing in cache:
+            ingredients2.append(cache[ing])
         else:
-            _, labels = pubchem.Ingredient(ing)
+            _, labels = pubchem.Ingredent(ing)
             ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
             ingredients2.append(ingredient)
+            cache[ing] = ingredient
     # Symptom comparisons
     symptoms1 = comp.getMassSymptomList(ingredients1)
     symptoms2 = comp.getMassSymptomList(ingredients2)
@@ -232,11 +232,7 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
             }
         }
     }
-    allInfoJson = json.dumps(allInfo, indent=4)
-    return allInfoJson
-
-    cache[name] = ingredient
-
+    return allInfo
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
