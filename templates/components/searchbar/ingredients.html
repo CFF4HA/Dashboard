@@ -41,12 +41,15 @@
             </div>
 
             <div class="col-md-3 text-md-end mt-3 mt-md-0">
-                <button class="btn btn-outline-dark rounded-0 px-4 py-2 text-uppercase fw-bold btn-investigate"
+                <button class="btn btn-dark rounded px-3 py-2 text-uppercase mt-2"
                         hx-get="/ingredients/investigate/{{ .Id }}"
-                        hx-target="#main-display"
-                        hx-push-url="true"
-                        style="font-size: 0.75rem; letter-spacing: 0.1em;">
+                        hx-target="#main-display">
                     Investigate
+                </button>
+                <button class="btn btn-dark rounded px-3 py-2 text-uppercase mt-2"
+                        hx-get="/ingredients/investigate/{{ .Id }}"
+                        hx-target="#main-display">
+                    Add to Product
                 </button>
             </div>
             

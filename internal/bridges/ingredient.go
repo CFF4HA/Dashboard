@@ -3,6 +3,8 @@ package bridges
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/types"
@@ -12,8 +14,14 @@ type SearchIngredients struct{}
 
 func (s SearchIngredients) Data(w http.ResponseWriter, r *http.Request) (any, error) {
 	var ingredients []types.Ingredient
+	name := strings.Trim(r.FormValue("name"), " \r\n\t")
+	if name == "" {
+		return nil, nil
+	} else if strings.Contains(name, ",") {
+		return nil, nil
+	}
 
-	req, err := http.NewRequest("GET", core.BackendAddress+"/ingredient/search?name="+r.FormValue("name"), nil)
+	req, err := http.NewRequest("GET", core.BackendAddress+"/ingredient/search?name="+url.QueryEscape(name), nil)
 	if err != nil {
 		return nil, err
 	}
