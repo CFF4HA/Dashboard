@@ -10,6 +10,7 @@ import pubchem
 import uvicorn
 import compareIngredients as comp
 import json
+import string
 
 parser = argparse.ArgumentParser(description="Ingredient Server")
 parser.add_argument("--port", type=int, default=8000, help="Server port")
@@ -111,7 +112,9 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
     cache[name] = ingredient
 
 @app.get("/ingredient/compare")
-async def compare_products(product1: list[str], product2: list[str], db: AsyncSession = Depends(get_db)):
+async def compare_products(product1: str, product2: str, db: AsyncSession = Depends(get_db)):
+    product1 = product1.split(",")
+    product2 = product2.split(",")
     ingredients1 : list[models.Ingredient] = []
     ingredients2 : list[models.Ingredient] = []
     for ing in product1:
