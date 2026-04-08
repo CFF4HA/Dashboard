@@ -1,0 +1,21 @@
+{{ define "product-search_tmpl" }}
+{{ range .Products }}
+      <div class="card flex-shrink-0 border-0 shadow-sm" 
+        style="width: 220px; cursor: pointer;"
+        hx-get="/product-comparator" 
+        hx-target="#comparison-results" 
+        hx-include="#comparison-ids"
+        onclick="updateIdList('{{ .Id }}')">
+      <div class="card-body">
+        <h6 class="fw-bold text-truncate">{{ .Name }}</h6>
+        {{ if eq (len .Origin) 0 }}
+          <span class="small text-muted">Origin unknown</span>
+        {{ else }}
+          <a href="{{ .Origin }}" class="small text-muted mb-0">View @Source</a>
+        {{ end }}
+      </div>
+    </div>
+      {{ end }}
+{{ end }}
+{{ template "product-search_tmpl" }}
+
