@@ -2,11 +2,14 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/pff"
+	"github.com/DAlba-sudo/verb"
+	"github.com/DAlba-sudo/verb/htmx"
 )
 
 // This is what the frontend will modify.
@@ -79,6 +82,9 @@ func Frontend(a *pff.App) {
 
 	a.RegisterTemplate("/component/search/product", "components/product/search.html", pff.TemplateRegistrationOpts{})
 
+	a.RegisterTemplate("/component/product/search", "components/product/search-res.html", pff.TemplateRegistrationOpts{}).
+		RegisterBridge("Products", bridges.ProductSearch{})
+
 	//-------------------//
 }
 
@@ -101,10 +107,55 @@ func main() {
 		Port:                  *port,
 		Live:                  *live,
 	})
-
 	Frontend(app)
+
+	v := verb.New(*address, *port, verb.Settings{
+		Templates:  *templateDir,
+		Static:     *staticDir,
+		LiveReload: *live,
+	})
+
+	v.Page("", "v2/pages/index.html").
+		Bridge(verb.DataBridge{
+			Key: "TotalIngredients",
+			Provide: func(r *http.Request) (any, error) {
+				return 3, nil
+			},
+		}).
+		Bridge(verb.DataBridge{
+			Key: "TotalProducts",
+			Provide: func(r *http.Request) (any, error) {
+				return 25, nil
+			},
+		})
+	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div"))
+	v.Component("v2/components/ingredient/ingredient-search_results.html", htmx.Create("div")).
+		Bridge(verb.DataBridge{
+			Key:     "Ingredients",
+			Provide: bridges.IngredientSearchProvider,
+		}).
+		Bridge(verb.DataBridge{
+			Key: "Showable",
+			Provide: func(r *http.Request) (any, error) {
+				var filter struct {
+					Ingredient bool
+					Product    bool
+				}
+
+				core.Logger.Info("Showable Bridge Payload", "Ingredient", r.FormValue("switchIngredient"), "Product", r.FormValue("switchProduct"))
+
+				filter.Ingredient = r.FormValue("switchIngredient") == "on"
+				filter.Product = r.FormValue("switchProduct") == "on"
+
+				return filter, nil
+			},
+		})
 
 	if err := app.Start(); err != nil {
 		panic(err)
 	}
+
+	// if err := v.Serve(); err != nil {
+	// 	panic(err)
+	// }
 }

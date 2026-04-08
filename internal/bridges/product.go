@@ -76,6 +76,28 @@ func (p ProductComparator) Data(w http.ResponseWriter, r *http.Request) (any, er
 	return strings.Split(ids, ","), nil
 }
 
+type ProductSearch struct{}
+
+func (p ProductSearch) Data(w http.ResponseWriter, r *http.Request) (any, error) {
+	name := strings.Trim(r.FormValue("name"), " \t\r\n")
+	req, err := http.NewRequest("GET", core.BackendAddress+"/product/search?name="+url.QueryEscape(name), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var products []types.Product
+	if err := json.NewDecoder(resp.Body).Decode(&products); err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 type ProductBridge struct{}
 
 func (p ProductBridge) Data(w http.ResponseWriter, r *http.Request) (any, error) {

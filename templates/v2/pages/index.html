@@ -1,0 +1,36 @@
+
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <img src="/static/github-ff-banner.png"/> 
+    <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
+  </div>
+
+  {{/*   <div class="row mt-1">
+    <div class="col">
+      <h3>Search for Ingredients</h3>
+      <p>
+        If it's in PubChem, we'll have it too! Begin typing a single 
+        ingredient and if it appears, you'll be able to investigate it 
+        further!
+      </p>
+    </div>
+
+
+    <div class="col">
+      <h3>Search for Products</h3>
+      <p>
+        If you'd like to paste a list of ingredients, feel free to! We'll 
+        automatically parse them invididually and present you with a product 
+        draft that you can save and share with others.
+      </p>
+    </div>
+  </div>
+    */}}
+
+
+  <div hx-get="/htmx/input-searchbar_generic" hx-trigger="load"></div>
+
+</div>
+
+<div id="modal-container">
+</div>

@@ -8,15 +8,15 @@
     <div style="font-size: 0.75rem; color: #666; text-transform: uppercase; margin-bottom: 8px;">High Risk Ingredients</div>
     <div class="d-flex justify-content-center align-items-center gap-3">
         <div>
-        {{ range .Count.Hazards }}
-        <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;">{{ . }}</div>
+      {{ $length := (len .Count.Hazards) }}
+        {{ range $i, $elem :=  .Count.Hazards }}
+        <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;">{{ $elem }}</div>
         </div>
+
+        {{ if lt $i $length }}
+        <div class="vs" style="font-size: 1.2rem; color: #ccc;">vs</div>
+        {{ end }}
     {{ end }}
-        <div style="font-size: 1.2rem; color: #ccc;">vs</div>
-        <div>
-            <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444;">0</div>
-            <div style="font-size: 0.7rem; color: #999;">Neutrogena</div>
-        </div>
     </div>
     </div>
 
@@ -24,7 +24,7 @@
     <div class="comparison-container">
         <!-- Product 1 -->
         {{ range .product_comparator }}
-          <div hx-get="/products?id={{ . }}" hx-trigger="load"></div> 
+          <div hx-get="/products?id={{ . }}" hx-trigger="load" onload="rmLastVs()"></div> 
         {{ end }}
     </div>
 </div>
@@ -96,6 +96,16 @@
         }
     }
 </style>
+
+<script>
+  // Add any necessary JavaScript for interactivity here
+  function rmLastVs() {
+    var vstext = document.getElementsByClassName('vs');
+    vstext[vstext.length - 1].style.display = 'none';
+  }
+
+  rmLastVs();
+</script>
 
 {{ end }}
 

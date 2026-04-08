@@ -1,37 +1,6 @@
 {{ define "content" }}
  
 
-<div class="sidebar">
-  <div class="position-absolute top-10 start-10" id="sidebar-toggle-badge">
-    <div class="d-flex flex-row gap-2">
-      
-      <a href='/product'><span class="d-md-block badge rounded-pill bg-dark text-light" style="cursor: pointer;">Products</span></a>
-    </div>
-  </div>
-</div>
-
-<div class="container py-5">
-  <div class="text-center mb-5">
-    <img src="/static/github-ff-banner.png"/> 
-    <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
-  </div>
-
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-    </div>
-  </div>
-
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div id="searchbar" class="" hx-get="/searchbar" hx-trigger="load"></div>  
-      <div id="search-results"></div>
-    </div>
-  </div>
-</div>
-
-<div id="modal-container">
-</div>
-
 <style>
 .btn-registry {
     background-color: #000;
