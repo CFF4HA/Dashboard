@@ -55,7 +55,7 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
 
     if name in cache:
         return cache[name]
-    
+
     names, labels = pubchem.Ingredient(name)
 
     ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
@@ -87,7 +87,7 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
                     "id": uuid.uuid4(), "text": name, "ingredient_id": ingredient.Id})
                 if result.scalar() is None:
                     raise HTTPException(
-                        status_code=500, detail="Failed to insert name into database")
+                        status_code=204, detail="Failed to insert name into database")
 
             for label in labels:
                 label_id = uuid.uuid4()
@@ -111,12 +111,13 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
         raise e
     cache[name] = ingredient
 
+
 @app.get("/ingredient/compare")
 async def compare_products(product1: str, product2: str, db: AsyncSession = Depends(get_db)):
     product1 = product1.split(",")
     product2 = product2.split(",")
-    ingredients1 : list[models.Ingredient] = []
-    ingredients2 : list[models.Ingredient] = []
+    ingredients1: list[models.Ingredient] = []
+    ingredients2: list[models.Ingredient] = []
     for ing in product1:
         if ing in cache:
             ingredients1.append(cache[ing])

@@ -1,35 +1,28 @@
 
-<div class="container py-5">
-  <div class="text-center mb-5">
-    <img src="/static/github-ff-banner.png"/> 
-    <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
+<div class="container-fluid py-5 g-5">
+  <div class="row">
+    {{/* Sidebar */}}
+
+    {{/* Content */}}
+    <div class="col m-3">
+      <div class="text-center mb-5">
+        <img src="/static/github-ff-banner.png"/> 
+        <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
+      </div>
+
+      <!-- <div class="row mb-2"> -->
+      <!--   <div class="col mt-5"> -->
+      <!---->
+      <!--     <h3 class="fw-light">Explore Ingredients and Products</h3> -->
+      <!--     <p class="text-muted">Search for any ingredient or product to discover detailed information, including potential health impacts and safety ratings.</p> -->
+      <!---->
+      <!--   </div> -->
+      <!-- </div> -->
+      
+      <div hx-get="/htmx/input-searchbar_generic" hx-trigger="load"></div>
+    </div> 
   </div>
-
-  {{/*   <div class="row mt-1">
-    <div class="col">
-      <h3>Search for Ingredients</h3>
-      <p>
-        If it's in PubChem, we'll have it too! Begin typing a single 
-        ingredient and if it appears, you'll be able to investigate it 
-        further!
-      </p>
-    </div>
-
-
-    <div class="col">
-      <h3>Search for Products</h3>
-      <p>
-        If you'd like to paste a list of ingredients, feel free to! We'll 
-        automatically parse them invididually and present you with a product 
-        draft that you can save and share with others.
-      </p>
-    </div>
-  </div>
-    */}}
-
-
-  <div hx-get="/htmx/input-searchbar_generic" hx-trigger="load"></div>
-
+  
 </div>
 
 <div id="modal-container">

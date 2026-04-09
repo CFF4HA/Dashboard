@@ -1,34 +1,75 @@
 
 <!-- Search Bar -->
 <div class="mt-3">
-  <div class="input-group rounded">
-    <input 
-      id="search-ingredient_name" name="name" type="text" class="form-control form-control-lg" placeholder="Search ingredients..."
-      hx-get="/htmx/ingredient-search_results" hx-trigger="load, keyup changed delay:500ms" hx-target="#search-results" autocomplete="off"
-      hx-include="#switchProduct, #switchIngredient"
-    />
-  </div>
+  <div class="d-flex justify-content-center">
+    <div class="col-auto" style="min-width: 800px;">
+     
+      <input 
+        id="search-ingredient_name" 
+        name="router-search_query" 
+        type="text" 
+        class="form-control form-control-lg" 
+        placeholder="Search for anything..."
+        hx-get="/htmx/router" 
+        hx-trigger="keyup changed delay:500ms" 
+        hx-target="#search-results" 
+        hx-indicator="#search-progress"
+        autocomplete="off"
+      />
+      <div class="form-text text-muted mt-1">Try searching for an ingredient, product, or even a question!</div>
 
-  <div class="mt-1">
-    <p class="text-muted">You can toggle the items included in your search.</p>
-    <div class="d-flex">
-      <div class="form-check form-switch">
-        <input hx-get="/htmx/ingredient-search_results" hx-trigger="mouseup" hx-target="#search-results" hx-include="#search-ingredient_name, #switchProduct, #switchIngredient"
-          hx-params="not switchProduct"
-          class="form-check-input" type="checkbox" role="switch" id="switchProduct" name="switchProduct" checked>
-        <label class="form-check-label" for="switchCheckDefault">Product</label>
-      </div>
-
-      <div class="form-check form-switch ms-3">
-        <input hx-get="/htmx/ingredient-search_results" hx-trigger="mouseup" hx-target="#search-results" hx-include="#search-ingredient_name, #switchProduct, #switchIngredient"
-          hx-params="not switchIngredient"
-          class="form-check-input" type="checkbox" role="switch" id="switchIngredient" name="switchIngredient" checked>
-        <label class="form-check-label" for="switchCheckDefault">Ingredient</label>
+      <div id="search-progress" class="progress htmx-indicator mb-1 mt-3" style="height: 4px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+             role="progressbar" 
+             style="width: 100%"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="card p-3 mt-4" id="search-results">
+
+  <!-- <div class="mt-1"> -->
+  <!--   <div class="d-flex"> -->
+  <!--     <ul class="nav nav-tabs"> -->
+  <!--       <li class="nav-item"> -->
+  <!--         <a class="nav-link active" aria-current="page" href="#" -->
+  <!--           id="ingredient-search_result_tab" -->
+  <!--           data-bs-toggle="tab" -->
+  <!--         >Ingredient</a> -->
+  <!--       </li> -->
+  <!--       <li class="nav-item"> -->
+  <!--         <a class="nav-link" href="#" -->
+  <!--           id="product-search_result_tab" -->
+  <!--           data-bs-toggle="tab" -->
+  <!--         >Product</a> -->
+  <!--       </li> -->
+  <!--     </ul> -->
+  <!--   </div> -->
+  <!-- </div> -->
+  
+
+  <div class="p-3 mt-4" id="search-results">
   </div>
 </div>
 
+<style>
+/* Hide the indicator by default */
+.htmx-indicator {
+  display: none;
+}
+
+/* Show it when an HTMX request is active */
+.htmx-request .htmx-indicator, 
+.htmx-request.htmx-indicator {
+  display: flex; /* Bootstrap progress bars use flex */
+}
+
+/* Optional: Smooth fade-in to prevent flickering on fast queries */
+.htmx-indicator {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+.htmx-request .htmx-indicator {
+  opacity: 1;
+}
+</style>

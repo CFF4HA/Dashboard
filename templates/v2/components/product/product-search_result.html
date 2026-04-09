@@ -1,0 +1,68 @@
+{{ if .Product }}
+<div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
+  <div class="card-body p-4">
+    <div class="mb-3">
+      <h4 class="card-title fw-bold text-dark mb-1">{{ .Product.Name }}</h4>
+      <p class="text-muted small mb-0">Source: <span class="text-secondary">{{ .Product.Origin }}</span></p>
+    </div>
+
+    <div class="mb-3">
+      <p class="text-muted small mb-1"><strong>Ingredients:</strong></p>
+      <p class="text-secondary small mb-0">
+        {{ range $i, $ing := .Product.Ingredients }}
+          {{ if lt $i 5 }}
+            {{ if gt $i 0 }}, {{ end }}{{ (index $ing.Names 0).Text }}
+          {{ end }}
+        {{ end }}
+        {{ if gt (len .Product.Ingredients) 5 }}<span class="opacity-50">...and more</span>{{ end }}
+      </p>
+    </div>
+
+    <hr class="my-3 opacity-25">
+
+    <div class="d-flex flex-wrap gap-2">
+      {{ range $ing := .Product.Ingredients }}
+        {{ range $l := $ing.Labels }}
+          <span class="badge rounded-pill px-3 py-2 label-soft 
+            {{ if eq $l.Type "hazard" }}bg-soft-hazard
+            {{ else if eq $l.Type "symptom" }}bg-soft-symptom
+            {{ else if eq $l.Type "effect" }}bg-soft-effect
+            {{ else if eq $l.Type "regulation" }}bg-soft-reg
+            {{ else }}bg-soft-gen{{ end }}">
+            
+            {{ if gt (len $l.Payload) 20 }}
+              {{ slice $l.Payload 0 20 }}...
+            {{ else }}
+              {{ $l.Payload }}
+            {{ end }}
+          </span>
+        {{ end }}
+      {{ end }}
+    </div>
+  </div>
+</div>
+{{ else }}
+<div class="text-center py-5">
+  <p class="text-muted">No product information available.</p>
+</div>
+{{ end }}
+
+<style>
+/* Soft Aesthetic Palette */
+.label-soft {
+  font-weight: 500;
+  border: none;
+  max-width: 200px; /* Limits width to prevent overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.bg-soft-hazard { background-color: #fce4e4; color: #924040; }
+.bg-soft-symptom { background-color: #fff9db; color: #856404; }
+.bg-soft-effect { background-color: #e3f2fd; color: #3b6991; }
+.bg-soft-reg { background-color: #f3e5f5; color: #6a4c93; }
+.bg-soft-gen { background-color: #f8f9fa; color: #6c757d; border: 1px solid #e9ecef; }
+</style>
