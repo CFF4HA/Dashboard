@@ -1,26 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"net/http"
-	"net/url"
 	"strings"
-	"sync"
-	"time"
 
-	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
-	"github.com/CFF4HA/Dashboard/internal/types"
+
+	"github.com/CFF4HA/Dashboard/pkg/aux-router"
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
-	"github.com/google/uuid"
-)
-
-var (
-	ai = bridges.AIRouter{
-		Sessions: make(map[string]bridges.View),
-		Lock:     &sync.RWMutex{},
-	}
 )
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
@@ -35,7 +25,6 @@ func main() {
 	flag.Parse()
 
 	core.BackendAddress = strings.TrimRight(*backend, "/")
-	core.LLMAddress = strings.TrimRight(*llm, "/")
 
 	v := verb.New(*address, *port, verb.Settings{
 		Templates:  *templateDir,
@@ -43,59 +32,72 @@ func main() {
 		LiveReload: *live,
 	})
 
-	v.Page("", "v2/pages/index.html").
-		Bridge(verb.DataBridge{
-			Key: "TotalIngredients",
-			Provide: func(r *http.Request) (any, error) {
-				return 3, nil
-			},
-		}).
-		Bridge(verb.DataBridge{
-			Key: "TotalProducts",
-			Provide: func(r *http.Request) (any, error) {
-				return 25, nil
-			},
-		})
+	v.Page("", "v2/pages/index.html")
 	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div"))
-	v.Component("v2/components/product/product-search_result.html", htmx.Create("div")).
-		Bridge(verb.DataBridge{
-			Key: "Product",
-			Provide: func(r *http.Request) (any, error) {
-				return types.Product{
-					Id:      uuid.New(),
-					Name:    "Example Product",
-					Origin:  "https://www.vanicream.com/product/free-and-clear-shampoo",
-					Created: time.Now().Add(-time.Hour),
-					Updated: time.Now(),
-					Ingredients: []types.Ingredient{
-						{
-							Names:  []types.Name{{Text: "Example Name 1"}, {Text: "Example Name 2"}},
-							Labels: []types.Label{{Type: "hazard", Payload: "Example Hazard", Origin: "http://example.com/hazard"}},
-						},
-					},
-				}, nil
-			},
-		})
 
-	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(verb.DataBridge{
-			Key:     "Ingredient",
-			Provide: bridges.IngredientSearchProvider,
-		}).
-		Bridge(verb.DataBridge{
-			Key: "Htmx",
-			Provide: func(r *http.Request) (any, error) {
-				if _, ok := core.IngredientsCache[r.FormValue("name")]; ok {
-					return htmx.Div(), nil
+	aux := auxrouter.Aux{LlmServerEndpoint: *llm}
+	aux.Intent("single_ingredient_search", "user wishes to search for single ingredient",
+		auxrouter.IntentExample{
+			Prompt:         "Water",
+			ResponseSchema: `{"ingredient": "Water"}`,
+		},
+		auxrouter.IntentExample{
+			Prompt:         "What is Citral?",
+			ResponseSchema: `{"ingredient": "Citral"}`,
+		},
+	)
+	aux.Intent("unknown", "the intent is unknown or cannot be determined with certainty (note: return this if user input seems questionable)",
+		auxrouter.IntentExample{
+			Prompt:         "What do you know about the universe?",
+			ResponseSchema: `{}`,
+		})
+	aux.Intent("multi_ingredient_search", "user wishes to search for multiple ingredients",
+		auxrouter.IntentExample{
+			Prompt:         "Water, Citral, and Limonene",
+			ResponseSchema: `{"ingredients": ["Water", "Citral", "Limonene"]}`,
+		},
+		auxrouter.IntentExample{
+			Prompt:         "What do you know about Water, Citral, and Limonene?",
+			ResponseSchema: `{"ingredients": ["Water", "Citral", "Limonene"]}`,
+		},
+	)
+	aux.Intent("product_search_name", "user wishes to search for a specific product by name",
+		auxrouter.IntentExample{
+			Prompt:         "Tell me about the ingredient in CeraVe Hydrating Cleanser",
+			ResponseSchema: `{"product": "CeraVe Hydrating Cleanser"}`,
+		},
+		auxrouter.IntentExample{
+			Prompt:         "VaniCream Shampoo",
+			ResponseSchema: `{"product": "VaniCream Shampoo"}`,
+		},
+	)
+	v.Component("v2/components/ai/router.html", htmx.Div()).
+		Bridge(aux).
+		Bridge(verb.Map("Ingredient", func(r *http.Request, m map[string]any) (any, error) {
+			_, ok := m[aux.Name()]
+			if !ok {
+				return nil, nil
+			}
+
+			aux_response, ok := m[aux.Name()].(auxrouter.Response)
+			if !ok {
+				return nil, nil
+			}
+
+			var Ingredient struct {
+				Ingredient string `json:"ingredient"`
+			}
+
+			if aux_response.Intent == "single_ingredient_search" {
+				if json.Unmarshal(aux_response.Response, &Ingredient) != nil {
+					return nil, nil
 				}
 
-				name := r.FormValue("name")
-				return htmx.Div().Trigger("load delay:2s").GET("/htmx/ingredient-search_result?name=" + url.QueryEscape(name)).Swap("outerHTML"), nil
-			},
-		})
+				return Ingredient, nil
+			}
 
-	v.Component("v2/components/ai/router.html", htmx.Div()).
-		Bridge(ai)
+			return nil, nil
+		}))
 
 	if err := v.Serve(); err != nil {
 		panic(err)
