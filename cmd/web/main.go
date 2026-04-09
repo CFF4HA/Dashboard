@@ -151,11 +151,7 @@ func main() {
 			},
 		})
 
-	if err := app.Start(); err != nil {
+	if err := v.Serve(); err != nil {
 		panic(err)
 	}
-
-	// if err := v.Serve(); err != nil {
-	// 	panic(err)
-	// }
 }
