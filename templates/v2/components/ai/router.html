@@ -1,0 +1,39 @@
+{{ $entities := .AI.Entities }}
+{{ $summary := .AI.Summary }}
+<div class="d-flex flex-column gap-3">
+  {{ if $summary }}
+  <div class="card border-0 bg-light shadow-sm">
+    <div class="card-body">
+      <h6 class="card-subtitle mb-2 text-muted uppercase small">AI Summary</h6>
+      <p class="card-text">{{ $summary }}</p>
+    </div>
+  </div>
+  {{ end }}
+
+  <div class="d-flex flex-column gap-2">
+    {{ if eq .AI.Intent "IngredientSearch" }}
+      {{ range $entities }}
+      <div hx-get="/htmx/ingredient-search_result?name={{ urlquery . }}" 
+           hx-trigger="load" 
+           hx-swap="outerHTML">
+        <div class="p-3 border rounded text-muted">Loading ingredient details...</div>
+      </div>
+      {{ end }}
+
+    {{ else if eq .AI.Intent "ProductSearch" }}
+      {{ range $entities }}
+      <div hx-get="/htmx/product-search_result?name={{ urlquery . }}" 
+           hx-trigger="load" 
+           hx-swap="outerHTML">
+        <div class="p-3 border rounded text-muted">Loading product details...</div>
+      </div>
+      {{ end }}
+
+    {{ else if eq .AI.Intent "ProductCreation" }}
+      <div class="alert alert-info">It looks like you want to create a new product. Follow the steps below.</div>
+      
+    {{ else }}
+      <div class="text-muted italic text-center">I'm not quite sure how to help with that request. Try refining your search.</div>
+    {{ end }}
+  </div>
+</div>

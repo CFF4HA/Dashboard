@@ -40,7 +40,7 @@ func syncDatabaseWithIngredient(name string) {
 // get an exact name. This will always return a list of ingredients.
 func IngredientSEARCH(w http.ResponseWriter, r *http.Request) error {
 	db := database.Database()
-	var ingredient []types.Ingredient
+	var ingredient types.Ingredient
 
 	chemical_name := r.FormValue("name")
 	if chemical_name == "" {
@@ -48,23 +48,27 @@ func IngredientSEARCH(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// chemical_name = "Acid"
-	searchTerm := "%" + chemical_name + "%"
+	searchTerm := chemical_name
 
 	err := db.Model(&types.Ingredient{}).
 		// 1. Join the Names table to filter by name text
 		Joins("JOIN names ON names.ingredient_id = ingredients.id").
 		// 2. Filter using ILIKE
-		Where("names.text ILIKE ?", searchTerm).
+		Where("names.text ~* ?", searchTerm).
 		// 3. Ensure we only get unique Ingredient records
 		Distinct("ingredients.*").
 		// 4. Limit to top 5
-		Limit(5).
+		Limit(1).
 		// 5. Optionally Preload all names for those ingredients
 		Preload("Names").
-		Find(&ingredient).Error
+		Preload("Labels").
+		First(&ingredient).Error
 
-	if err != nil {
-		return json.NewEncoder(w).Encode(ingredient)
+	if err != nil && err.Error() == "record not found" {
+		go syncDatabaseWithIngredient(chemical_name)
+		return nil
+	} else if err != nil {
+		return err
 	}
 
 	return json.NewEncoder(w).Encode(ingredient)

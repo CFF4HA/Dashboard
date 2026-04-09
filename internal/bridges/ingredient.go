@@ -2,6 +2,7 @@ package bridges
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -11,7 +12,7 @@ import (
 )
 
 func IngredientSearchProvider(r *http.Request) (any, error) {
-	var ingredients []types.Ingredient
+	var ingredients types.Ingredient
 	name := strings.Trim(r.FormValue("name"), " \r\n\t")
 	if name == "" {
 		return nil, nil
@@ -30,10 +31,18 @@ func IngredientSearchProvider(r *http.Request) (any, error) {
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&ingredients); err != nil {
+	if resp.StatusCode != http.StatusOK {
 		return nil, err
 	}
 
+	if err := json.NewDecoder(resp.Body).Decode(&ingredients); err != nil {
+		if err == io.EOF {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	core.IngredientsCache[name] = ingredients
 	return ingredients, nil
 }
 

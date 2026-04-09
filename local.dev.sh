@@ -22,7 +22,7 @@ sleep 5 # Wait for the database to initialize
 PUBCHEM=$!
 
 # Start the web server
-(go run cmd/web/main.go --backend "http://localhost:8081" --reload) &
+(go run cmd/web/main.go --backend "http://localhost:8081" --reload --llm http://127.0.0.1:11434) &
 WEB=$!
 echo "Running the website (pid=$WEB)!"
 
