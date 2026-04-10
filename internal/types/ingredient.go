@@ -55,24 +55,12 @@ type Ingredient struct {
 	Names  []Name  `json:"names" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
-func (i Ingredient) Data(w http.ResponseWriter, r *http.Request) (any, error) {
-	return ingredient, nil
-}
-
 // This is the Name table, which is how we will access ingredients.
 type Name struct {
 	Text string `json:"text" gorm:"type:text;not null;primaryKey;unique;"`
 
 	IngredientId uuid.UUID  `json:"ingredient_id" gorm:"type:uuid;not null;index;"`
 	Ingredient   Ingredient `json:"ingredient" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-}
-
-func (n Name) Data(w http.ResponseWriter, r *http.Request) (any, error) {
-
-	return &Name{
-		Text:       "Formaldehyde",
-		Ingredient: ingredient,
-	}, nil
 }
 
 // We should use labels as a way to describe a hazard, symptom, effect, regulation, etc.
