@@ -1,0 +1,156 @@
+{{ if .Ingredient }}
+
+<div class="card rounded-4 shadow-sm mb-4 border-0 bg-white" data-id="{{ .Ingredient.Id }}">
+  <div class="card-body p-4 p-lg-5">
+    <div class="row">
+      <div class="col-lg-4 border-end-lg mb-4 mb-lg-0">
+        <h2 class="h3 fw-bold text-dark mb-1">{{ (index .Ingredient.Names 0).Text }}</h2>
+        <p class="text-muted small mb-4">Last Updated: {{ .Ingredient.Updated.Format "Jan 02, 2006" }}</p>
+        
+        <div class="stats-grid d-flex flex-column gap-2">
+          <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <span class="text-secondary small fw-bold">Hazards</span>
+            <span class="badge bg-soft-hazard text-dark">{{ .Metadata.CountHazards }}</span>
+          </div>
+          <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <span class="text-secondary small fw-bold">Symptoms</span>
+            <span class="badge bg-soft-symptom text-dark">{{ .Metadata.CountSymptoms }}</span>
+          </div>
+          <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <span class="text-secondary small fw-bold">Regulations</span>
+            <span class="badge bg-soft-reg text-dark">{{ .Metadata.CountRegulations }}</span>
+          </div>
+        </div>
+        
+        <div class="mt-4 pt-4 border-top">
+          <button class="btn btn-outline-danger btn-sm w-100" onclick="this.closest('.card').remove()">Remove View</button>
+        </div>
+      </div>
+
+      <div class="col-lg-8 ps-lg-5">
+        <section class="mb-4">
+          <h5 class="fw-bold small text-uppercase tracking-wider text-muted mb-3">Nomenclature & Aliases</h5>
+
+          <div class="mt-2 mb-2">
+            <input type="text" class="form-control form-control-sm border-2" 
+                  placeholder="Search for a name..."
+                  onkeyup="filterDetails(this)">
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 detail-container">
+            {{ range $i, $name := .Ingredient.Names }}
+            <span class="badge bg-light text-dark border fw-normal px-3 py-2 detail-item {{ if gt $i 20 }}d-none{{ end }}" 
+                  data-search="{{ .Text | lower }}">
+              {{ .Text }}
+            </span>
+            {{ end }}
+          </div>
+        </section>
+
+        <section>
+          <h5 class="fw-bold small text-uppercase tracking-wider text-muted mb-3">Label Classification</h5>
+
+          <div class="mt-2 mb-2">
+            <input type="text" class="form-control form-control-sm border-2" 
+                  placeholder="Search for a name..."
+                  onkeyup="filterDetails(this)">
+          </div>
+
+          <div class="row g-3 detail-container">
+            {{ range $i, $label := .Ingredient.Labels }}
+            <div class="col-md-6 detail-item {{ if gt $i 20 }}d-none{{ end }}" data-search="{{ .Payload | lower }} {{ .Type | lower }}">
+              <a href="{{ .Origin }}" target="_blank" class="text-decoration-none d-block h-100 p-3 rounded-3 border-start border-4 detail-card-link
+                {{ if eq .Type "hazard" }}border-hazard bg-soft-hazard
+                {{ else if eq .Type "symptom" }}border-symptom bg-soft-symptom
+                {{ else if eq .Type "effect" }}border-effect bg-soft-effect
+                {{ else if eq .Type "regulation" }}border-reg bg-soft-reg
+                {{ else }}border-gen bg-soft-gen{{ end }}">
+                <div class="fw-bold text-dark mb-1 text-capitalize">{{ .Type }}</div>
+                <div class="small text-dark opacity-75 payload-text">{{ .Payload }}</div>
+              </a>
+            </div>
+            {{ end }}
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function filterDetails(input) {
+  const query = input.value.toLowerCase();
+  const card = input.closest('section');
+  const items = card.querySelectorAll('.detail-item');
+  
+  items.forEach((item, index) => {
+    const text = item.getAttribute('data-search');
+    if (text.includes(query)) {
+      item.classList.remove('d-none');
+    } else {
+      item.classList.add('d-none');
+    }
+    
+    // If query is empty, re-apply the "first 20" rule
+    if (query === "" && index > 20) {
+      item.classList.add('d-none');
+    }
+  });
+}
+</script>
+
+{{ else if not (eq .Htmx.HxAjax.Method "none" ) }}
+<div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
+  <input type="hidden" name="name" class="ingredient-name" value="{{ .Name }}">
+  <div class="card-body p-4 placeholder-glow">
+    <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
+    <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+    <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+    <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+  </div>
+</div>
+{{ else }}
+<div class="text-center py-5"><p class="text-muted">No results found.</p></div>
+{{ end }}
+
+<style>
+
+.detail-card-link {
+  transition: all 0.2s ease-in-out;
+  min-height: 80px;
+}
+/* Remove truncation and allow text to wrap on hover */
+.detail-card-link .payload-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Shows 2 lines initially */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.detail-card-link:hover .payload-text {
+  display: block; /* Shows everything on hover */
+  overflow: visible;
+}
+.detail-card-link:hover {
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* Soft Aesthetic Palette */
+.label-soft {
+  font-weight: 500;
+  border: none;
+  max-width: 200px; /* Limits width to prevent overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.bg-soft-hazard { background-color: #fce4e4; color: #924040; }
+.bg-soft-symptom { background-color: #fff9db; color: #856404; }
+.bg-soft-effect { background-color: #e3f2fd; color: #3b6991; }
+.bg-soft-reg { background-color: #f3e5f5; color: #6a4c93; }
+.bg-soft-gen { background-color: #f8f9fa; color: #6c757d; border: 1px solid #e9ecef; }
+</style>

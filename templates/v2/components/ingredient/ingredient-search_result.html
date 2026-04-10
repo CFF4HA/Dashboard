@@ -1,5 +1,7 @@
 {{ if .Ingredient }}
-<div class="card rounded-4 shadow-sm mb-3 border-0 bg-white searchable-item" data-name="{{ (index .Ingredient.Names 0).Text | lower }}">
+<div class="card rounded-4 shadow-sm mb-3 border-0 bg-white searchable-item" data-name="{{ (index .Ingredient.Names 0).Text | lower }}"
+  hx-get="/htmx/ingredient-search_result_single?name={{ (index .Ingredient.Names 0).Text | urlquery }}" hx-trigger="click" hx-swap="outerHTML" 
+>
   <div class="card-body p-4">
     <h4 class="card-title fw-bold text-dark mb-1">{{ (index .Ingredient.Names 0).Text }}</h4>
 
@@ -30,6 +32,7 @@
       </a>
       {{ end }}
     </div>
+    <button class="btn btn-dark btn-sm mt-3" onclick="this.closest('.card').remove()">Remove</button>
   </div>
 </div>
 {{ else if not (eq .Htmx.HxAjax.Method "none" ) }}
@@ -48,6 +51,33 @@
 
 <style>
 /* Soft Aesthetic Palette */
+
+.card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05); /* Soft baseline border */
+}
+
+.card:hover {
+  z-index: 10;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15); /* Softer, deeper shadow */
+  transform: translateY(-4px); /* Slightly more lift */
+  cursor: pointer;
+  background-color: #fcfcfc; /* Very subtle shift from white */
+  border-color: #dee2e6; /* Define the shape more clearly on hover */
+}
+
+/* Optional: Scale effect for the internal content */
+.card:hover .card-title {
+  color: #0d6efd; /* Highlight the title on hover */
+}
+
+/* Active state for immediate feedback on click */
+.card:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f8f9fa;
+}
+
 .label-soft {
   font-weight: 500;
   border: none;

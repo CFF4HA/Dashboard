@@ -55,6 +55,14 @@ type Ingredient struct {
 	Names  []Name  `json:"names" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
+type IngredientMetadata struct {
+	CountHazards     int `json:"count_hazards"`
+	CountEffects     int `json:"count_effects"`
+	CountSymptoms    int `json:"count_symptoms"`
+	CountGeneral     int `json:"count_general"`
+	CountRegulations int `json:"count_regulations"`
+}
+
 // This is the Name table, which is how we will access ingredients.
 type Name struct {
 	Text string `json:"text" gorm:"type:text;not null;primaryKey;unique;"`

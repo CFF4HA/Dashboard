@@ -40,17 +40,11 @@ func main() {
 		return strings.ToLower(s)
 	})
 
+	// Index Page
 	v.Page("", "v2/pages/index.html")
 
+	// Aux Router Search Bar
 	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div"))
-
-	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(verbs.TicketQ(7, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
-		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
-			m["Name"] = r.FormValue("name")
-			return r.FormValue("name"), nil
-		}))
-
 	v.Component("v2/components/ai/router.html", htmx.Div()).
 		Bridge(bridges.Aux(*llm)).
 		Bridge(verb.Map("Payload", func(r *http.Request, m map[string]any) (any, error) {
@@ -89,6 +83,22 @@ func main() {
 
 			return nil, nil
 		}))
+
+	// Ingredient Search Result, Individual
+	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
+		Bridge(verbs.TicketQ(7, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
+		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
+			m["Name"] = r.FormValue("name")
+			return r.FormValue("name"), nil
+		}))
+
+	v.Component("v2/components/ingredient/ingredient-search_result_single.html", htmx.Create("div")).
+		Bridge(verbs.TicketQ(20, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
+		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
+			m["Name"] = r.FormValue("name")
+			return r.FormValue("name"), nil
+		})).
+		Bridge(verb.Map("Metadata", bridges.IngredientMetadataProvider))
 
 	if err := v.Serve(); err != nil {
 		panic(err)
