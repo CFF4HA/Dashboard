@@ -7,7 +7,13 @@
   {{- if eq .Aux.Intent "multi_ingredient_search" }}
 
   {{/* Search bar for the items that resulted */}}
-  
+  <h3>Ingredients</h3>
+  <p>
+    This section lists the ingredients that were found based on your query. You can click on any ingredient to view more detailed information about it, including potential health impacts, safety ratings, and related products.
+  </p>
+
+  <hr class="mb-4"> 
+
   <input
     id="ingredient-search_input_rendered"
     name="query"
