@@ -2,6 +2,7 @@ package auxrouter
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"strings"
 
@@ -23,7 +24,7 @@ type OllamaResponse struct {
 	Response json.RawMessage `json:"response"`
 }
 
-func (a *Aux) LLM(prompt string) (*OllamaResponse, error) {
+func (a *Aux) LLM(ctx context.Context, prompt string) (*OllamaResponse, error) {
 	ollamaRequest := OllamaRequest{
 		Model:  "gemma-text",
 		Prompt: prompt,
@@ -42,7 +43,7 @@ func (a *Aux) LLM(prompt string) (*OllamaResponse, error) {
 	}
 
 	url := strings.TrimRight(a.LlmServerEndpoint, "/") + "/api/generate"
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}

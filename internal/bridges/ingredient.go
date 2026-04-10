@@ -18,5 +18,6 @@ func IngredientByNameProvider(r *http.Request, model map[string]any) (any, error
 		return nil, err
 	}
 
+	model["Ingredient"] = v
 	return v, nil
 }

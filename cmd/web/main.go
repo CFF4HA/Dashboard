@@ -10,6 +10,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	auxrouter "github.com/CFF4HA/Dashboard/pkg/aux-router"
+	"github.com/DAlba-sudo/verbs"
 
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
@@ -35,17 +36,24 @@ func main() {
 		Static:     *staticDir,
 		LiveReload: *live,
 	})
+	v.Func("lower", func(s string) string {
+		return strings.ToLower(s)
+	})
 
 	v.Page("", "v2/pages/index.html")
 
 	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div"))
 
 	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(verb.Map("Ingredient", bridges.IngredientByNameProvider))
+		Bridge(verbs.TicketQ(1, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
+		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
+			m["Name"] = r.FormValue("name")
+			return r.FormValue("name"), nil
+		}))
 
 	v.Component("v2/components/ai/router.html", htmx.Div()).
 		Bridge(bridges.Aux(*llm)).
-		Bridge(verb.Map("Ingredient", func(r *http.Request, m map[string]any) (any, error) {
+		Bridge(verb.Map("Payload", func(r *http.Request, m map[string]any) (any, error) {
 			_, ok := m["Aux"]
 			if !ok {
 				return nil, nil
@@ -56,16 +64,27 @@ func main() {
 				return nil, nil
 			}
 
-			var Ingredient struct {
-				Ingredient string `json:"ingredient"`
-			}
+			switch aux_response.Intent {
+			case "single_ingredient_search":
+				var Ingredient struct {
+					Ingredient string `json:"ingredient"`
+				}
 
-			if aux_response.Intent == "single_ingredient_search" {
 				if json.Unmarshal(aux_response.Response, &Ingredient) != nil {
 					return nil, nil
 				}
 
 				return Ingredient, nil
+
+			case "multi_ingredient_search":
+				var Ingredients struct {
+					Ingredients []string `json:"ingredients"`
+				}
+				if json.Unmarshal(aux_response.Response, &Ingredients) != nil {
+					return nil, nil
+				}
+
+				return Ingredients, nil
 			}
 
 			return nil, nil
