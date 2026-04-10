@@ -45,7 +45,7 @@ func main() {
 	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div"))
 
 	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(verbs.TicketQ(1, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
+		Bridge(verbs.TicketQ(7, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
 		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
 			m["Name"] = r.FormValue("name")
 			return r.FormValue("name"), nil
