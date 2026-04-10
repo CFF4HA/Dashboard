@@ -1,9 +1,5 @@
 {{ if .Aux -}}
-
-  {{- if .Ingredient -}}
-    {{- .Ingredient.Ingredient -}}
-  {{- end -}}
-
+ 
   {{- if eq .Aux.Intent "multi_ingredient_search" }}
 
   {{/* Search bar for the items that resulted */}}
@@ -11,6 +7,11 @@
   <p>
     This section lists the ingredients that were found based on your query. You can click on any ingredient to view more detailed information about it, including potential health impacts, safety ratings, and related products.
   </p>
+
+  <form hx-get="/htmx/product-create_form">
+    <input type="hidden" name="ingredients" value="{{- range .Payload.Ingredients -}}{{.}},{{- end }}">
+    <button class="btn btn-dark btn-sm" type="submit">Create a product from these ingredients?</button>
+  </form>
 
   <hr class="mb-4"> 
 
@@ -53,6 +54,22 @@
   <style>
     .placeholder { background-color: #e9ecef; /* Default gray, but you can lighten it */ }
   </style>
+
+  {{- else if eq .Aux.Intent "single_ingredient_search" }}
+  
+    {{- with .Payload.Ingredient }}
+    <div hx-get="/htmx/ingredient-search_result_single?name={{ . }}" hx-trigger="load" hx-swap="outerHTML">
+      <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
+        <div class="card-body p-4 placeholder-glow">
+          <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
+          <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+          <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+          <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+        </div>
+      </div>
+    </div> 
+    {{- end }}
+
   {{- end }}
 
 {{- end }}
