@@ -1,7 +1,52 @@
-{{ if .Aux }}
-{{ .Aux.Intent }}
-{{ .Aux.Certainty }}
-{{ if .Ingredient }}
-{{ .Ingredient.Ingredient }}
-{{ end }}
-{{ end }}
+{{ if .Aux -}}
+
+  {{- if .Ingredient -}}
+    {{- .Ingredient.Ingredient -}}
+  {{- end -}}
+
+  {{- if eq .Aux.Intent "multi_ingredient_search" }}
+
+  {{/* Search bar for the items that resulted */}}
+  
+  <input
+    id="ingredient-search_input_rendered"
+    name="query"
+    type="text"
+    class="form-control form-control-lg mb-3"
+    placeholder="Search within results..."
+    autocomplete="off">
+
+  <script>
+  document.getElementById('ingredient-search_input_rendered').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const items = document.querySelectorAll('.searchable-item');
+
+    items.forEach(item => {
+      const itemName = item.getAttribute('data-name');
+      if (itemName.includes(searchTerm)) {
+        item.classList.remove('d-none');
+      } else {
+        item.classList.add('d-none');
+      }
+    });
+  });
+  </script>
+
+  {{- range .Payload.Ingredients }}
+  <div hx-get="/htmx/ingredient-search_result?name={{ . }}" hx-trigger="load" hx-swap="outerHTML">
+    <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
+      <div class="card-body p-4 placeholder-glow">
+        <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
+        <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+        <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+        <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+      </div>
+    </div>
+  </div>
+  {{- end }}
+  <style>
+    .placeholder { background-color: #e9ecef; /* Default gray, but you can lighten it */ }
+  </style>
+  {{- end }}
+
+{{- end }}

@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/DAlba-sudo/pbf v1.0.0
 	github.com/DAlba-sudo/pff v1.0.1 // direct
-	github.com/DAlba-sudo/verb v0.0.5
+	github.com/DAlba-sudo/verb v0.0.6
 	github.com/google/uuid v1.6.0
 	golang.org/x/crypto v0.49.0
 	gorm.io/driver/postgres v1.6.0

@@ -65,7 +65,7 @@ func (a Aux) Data(w http.ResponseWriter, r *http.Request, model map[string]any) 
 	prompt := fmt.Sprintf(strings.Trim(llmPromptTemplate, " "), string(data), query)
 
 	// we send directly to the llm now
-	ollama, err := a.LLM(prompt)
+	ollama, err := a.LLM(r.Context(), prompt)
 	if err != nil {
 		response.Certainty = 1
 		response.Intent = IntentLLMError
