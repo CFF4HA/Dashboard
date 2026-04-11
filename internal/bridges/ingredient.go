@@ -45,7 +45,7 @@ func Ingredient(r *http.Request) (any, error) {
 	if id != "" {
 		err := db.Preload("Names").Preload("Labels").First(ingredient, "id = ?", id).Error
 		if err != nil {
-			go SyncDatabaseWithIngredient(name)
+			SyncDatabaseWithIngredient(name)
 
 			core.Logger.Info("ingredient not found in database, syncing with backend", "name", name)
 			return nil, err
@@ -57,7 +57,7 @@ func Ingredient(r *http.Request) (any, error) {
 	// the following assumes that you are searching by primary name only
 	err := db.Preload("Names").Preload("Labels").First(ingredient, "primary_name = ?", name).Error
 	if err != nil {
-		go SyncDatabaseWithIngredient(name)
+		SyncDatabaseWithIngredient(name)
 
 		core.Logger.Info("ingredient not found in database, syncing with backend", "name", name)
 		return nil, err
@@ -103,4 +103,55 @@ func IngredientMetadataProvider(r *http.Request, model map[string]any) (any, err
 	meta.CountRegulations = counts["regulation"]
 
 	return meta, nil
+}
+
+func Ingredients(r *http.Request, model map[string]any) (any, error) {
+	// assumes that the ingredient names are available in the model
+	ingredients := []types.Ingredient{}
+	names, ok := model["IngredientList"].([]string)
+	if !ok {
+		return nil, nil
+	}
+
+	for _, name := range names {
+		result, err := Ingredient(&http.Request{Form: url.Values{"name": []string{name}}})
+		if err != nil {
+			continue
+		}
+
+		resultIngredient, ok := result.(*types.Ingredient)
+		if !ok {
+			continue
+		}
+
+		ingredients = append(ingredients, *resultIngredient)
+	}
+
+	return ingredients, nil
+}
+
+func countLabelsForIngredients(ingredients []types.Ingredient) map[string]int {
+	counts := map[string]int{}
+	for _, ingredient := range ingredients {
+		for _, label := range ingredient.Labels {
+			counts[label.Type]++
+		}
+	}
+
+	return counts
+}
+
+func CountLabelsForIngredients(r *http.Request, model map[string]any) (any, error) {
+	modelIngredients, ok := model["Ingredients"]
+	if !ok {
+		return nil, nil
+	}
+
+	ingredients, ok := modelIngredients.([]types.Ingredient)
+	if !ok {
+		return nil, nil
+	}
+
+	counts := countLabelsForIngredients(ingredients)
+	return counts, nil
 }

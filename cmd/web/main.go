@@ -39,12 +39,27 @@ func main() {
 	v.Func("lower", func(s string) string {
 		return strings.ToLower(s)
 	})
+	v.Func("default", func(a any, b any) any {
+		if b == nil {
+			return a
+		}
+
+		return b
+	})
 
 	// Global Bridges (i.e., where state is important)
 	IngredientWithCache := verbs.QueryCachedResource("Ingredient", verbs.QueryCachedResourceOptions{
 		AcquisitionPolicy:         bridges.Ingredient,
 		MaxConcurrentAcquisitions: 10,
 		Fingerprint:               []string{"id", "name"},
+	})
+
+	IngredientNames := verbs.QueryParameter("ingredients", &verbs.QueryParameterOptions{
+		Name: "Ingredients",
+	})
+	Name := verbs.QueryParameter("name", &verbs.QueryParameterOptions{
+		Name:  "Name",
+		First: true,
 	})
 
 	// Index Page
@@ -86,6 +101,17 @@ func main() {
 				}
 
 				return Ingredients, nil
+			case "product_create":
+				var Product struct {
+					Product     string   `json:"product"`
+					Ingredients []string `json:"ingredients"`
+				}
+
+				if json.Unmarshal(aux_response.Response, &Product) != nil {
+					return nil, nil
+				}
+
+				return Product, nil
 			}
 
 			return nil, nil
@@ -93,10 +119,14 @@ func main() {
 
 	// Ingredient Search Result, Individual
 	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
+		Bridge(verbs.QueryParameter("name", &verbs.QueryParameterOptions{
+			Name:  "Name",
+			First: true,
+		})).
 		Bridge(IngredientWithCache).
 		OnError(htmx.Div().
 			GET("/htmx/ingredient-search_result").
-			Include("previous .ingredient-name").
+			Include(`find [name="name"]`).
 			Trigger("load delay:5s").
 			Swap("outerHTML"))
 
@@ -109,8 +139,17 @@ func main() {
 		Bridge(IngredientWithCache).
 		Bridge(verb.Map("Metadata", bridges.IngredientMetadataProvider))
 
+	v.Component("v2/components/ingredient/ingredient-list_stats.html", htmx.Div().GET("/htmx/ingredient-list_stats").
+		Trigger("load delay:7s").
+		Include(`find [name="ingredients"]`)).
+		Bridge(verbs.QueryParameter("ingredients", &verbs.QueryParameterOptions{Name: "IngredientList"})).
+		Bridge(verb.Map("Ingredients", bridges.Ingredients)).
+		Bridge(verb.Map("Counts", bridges.CountLabelsForIngredients))
+
 	// Product
-	v.Component("v2/components/product/product-creation_form.html", htmx.Create("div"))
+	v.Component("v2/components/product/product-creation_form.html", htmx.Create("div")).
+		Bridge(Name).
+		Bridge(IngredientNames)
 
 	if err := v.Serve(); err != nil {
 		panic(err)
