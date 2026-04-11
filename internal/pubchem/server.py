@@ -62,32 +62,26 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
 
     try:
         # First insert, fetching the returned ID
-        result = await db.execute(text("INSERT INTO ingredients (id, failed) VALUES (:id, :failed) RETURNING id"), {
-            "id": ingredient.Id, "failed": names is None or labels is None})
+        result = await db.execute(text("INSERT INTO ingredients (id, failed, primary_name) VALUES (:id, :failed, :name) RETURNING id"), {
+            "id": ingredient.Id, "failed": names is None or labels is None, "name": name})
         if result.scalar() is None:
             raise HTTPException(
                 status_code=500, detail="Failed to insert ingredient into database")
 
-        if names is None or labels is None:
-            # insert the name so that we can cache the miss on purpose
-            result = await db.execute(text("INSERT INTO names (text, ingredient_id) VALUES (:text, :ingredient_id) RETURNING text"), {
-                "text": name,
-                "ingredient_id": ingredient.Id})
-            if result.scalar() is None:
-                raise HTTPException(
-                    status_code=500, detail="Failed to insert name into database")
         else:
-            # Cache the original name as well, since it's a valid synonym
-            if name not in names:
-                names.append(name)
-
             for name in names:
                 # Added RETURNING id to verify success
-                result = await db.execute(text("INSERT INTO names (text, ingredient_id) VALUES (:text, :ingredient_id) RETURNING text"), {
-                    "id": uuid.uuid4(), "text": name, "ingredient_id": ingredient.Id})
+                try:
+                    result = await db.execute(text("INSERT INTO names (text) VALUES (:text) RETURNING text"), {
+                        "text": name})
+                except Exception as e:
+                    pass
+
+                result = await db.execute(text("INSERT INTO ingredient_names (ingredient_id, name_text) VALUES (:ingredient_id, :name) RETURNING ingredient_id"), {
+                    "ingredient_id": ingredient.Id, "name": name})
                 if result.scalar() is None:
                     raise HTTPException(
-                        status_code=204, detail="Failed to insert name into database")
+                        status_code=500, detail="Failed to associate name with ingredient in database")
 
             for label in labels:
                 label_id = uuid.uuid4()

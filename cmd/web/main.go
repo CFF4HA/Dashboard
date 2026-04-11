@@ -40,6 +40,13 @@ func main() {
 		return strings.ToLower(s)
 	})
 
+	// Global Bridges (i.e., where state is important)
+	IngredientWithCache := verbs.QueryCachedResource("Ingredient", verbs.QueryCachedResourceOptions{
+		AcquisitionPolicy:         bridges.Ingredient,
+		MaxConcurrentAcquisitions: 10,
+		Fingerprint:               []string{"id", "name"},
+	})
+
 	// Index Page
 	v.Page("", "v2/pages/index.html")
 
@@ -86,19 +93,24 @@ func main() {
 
 	// Ingredient Search Result, Individual
 	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(verbs.TicketQ(7, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
-		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
-			m["Name"] = r.FormValue("name")
-			return r.FormValue("name"), nil
-		}))
+		Bridge(IngredientWithCache).
+		OnError(htmx.Div().
+			GET("/htmx/ingredient-search_result").
+			Include("previous .ingredient-name").
+			Trigger("load delay:5s").
+			Swap("outerHTML"))
 
 	v.Component("v2/components/ingredient/ingredient-search_result_single.html", htmx.Create("div")).
-		Bridge(verbs.TicketQ(20, 10, "/htmx/ingredient-search_result", "find .ingredient-name", bridges.IngredientByNameProvider)).
-		Bridge(verb.Map("Name", func(r *http.Request, m map[string]any) (any, error) {
-			m["Name"] = r.FormValue("name")
-			return r.FormValue("name"), nil
-		})).
+		OnError(htmx.Div().
+			GET("/htmx/ingredient-search_result_single").
+			Include("previous .ingredient-name").
+			Trigger("load delay:3s").
+			Swap("outerHTML")).
+		Bridge(IngredientWithCache).
 		Bridge(verb.Map("Metadata", bridges.IngredientMetadataProvider))
+
+	// Product
+	v.Component("v2/components/product/product-creation_form.html", htmx.Create("div"))
 
 	if err := v.Serve(); err != nil {
 		panic(err)

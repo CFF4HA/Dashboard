@@ -2,8 +2,9 @@
 <div class="card rounded-4 shadow-sm mb-3 border-0 bg-white searchable-item" data-name="{{ (index .Ingredient.Names 0).Text | lower }}"
   hx-get="/htmx/ingredient-search_result_single?name={{ (index .Ingredient.Names 0).Text | urlquery }}" hx-trigger="click" hx-swap="outerHTML" 
 >
+  <input type="hidden" name="name" class="ingredient-name" value="{{ .Name }}">
   <div class="card-body p-4">
-    <h4 class="card-title fw-bold text-dark mb-1">{{ (index .Ingredient.Names 0).Text }}</h4>
+    <h4 class="card-title fw-bold text-dark mb-1">{{ .Ingredient.PrimaryName }}</h4>
 
     {{ if gt (len .Ingredient.Names) 1 }}
     <p class="text-muted small mb-3">

@@ -44,6 +44,15 @@ func Aux(llm string) auxrouter.Aux {
 			ResponseSchema: `{"product": "VaniCream Shampoo"}`,
 		},
 	)
+	aux.Intent("product_create", "user wishes to create a new product with specified name and ingredients",
+		auxrouter.IntentExample{
+			Prompt:         "VaniCream: Water, Citral, Vanillin, A-Xyz, Glyceene",
+			ResponseSchema: `{"product": "VaniCream", "ingredients": ["Water", "Citral", "Vanillin", "A-Xyz", "Glyceene"]}`,
+		},
+		auxrouter.IntentExample{
+			Prompt:         "Create a product",
+			ResponseSchema: `{}`,
+		})
 
 	return aux
 }
