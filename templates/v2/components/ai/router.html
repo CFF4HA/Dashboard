@@ -78,7 +78,12 @@
     {{- end }}
 
   {{- else if eq .Aux.Intent "product_create" }}
-    <div hx-get="/htmx/product-creation_form" hx-trigger="load" hx-swpa="outerHTML"></div>
+    {{ with .Payload }}
+    <div hx-get="/htmx/product-creation_form" hx-trigger="load" hx-swpa="outerHTML" hx-include="[name='name'], [name='ingredients']">
+    {{- if .Product }}<input type="hidden" name="name" value="{{ .Product }}">{{ end }}
+    {{- if len .Ingredients }}<input type="hidden" name="ingredients" value="{{- range .Ingredients -}}{{.}},{{- end }}">{{ end }}
+    </div>
+    {{ end }}
   {{- end }}
 
 {{- end }}

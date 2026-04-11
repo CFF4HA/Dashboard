@@ -1,8 +1,8 @@
 {{ if .Ingredient }}
 <div class="card rounded-4 shadow-sm mb-3 border-0 bg-white searchable-item" data-name="{{ (index .Ingredient.Names 0).Text | lower }}"
-  hx-get="/htmx/ingredient-search_result_single?name={{ (index .Ingredient.Names 0).Text | urlquery }}" hx-trigger="click" hx-swap="outerHTML" 
+  hx-get="/htmx/ingredient-search_result_single?name={{ .PrimaryName | urlquery }}" hx-trigger="click" hx-swap="outerHTML" 
 >
-  <input type="hidden" name="name" class="ingredient-name" value="{{ .Name }}">
+  <input type="hidden" name="name" class="ingredient-name" value="{{ .PrimaryName }}">
   <div class="card-body p-4">
     <h4 class="card-title fw-bold text-dark mb-1">{{ .Ingredient.PrimaryName }}</h4>
 

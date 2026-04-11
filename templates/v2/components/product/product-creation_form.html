@@ -16,9 +16,10 @@
       <div class="col-md-6">
         <label class="form-label fw-bold text-muted small text-uppercase mb-2">Product Name</label>
         <input type="text" 
-               placeholder="e.g., Organic Hydrating Cleanser" 
-               class="form-control form-control-lg border-2 shadow-none" 
-               name="name">
+          placeholder="e.g., Organic Hydrating Cleanser" 
+          class="form-control form-control-lg border-2 shadow-none" 
+          {{- if .Name }}value="{{ .Name }}"{{ end }}
+          name="product_name">
       </div>
       <div class="col-md-6">
         <label class="form-label fw-bold text-muted small text-uppercase mb-2">Product URL</label>
@@ -30,6 +31,46 @@
     </div>
 
     <div class="row">
+      <div class="col-lg-5 ps-lg-2 pb-lg-2">
+        <div class="sticky-top" style="top: 2rem;">
+          <div class="p-4 bg-light rounded-4 border border-2 border-white shadow-sm">
+            <h5 class="fw-bold mb-4">Analysis Summary</h5>
+            
+            <div hx-get="/htmx/ingredient-list_stats" hx-trigger="load" hx-swap="innerHTML" hx-include='[name="ingredients"]'>
+              <input type="hidden" name="ingredients" value="{{- range .Ingredients -}}{{ . }},{{- end -}}">
+              <div class="d-grid gap-3">
+                <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white px-3 shadow-sm">
+                  <span class="small fw-bold text-secondary">Hazards Found</span>
+                  <p class="placeholder-glow">
+                    <span class="placeholder badge bg-soft-hazard rounded-pill">...</span>
+                  </p>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white px-3 shadow-sm">
+                  <span class="small fw-bold text-secondary">Symptoms</span>
+
+                  <p class="placeholder-glow">
+                    <span class="placeholder badge bg-soft-symptom rounded-pill">...</span>
+                  </p>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white px-3 shadow-sm">
+                  <span class="small fw-bold text-secondary">Regulations</span>
+                  <p class="placeholder-glow">
+                    <span class="placeholder badge bg-soft-reg rounded-pill">...</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-top">
+              <h6 class="fw-bold small text-uppercase text-muted mb-3">AI Intelligence</h6>
+              <div class="p-3 bg-white rounded-3 border small text-muted">
+                Add ingredients to generate an automated safety summary and classification report.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="col-lg-7">
         <div class="mb-4">
           <label class="form-label fw-bold text-muted small text-uppercase mb-2">Ingredient Analysis</label>
@@ -46,44 +87,27 @@
               hx-trigger="keydown[key=='Enter']"
               hx-target="#ingredient-list"
               hx-swap="beforeend"
-              hx-include="[name='name']"
               onkeyup="if(event.key==='Enter') this.value=''">
           </div>
           
           <div id="ingredient-list" class="mt-3">
+            {{- range .Ingredients }}
+            <div class="" style="margin: 0px; padding: 0px;">
+              <div hx-get="/htmx/ingredient-search_result?name={{ . }}" hx-trigger="load" hx-swap="outerHTML">
+                <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
+                  <div class="card-body p-4 placeholder-glow">
+                    <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
+                    <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+                    <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+                    <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+                  </div>
+                </div>
+              </div> 
+            </div>
+            {{- end }}
           </div>
         </div>
-      </div>
-
-      <div class="col-lg-5 ps-lg-4">
-        <div class="sticky-top" style="top: 2rem;">
-          <div class="p-4 bg-light rounded-4 border border-2 border-white shadow-sm">
-            <h5 class="fw-bold mb-4">Analysis Summary</h5>
-            
-            <div class="d-grid gap-3">
-              <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white px-3 shadow-sm">
-                <span class="small fw-bold text-secondary">Hazards Found</span>
-                <span class="badge bg-soft-hazard rounded-pill">0</span>
-              </div>
-              <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white px-3 shadow-sm">
-                <span class="small fw-bold text-secondary">Symptoms</span>
-                <span class="badge bg-soft-symptom rounded-pill">0</span>
-              </div>
-              <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-white px-3 shadow-sm">
-                <span class="small fw-bold text-secondary">Regulations</span>
-                <span class="badge bg-soft-reg rounded-pill">0</span>
-              </div>
-            </div>
-
-            <div class="mt-4 pt-4 border-top">
-              <h6 class="fw-bold small text-uppercase text-muted mb-3">AI Intelligence</h6>
-              <div class="p-3 bg-white rounded-3 border small text-muted">
-                Add ingredients to generate an automated safety summary and classification report.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      </div> 
     </div>
 
   </div>
