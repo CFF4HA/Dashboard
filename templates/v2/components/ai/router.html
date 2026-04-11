@@ -40,25 +40,9 @@
   </script>
 
   {{- range .Payload.Ingredients }}
-  <div hx-get="/htmx/ingredient-search_result?name={{ . }}" hx-trigger="load" hx-swap="outerHTML">
-    <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
-      <div class="card-body p-4 placeholder-glow">
-        <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
-        <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
-        <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
-        <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
-      </div>
-    </div>
-  </div>
-  {{- end }}
-  <style>
-    .placeholder { background-color: #e9ecef; /* Default gray, but you can lighten it */ }
-  </style>
-
-  {{- else if eq .Aux.Intent "single_ingredient_search" }}
-  
-    {{- with .Payload.Ingredient }}
-    <div hx-get="/htmx/ingredient-search_result_single?name={{ . }}" hx-trigger="load" hx-swap="outerHTML">
+  <div class="" style="margin: 0px; padding: 0px;">
+    <input type="hidden" name="name" class="ingredient-name" value="{{ . }}">
+    <div hx-get="/htmx/ingredient-search_result?name={{ . }}" hx-trigger="load" hx-swap="innerHTML">
       <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
         <div class="card-body p-4 placeholder-glow">
           <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
@@ -67,9 +51,34 @@
           <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
         </div>
       </div>
-    </div> 
+    </div>
+  </div> 
+  {{- end }}
+  <style>
+    .placeholder { background-color: #e9ecef; /* Default gray, but you can lighten it */ }
+  </style>
+
+  {{- else if eq .Aux.Intent "single_ingredient_search" }}
+  
+    {{- with .Payload.Ingredient }}
+    <div class="" style="margin: 0px; padding: 0px;">
+      <input type="hidden" name="name" class="ingredient-name" value="{{ . }}">
+
+      <div hx-get="/htmx/ingredient-search_result_single?name={{ . }}" hx-trigger="load" hx-swap="innerHTML">
+        <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
+          <div class="card-body p-4 placeholder-glow">
+            <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
+            <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+            <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+            <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>
+          </div>
+        </div>
+      </div> 
+    </div>
     {{- end }}
 
+  {{- else if eq .Aux.Intent "product_create" }}
+    <div hx-get="/htmx/product-creation_form" hx-trigger="load" hx-swpa="outerHTML"></div>
   {{- end }}
 
 {{- end }}

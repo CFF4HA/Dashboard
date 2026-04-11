@@ -4,5 +4,5 @@ use (
 	.
 	../verb
 	./pkg/aux-router
-	./pkg/verbs
+	../verbs
 )
