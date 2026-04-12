@@ -38,7 +38,7 @@ func Ingredient(r *http.Request) (any, error) {
 	ingredient := &types.Ingredient{}
 	db := database.Database()
 	id := strings.Trim(r.FormValue("id"), " ")
-	name := strings.ToLower(strings.Trim(r.FormValue("name"), " "))
+	name := strings.ToLower(strings.Trim(r.FormValue("query"), " "))
 
 	// this is the search by ID path and takes
 	// precence over the name search path
