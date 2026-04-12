@@ -10,10 +10,10 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	auxrouter "github.com/CFF4HA/Dashboard/pkg/aux-router"
-	"github.com/DAlba-sudo/verbs"
 
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
+	"github.com/DAlba-sudo/verbs"
 )
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
@@ -35,6 +35,7 @@ func main() {
 		Templates:  *templateDir,
 		Static:     *staticDir,
 		LiveReload: *live,
+		Bridges:    []verb.Bridge{verbs.Request{}},
 	})
 	v.Func("lower", func(s string) string {
 		return strings.ToLower(s)
@@ -46,15 +47,18 @@ func main() {
 
 		return b
 	})
+	v.Func("split", func(a any, b string) []string {
+		return strings.Split(a.(string), b)
+	})
 
 	// Global Bridges (i.e., where state is important)
 	IngredientWithCache := verbs.QueryCachedResource("Ingredient", verbs.QueryCachedResourceOptions{
 		AcquisitionPolicy:         bridges.Ingredient,
 		MaxConcurrentAcquisitions: 10,
-		Fingerprint:               []string{"id", "name"},
+		Fingerprint:               []string{"id", "query"},
 	})
 
-	IngredientNames := verbs.QueryParameter("ingredients", &verbs.QueryParameterOptions{
+	IngredientNames := verbs.QueryParameter("query", &verbs.QueryParameterOptions{
 		Name: "Ingredients",
 	})
 	Name := verbs.QueryParameter("name", &verbs.QueryParameterOptions{
@@ -118,30 +122,29 @@ func main() {
 		}))
 
 	// Ingredient Search Result, Individual
+	// Query Parameters: `id`, `query`
 	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(verbs.QueryParameter("name", &verbs.QueryParameterOptions{
-			Name:  "Name",
-			First: true,
-		})).
 		Bridge(IngredientWithCache).
 		OnError(htmx.Div().
 			GET("/htmx/ingredient-search_result").
-			Include(`find [name="name"]`).
+			SelfEncodeRequest().
 			Trigger("load delay:5s").
 			Swap("outerHTML"))
 
+	// Query Parameters: `id`, `query`
 	v.Component("v2/components/ingredient/ingredient-search_result_single.html", htmx.Create("div")).
 		OnError(htmx.Div().
 			GET("/htmx/ingredient-search_result_single").
-			Include("previous .ingredient-name").
+			SelfEncodeRequest().
 			Trigger("load delay:3s").
 			Swap("outerHTML")).
 		Bridge(IngredientWithCache).
 		Bridge(verb.Map("Metadata", bridges.IngredientMetadataProvider))
 
+	// Query Parameters: `name`, `ingredients`
 	v.Component("v2/components/ingredient/ingredient-list_stats.html", htmx.Div().GET("/htmx/ingredient-list_stats").
 		Trigger("load delay:7s").
-		Include(`find [name="ingredients"]`)).
+		SelfEncodeRequest()).
 		Bridge(verbs.QueryParameter("ingredients", &verbs.QueryParameterOptions{Name: "IngredientList"})).
 		Bridge(verb.Map("Ingredients", bridges.Ingredients)).
 		Bridge(verb.Map("Counts", bridges.CountLabelsForIngredients))
