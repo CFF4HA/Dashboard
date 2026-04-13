@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"net/http"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/DAlba-sudo/auxrouter"
 
 	"github.com/DAlba-sudo/verb"
@@ -86,9 +88,13 @@ func main() {
 		})).
 		Bridge(verb.Map("LLMErr", func(r *http.Request, m map[string]any) (any, error) {
 			resp, err := http.DefaultClient.Get(*llm)
-			if err != nil || resp.StatusCode != http.StatusOK {
+			if err != nil {
 				return err.Error(), nil
+			} else if resp.StatusCode != http.StatusOK {
+				resp.Body.Close()
+				return errors.New("LLM server returned non-200 status code").Error(), nil
 			}
+			defer resp.Body.Close()
 
 			return nil, nil
 		}))
@@ -154,13 +160,46 @@ func main() {
 
 	// Query Parameters: `id`, `query`
 	v.Component("v2/components/ingredient/ingredient-search_result_single.html", htmx.Create("div")).
+		Bridge(IngredientWithCache).
 		OnError(htmx.Div().
 			GET("/htmx/ingredient-search_result_single").
 			SelfEncodeRequest().
 			Trigger("load delay:3s").
 			Swap("outerHTML")).
-		Bridge(IngredientWithCache).
 		Bridge(verb.Map("Metadata", bridges.IngredientMetadataProvider))
+
+	v.Component("v2/components/ingredient/ingredient-search_bar_manual.html", htmx.Div())
+	v.Component("v2/components/ingredient/ingredient-search_bar_manual_res.html", htmx.Div()).
+		Bridge(verbs.QueryParameter("query", &verbs.QueryParameterOptions{Name: "Query", First: true})).
+		Bridge(verb.Map("Names", func(r *http.Request, m map[string]any) (any, error) {
+			db, err := database.Database()
+			if err != nil {
+				core.Logger.Error("failed to connect to database", "error", err)
+				return []string{}, nil
+			}
+
+			if _, exists := m["Query"]; !exists {
+				core.Logger.Error("query parameter not found in request map")
+				return []string{}, nil
+			} else if _, casts := m["Query"].(string); !casts {
+				core.Logger.Error("query parameter is not of type string")
+				return []string{}, nil
+			}
+
+			query := (m["Query"].(string))
+			if strings.TrimSpace(query) == "" {
+				core.Logger.Error("query parameter is empty")
+				return []string{}, nil
+			}
+
+			var name []types.Name
+			if tx := db.Model(&types.Name{}).Where("text ILIKE ?", "%"+query+"%").Limit(20).Find(&name); tx.Error != nil {
+				core.Logger.Error("failed to query database for ingredient names", "error", err)
+				return []string{}, nil
+			}
+
+			return name, nil
+		}))
 
 	// Query Parameters: `name`, `ingredients`
 	v.Component("v2/components/ingredient/ingredient-list_stats.html", htmx.Div().GET("/htmx/ingredient-list_stats").
