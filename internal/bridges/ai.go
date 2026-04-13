@@ -1,13 +1,19 @@
 package bridges
 
 import (
-	"github.com/CFF4HA/Dashboard/pkg/aux-router"
+	"github.com/DAlba-sudo/auxrouter"
 )
 
 var ()
 
-func Aux(llm string) auxrouter.Aux {
-	aux := auxrouter.Aux{LlmServerEndpoint: llm}
+func Aux(llm string, cf_client, cf_secret string) auxrouter.Aux {
+	aux := auxrouter.Aux{
+		LlmServerEndpoint: llm,
+		Headers: map[string]string{
+			"CF-Access-Client-Id":     cf_client,
+			"CF-Access-Client-Secret": cf_secret,
+		},
+	}
 
 	aux.Intent("single_ingredient_search", "user wishes to search for single ingredient",
 		auxrouter.IntentExample{

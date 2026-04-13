@@ -84,6 +84,9 @@
     {{- if len .Ingredients }}<input type="hidden" name="ingredients" value="{{- range .Ingredients -}}{{.}},{{- end }}">{{ end }}
     </div>
     {{ end }}
+
+  {{- else }}
+  <div class="badge badge-secondary">Something went wrong, maybe the LLM is offline? You can use the manual section instead!</div>
   {{- end }}
 
 {{- end }}

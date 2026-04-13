@@ -9,20 +9,36 @@
         name="query" 
         type="text" 
         class="form-control form-control-lg" 
+        {{- if .LLMErr }}
+        placeholder="The AI Routing Service is currently unavailable, please use a manual option below."
+        {{- else }}
         placeholder="Search for anything..."
+        {{- end }}
         hx-get="/htmx/router" 
         hx-trigger="keyup changed delay:500ms" 
         hx-target="#search-results" 
         hx-indicator="#search-progress"
         hx-sync="this:replace"
         autocomplete="off"
+        {{- if .LLMErr }}
+        disabled
+        {{- end }}
       />
+      {{- if not .LLMErr }}
       <div class="form-text text-muted mt-1">Try searching for an ingredient, product, or even a question!</div>
 
       <div id="search-progress" class="progress htmx-indicator mb-1 mt-3" style="height: 4px;">
         <div class="progress-bar progress-bar-striped progress-bar-animated" 
              role="progressbar" 
              style="width: 100%"></div>
+      </div>
+      {{- end }}
+
+      <!-- Manual Menu -->
+      <div class="d-flex flex-row gap-2 mt-3">
+        <span class="badge bg-dark" data-bs-toggle="modal" data-bs-target="#modal">Ingredient Search</span>
+        <span class="badge bg-dark" data-bs-toggle="modal" data-bs-target="#modal">Product Search</span>
+        <span class="badge bg-dark" hx-get="/htmx/product-creation_form" hx-trigger="click" hx-target="#modal-content" data-bs-toggle="modal" data-bs-target="#modal">Create a Product</span>
       </div>
     </div>
   </div>
@@ -33,6 +49,13 @@
 </div>
 
 <style>
+.badge.bg-dark:hover {
+  cursor: pointer;
+  background-color: #87ff9b !important; 
+  color: #000;
+  transition: background-color 200ms ease-in, color 200ms ease-in;
+}
+
 /* Hide the indicator by default */
 .htmx-indicator {
   display: none;
