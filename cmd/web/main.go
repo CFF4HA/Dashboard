@@ -9,7 +9,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
-	auxrouter "github.com/CFF4HA/Dashboard/pkg/aux-router"
+	"github.com/DAlba-sudo/auxrouter"
 
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
@@ -26,10 +26,14 @@ func main() {
 	backend := flag.String("backend", "http://localhost:8081", "the address of the backend server")
 	llm := flag.String("llm", "http://localhost:8082", "the address of the LLM server")
 	db := flag.String("db", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable", "the connection string for the database")
+	cf_client_id := flag.String("cf_client_id", "", "the client id for the cloudflare instance")
+	cf_client_secret := flag.String("cf_client_secret", "", "the client secret for the cloudflare instance")
 	flag.Parse()
 
 	core.BackendAddress = strings.TrimRight(*backend, "/")
-	database.Initialize(*db)
+	if err := database.Initialize(*db); err != nil {
+		core.Logger.Error("failed to initialize database", "error", err)
+	}
 
 	v := verb.New(*address, *port, verb.Settings{
 		Templates:  *templateDir,
@@ -68,11 +72,28 @@ func main() {
 
 	// Index Page
 	v.Page("", "v2/pages/index.html")
+	v.Page("/products", "v2/pages/products.html")
 
 	// Aux Router Search Bar
-	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div"))
+	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div")).
+		Bridge(verb.Map("DatabaseErr", func(r *http.Request, m map[string]any) (any, error) {
+			_, err := database.Database()
+			if err != nil {
+				return err.Error(), nil
+			}
+
+			return nil, nil
+		})).
+		Bridge(verb.Map("LLMErr", func(r *http.Request, m map[string]any) (any, error) {
+			resp, err := http.DefaultClient.Get(*llm)
+			if err != nil || resp.StatusCode != http.StatusOK {
+				return err.Error(), nil
+			}
+
+			return nil, nil
+		}))
 	v.Component("v2/components/ai/router.html", htmx.Div()).
-		Bridge(bridges.Aux(*llm)).
+		Bridge(bridges.Aux(*llm, *cf_client_id, *cf_client_secret)).
 		Bridge(verb.Map("Payload", func(r *http.Request, m map[string]any) (any, error) {
 			_, ok := m["Aux"]
 			if !ok {

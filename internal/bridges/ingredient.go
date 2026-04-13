@@ -36,7 +36,11 @@ func SyncDatabaseWithIngredient(name string) {
 // or "name" query parameter.
 func Ingredient(r *http.Request) (any, error) {
 	ingredient := &types.Ingredient{}
-	db := database.Database()
+	db, err := database.Database()
+	if err != nil {
+		return nil, nil
+	}
+
 	id := strings.Trim(r.FormValue("id"), " ")
 	name := strings.ToLower(strings.Trim(r.FormValue("query"), " "))
 
@@ -55,7 +59,7 @@ func Ingredient(r *http.Request) (any, error) {
 	}
 
 	// the following assumes that you are searching by primary name only
-	err := db.Preload("Names").Preload("Labels").First(ingredient, "primary_name = ?", name).Error
+	err = db.Preload("Names").Preload("Labels").First(ingredient, "primary_name = ?", name).Error
 	if err != nil {
 		SyncDatabaseWithIngredient(name)
 
