@@ -1,0 +1,28 @@
+<div class="p-3">
+  <h4>Ingredient</h4>
+  <p>
+    Ingredients make up the products you use. Some are good, some are bad, and some  
+    are flat out illegal!
+  </p>
+  <p class="text-muted mt-1">
+    Search and then click on an ingredient to see its details!
+  </p>
+  <div class="input-group mb-1 mt-1">
+    <span class="input-group-text bg-light border-2 border-end-0">
+      <i class="bi bi-search text-muted"></i>
+    </span>
+    <input type="text" 
+      class="form-control form-control-lg border-2 border-start-0 shadow-none" 
+      placeholder="Type ingredient and press Enter..."
+      name="query"
+      hx-get="/htmx/ingredient-search_bar_manual_res"
+      hx-trigger="keyup delay:500ms"
+      hx-target="#ingredient-search-results_manual"
+      hx-swap="innerHTML"
+      hx-include='this'
+      onkeyup="if(event.key==='Enter') this.value=''">
+  </div>
+
+  <div id="ingredient-search-results_manual" class="p-1">
+  </div>
+</div>

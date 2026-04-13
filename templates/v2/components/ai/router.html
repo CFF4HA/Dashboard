@@ -42,7 +42,7 @@
   {{- range .Payload.Ingredients }}
   <div class="" style="margin: 0px; padding: 0px;">
     <input type="hidden" name="name" class="ingredient-name" value="{{ . }}">
-    <div hx-get="/htmx/ingredient-search_result?name={{ . }}" hx-trigger="load" hx-swap="innerHTML">
+    <div hx-get="/htmx/ingredient-search_result?query={{ . }}" hx-trigger="load" hx-swap="innerHTML">
       <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
         <div class="card-body p-4 placeholder-glow">
           <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
@@ -62,9 +62,8 @@
   
     {{- with .Payload.Ingredient }}
     <div class="" style="margin: 0px; padding: 0px;">
-      <input type="hidden" name="name" class="ingredient-name" value="{{ . }}">
 
-      <div hx-get="/htmx/ingredient-search_result_single?name={{ . }}" hx-trigger="load" hx-swap="innerHTML">
+      <div hx-get="/htmx/ingredient-search_result_single?query={{ . }}" hx-trigger="load" hx-swap="innerHTML">
         <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
           <div class="card-body p-4 placeholder-glow">
             <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
