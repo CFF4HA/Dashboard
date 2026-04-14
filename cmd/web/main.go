@@ -16,6 +16,7 @@ import (
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
 	"github.com/DAlba-sudo/verbs"
+	"github.com/DAlba-sudo/verbs/gorm"
 )
 
 // This is all basic boiler plate, as the frontend you will not have to touch this.
@@ -37,11 +38,24 @@ func main() {
 		core.Logger.Error("failed to initialize database", "error", err)
 	}
 
+	dbconn, err := database.Database()
+	if err != nil {
+
+	}
+
 	v := verb.New(*address, *port, verb.Settings{
 		Templates:  *templateDir,
 		Static:     *staticDir,
 		LiveReload: *live,
-		Bridges:    []verb.Bridge{verbs.Request{}},
+		Bridges: []verb.Bridge{
+			verbs.Request{},
+			// the first primary name in the ingredient that matches the given
+			// specifier queries.
+			gorm.GORM("Ingredient", &types.Ingredient{}, "", dbconn, gorm.GormOptions{
+				Limit:  1,
+				Select: "PrimaryName",
+			}),
+		},
 	})
 	v.Func("lower", func(s string) string {
 		return strings.ToLower(s)

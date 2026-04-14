@@ -15,7 +15,7 @@ podman run -d --rm --replace --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=p
 POSTGRES_URL="postgres://postgres:postgres@localhost:5432/postgres"
 SQLALCHEMY_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 
-sleep 3 # Wait for the database to initialize
+sleep 5 # Wait for the database to initialize
 
 # start the python server
 (cd internal/pubchem && .venv/bin/python3 server.py --port 8082 --db $SQLALCHEMY_URL) &
