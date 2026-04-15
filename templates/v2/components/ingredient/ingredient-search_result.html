@@ -1,21 +1,22 @@
-{{ if .Ingredient }}
-<div class="card rounded-4 shadow-sm mb-3 border-0 bg-white searchable-item" data-name="{{ (index .Ingredient.Names 0).Text | lower }}"
-  hx-get="/htmx/ingredient-search_result_single?name={{ .PrimaryName | urlquery }}" hx-trigger="click" hx-swap="outerHTML" 
->
-  <input type="hidden" name="name" class="ingredient-name" value="{{ .PrimaryName }}">
-  <div class="card-body p-4">
-    <h4 class="card-title fw-bold text-dark mb-1">{{ .Ingredient.PrimaryName }}</h4>
+{{ if and .Ingredient (gt (len .Ingredient) 0) }}
+{{- $ingredient := (index .Ingredient 0) -}}
 
-    {{ if gt (len .Ingredient.Names) 1 }}
+<div class="card rounded-4 shadow-sm mb-3 border-0 bg-white searchable-item" data-name="{{ (index $ingredient.Names 0).Text | lower }}"
+  hx-get="/htmx/ingredient-search_result_single?primary_name={{ $ingredient.PrimaryName | urlquery }}" hx-trigger="click" hx-swap="outerHTML" 
+>
+  <div class="card-body p-4">
+    <h4 class="card-title fw-bold text-dark mb-1">{{ $ingredient.PrimaryName }}</h4>
+
+    {{ if gt (len $ingredient.Names) 1 }}
     <p class="text-muted small mb-3">
       <strong>Aliases:</strong> 
-      {{ range $i, $name := .Ingredient.Names }}{{ if and (gt $i 0) (lt $i 6) }}{{ if gt $i 1 }}, {{ end }}{{ $name.Text }}{{ end }}{{ end }}
-      {{ if gt (len .Ingredient.Names) 6 }}...{{ end }}
+      {{ range $i, $name := $ingredient.Names }}{{ if and (gt $i 0) (lt $i 6) }}{{ if gt $i 1 }}, {{ end }}{{ $name.Text }}{{ end }}{{ end }}
+      {{ if gt (len $ingredient.Names) 6 }}...{{ end }}
     </p>
     {{ end }}
 
     <div class="d-flex flex-wrap gap-2 mt-3">
-      {{ range .Ingredient.Labels }}
+      {{ range $ingredient.Labels }}
       <a href="{{ .Origin }}" target="_blank" class="text-decoration-none">
         <span class="badge rounded-pill px-3 py-2 label-soft 
           {{ if eq .Type "hazard" }}bg-soft-hazard
@@ -38,11 +39,6 @@
 </div>
 {{ else if not (eq .Htmx.HxAjax.Method "none" ) }}
 <div class="card rounded-4 shadow-sm mt-3 border-0 bg-white">
-  {{- with .Request }}
-  {{- range $key, $value := .Values }}
-  <input class="inputx" type="hidden" name="{{ $key }}" value="{{- range $value -}}{{ . }},{{- end -}}">
-  {{- end }}
-  {{- end }}
   <div class="card-body p-4 placeholder-glow">
     <h4 class="card-title fw-bold text-dark mb-1"><span class="placeholder col-4 rounded-pill"></span></h4>
     <p class="card-title fw-bold text-dark mb-1"><span class="placeholder w-100 rounded-pill"></span></p>

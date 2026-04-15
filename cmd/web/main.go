@@ -1,17 +1,13 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"flag"
-	"net/http"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/backend/database"
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/types"
-	"github.com/DAlba-sudo/auxrouter"
 
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
@@ -33,6 +29,7 @@ func main() {
 	cf_client_secret := flag.String("cf_client_secret", "", "the client secret for the cloudflare instance")
 	flag.Parse()
 
+	bridges.LLM = llm
 	core.BackendAddress = strings.TrimRight(*backend, "/")
 	if err := database.Initialize(*db); err != nil {
 		core.Logger.Error("failed to initialize database", "error", err)
@@ -40,7 +37,7 @@ func main() {
 
 	dbconn, err := database.Database()
 	if err != nil {
-
+		core.Logger.Error("failed to connect to database", "error", err)
 	}
 
 	v := verb.New(*address, *port, verb.Settings{
@@ -49,12 +46,6 @@ func main() {
 		LiveReload: *live,
 		Bridges: []verb.Bridge{
 			verbs.Request{},
-			// the first primary name in the ingredient that matches the given
-			// specifier queries.
-			gorm.GORM("Ingredient", &types.Ingredient{}, "", dbconn, gorm.GormOptions{
-				Limit:  1,
-				Select: "PrimaryName",
-			}),
 		},
 	})
 	v.Func("lower", func(s string) string {
@@ -70,163 +61,97 @@ func main() {
 	v.Func("split", func(a any, b string) []string {
 		return strings.Split(a.(string), b)
 	})
+	v.Func("trim", func(a any) string {
+		if _, ok := a.(string); !ok {
+			return ""
+		}
+		return strings.TrimSpace(a.(string))
+	})
 
 	// Global Bridges (i.e., where state is important)
 	IngredientWithCache := verbs.QueryCachedResource("Ingredient", verbs.QueryCachedResourceOptions{
 		AcquisitionPolicy:         bridges.Ingredient,
 		MaxConcurrentAcquisitions: 10,
-		Fingerprint:               []string{"id", "query"},
+		Fingerprint:               []string{"id", "primary_name"},
 	})
 
-	IngredientNames := verbs.QueryParameter("query", &verbs.QueryParameterOptions{
-		Name: "Ingredients",
-	})
-	Name := verbs.QueryParameter("name", &verbs.QueryParameterOptions{
-		Name:  "Name",
-		First: true,
-	})
+	Ingredient := gorm.GORM(
+		"Ingredient",
+		&types.Ingredient{},
+		&types.Ingredient{},
+		dbconn,
+		gorm.GormOptions{
+			Select:  "*",
+			Preload: []string{"Names", "Labels"},
+			Limit:   1,
+			KeyModifiers: map[string]string{
+				"primary_name": " ~* ",
+			},
+		},
+	)
+
+	Names := gorm.GORM(
+		"Names",
+		&types.Name{},
+		types.Name{},
+		dbconn,
+		gorm.GormOptions{
+			Select:  "*",
+			Preload: []string{"Ingredients"},
+			KeyModifiers: map[string]string{
+				"text": " ~* ",
+			},
+		},
+	)
 
 	// Index Page
 	v.Page("", "v2/pages/index.html")
 	v.Page("/products", "v2/pages/products.html")
+	v.Page("/ingredients", "v2/pages/ingredients.html").
+		Bridge(Ingredient)
 
 	// Aux Router Search Bar
 	v.Component("v2/components/input-searchbar_generic.html", htmx.Create("div")).
-		Bridge(verb.Map("DatabaseErr", func(r *http.Request, m map[string]any) (any, error) {
-			_, err := database.Database()
-			if err != nil {
-				return err.Error(), nil
-			}
+		Bridge(bridges.DatabaseChecker).
+		Bridge(bridges.LMMChecker)
 
-			return nil, nil
-		})).
-		Bridge(verb.Map("LLMErr", func(r *http.Request, m map[string]any) (any, error) {
-			resp, err := http.DefaultClient.Get(*llm)
-			if err != nil {
-				return err.Error(), nil
-			} else if resp.StatusCode != http.StatusOK {
-				resp.Body.Close()
-				return errors.New("LLM server returned non-200 status code").Error(), nil
-			}
-			defer resp.Body.Close()
-
-			return nil, nil
-		}))
 	v.Component("v2/components/ai/router.html", htmx.Div()).
 		Bridge(bridges.Aux(*llm, *cf_client_id, *cf_client_secret)).
-		Bridge(verb.Map("Payload", func(r *http.Request, m map[string]any) (any, error) {
-			_, ok := m["Aux"]
-			if !ok {
-				return nil, nil
-			}
-
-			aux_response, ok := m["Aux"].(auxrouter.Response)
-			if !ok {
-				return nil, nil
-			}
-
-			switch aux_response.Intent {
-			case "single_ingredient_search":
-				var Ingredient struct {
-					Ingredient string `json:"ingredient"`
-				}
-
-				if json.Unmarshal(aux_response.Response, &Ingredient) != nil {
-					return nil, nil
-				}
-
-				return Ingredient, nil
-
-			case "multi_ingredient_search":
-				var Ingredients struct {
-					Ingredients []string `json:"ingredients"`
-				}
-				if json.Unmarshal(aux_response.Response, &Ingredients) != nil {
-					return nil, nil
-				}
-
-				return Ingredients, nil
-			case "product_create":
-				var Product struct {
-					Product     string   `json:"product"`
-					Ingredients []string `json:"ingredients"`
-				}
-
-				if json.Unmarshal(aux_response.Response, &Product) != nil {
-					return nil, nil
-				}
-
-				return Product, nil
-			}
-
-			return nil, nil
-		}))
+		Bridge(bridges.AuxRouter)
 
 	// Ingredient Search Result, Individual
-	// Query Parameters: `id`, `query`
 	v.Component("v2/components/ingredient/ingredient-search_result.html", htmx.Create("div")).
-		Bridge(IngredientWithCache).
+		Bridge(Ingredient.SetModifiers(map[string]string{
+			"primary_name": " ~* ",
+		})).
 		OnError(htmx.Div().
 			GET("/htmx/ingredient-search_result").
 			SelfEncodeRequest().
 			Trigger("load delay:5s").
-			Swap("outerHTML"))
+			Swap("outerHTML")).
+		OnError(IngredientWithCache)
 
-	// Query Parameters: `id`, `query`
 	v.Component("v2/components/ingredient/ingredient-search_result_single.html", htmx.Create("div")).
-		Bridge(IngredientWithCache).
+		Bridge(Ingredient.SetModifiers(map[string]string{
+			"primary_name": " ~* ",
+		})).
 		OnError(htmx.Div().
 			GET("/htmx/ingredient-search_result_single").
 			SelfEncodeRequest().
 			Trigger("load delay:3s").
 			Swap("outerHTML")).
+		OnError(IngredientWithCache).
 		Bridge(verb.Map("Metadata", bridges.IngredientMetadataProvider))
 
-	v.Component("v2/components/ingredient/ingredient-search_bar_manual.html", htmx.Div())
-	v.Component("v2/components/ingredient/ingredient-search_bar_manual_res.html", htmx.Div()).
-		Bridge(verbs.QueryParameter("query", &verbs.QueryParameterOptions{Name: "Query", First: true})).
-		Bridge(verb.Map("Names", func(r *http.Request, m map[string]any) (any, error) {
-			db, err := database.Database()
-			if err != nil {
-				core.Logger.Error("failed to connect to database", "error", err)
-				return []string{}, nil
-			}
+	v.Component("v2/components/ingredient/ingredient-search_bar_manual.html", htmx.Create("div"))
+	v.Component("v2/components/ingredient/ingredient-search_bar_manual_res.html", htmx.Create("div")).
+		Bridge(Names)
 
-			if _, exists := m["Query"]; !exists {
-				core.Logger.Error("query parameter not found in request map")
-				return []string{}, nil
-			} else if _, casts := m["Query"].(string); !casts {
-				core.Logger.Error("query parameter is not of type string")
-				return []string{}, nil
-			}
-
-			query := (m["Query"].(string))
-			if strings.TrimSpace(query) == "" {
-				core.Logger.Error("query parameter is empty")
-				return []string{}, nil
-			}
-
-			var name []types.Name
-			if tx := db.Model(&types.Name{}).Where("text ILIKE ?", "%"+query+"%").Limit(20).Find(&name); tx.Error != nil {
-				core.Logger.Error("failed to query database for ingredient names", "error", err)
-				return []string{}, nil
-			}
-
-			return name, nil
-		}))
-
-	// Query Parameters: `name`, `ingredients`
-	v.Component("v2/components/ingredient/ingredient-list_stats.html", htmx.Div().GET("/htmx/ingredient-list_stats").
-		Trigger("load delay:7s").
-		SelfEncodeRequest()).
-		Bridge(verbs.QueryParameter("ingredients", &verbs.QueryParameterOptions{Name: "IngredientList"})).
-		Bridge(verb.Map("Ingredients", bridges.Ingredients)).
-		Bridge(verb.Map("Counts", bridges.CountLabelsForIngredients))
+	v.Component("v2/components/ingredient/_ingredient_sync.html", htmx.Create("div")).
+		Bridge(IngredientWithCache)
 
 	// Product
-	v.Component("v2/components/product/product-creation_form.html", htmx.Create("div")).
-		Bridge(Name).
-		Bridge(IngredientNames)
+	v.Component("v2/components/product/product-creation_form.html", htmx.Create("div"))
 
 	if err := v.Serve(); err != nil {
 		panic(err)
