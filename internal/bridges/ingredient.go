@@ -34,7 +34,7 @@ func SyncDatabaseWithIngredient(name string) {
 // this ingredient function will serve as the bridge between the
 // server and the database. It expects the existence of an "id",
 // or "name" query parameter.
-func Ingredient(r *http.Request) (any, error) {
+func Ingredient(w http.ResponseWriter, r *http.Request, m map[string]any) (any, error) {
 	ingredient := &types.Ingredient{}
 	db, err := database.Database()
 	if err != nil {
@@ -42,7 +42,7 @@ func Ingredient(r *http.Request) (any, error) {
 	}
 
 	id := strings.Trim(r.FormValue("id"), " ")
-	name := strings.ToLower(strings.Trim(r.FormValue("query"), " "))
+	name := strings.ToLower(strings.Trim(r.FormValue("primary_name"), " "))
 
 	// this is the search by ID path and takes
 	// precence over the name search path
@@ -68,7 +68,7 @@ func Ingredient(r *http.Request) (any, error) {
 	}
 
 	core.Logger.Info("ingredient found in database", "name", name)
-	return ingredient, nil
+	return nil, nil
 }
 
 func IngredientMetadataProvider(r *http.Request, model map[string]any) (any, error) {
@@ -107,55 +107,4 @@ func IngredientMetadataProvider(r *http.Request, model map[string]any) (any, err
 	meta.CountRegulations = counts["regulation"]
 
 	return meta, nil
-}
-
-func Ingredients(r *http.Request, model map[string]any) (any, error) {
-	// assumes that the ingredient names are available in the model
-	ingredients := []types.Ingredient{}
-	names, ok := model["IngredientList"].([]string)
-	if !ok {
-		return nil, nil
-	}
-
-	for _, name := range names {
-		result, err := Ingredient(&http.Request{Form: url.Values{"name": []string{name}}})
-		if err != nil {
-			continue
-		}
-
-		resultIngredient, ok := result.(*types.Ingredient)
-		if !ok {
-			continue
-		}
-
-		ingredients = append(ingredients, *resultIngredient)
-	}
-
-	return ingredients, nil
-}
-
-func countLabelsForIngredients(ingredients []types.Ingredient) map[string]int {
-	counts := map[string]int{}
-	for _, ingredient := range ingredients {
-		for _, label := range ingredient.Labels {
-			counts[label.Type]++
-		}
-	}
-
-	return counts
-}
-
-func CountLabelsForIngredients(r *http.Request, model map[string]any) (any, error) {
-	modelIngredients, ok := model["Ingredients"]
-	if !ok {
-		return nil, nil
-	}
-
-	ingredients, ok := modelIngredients.([]types.Ingredient)
-	if !ok {
-		return nil, nil
-	}
-
-	counts := countLabelsForIngredients(ingredients)
-	return counts, nil
 }

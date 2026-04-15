@@ -57,7 +57,6 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
         return cache[name]
 
     names, labels = pubchem.Ingredient(name)
-
     ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
 
     try:
@@ -69,40 +68,42 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
                 status_code=500, detail="Failed to insert ingredient into database")
 
         else:
-            for name in names:
-                # Added RETURNING id to verify success
-                try:
-                    result = await db.execute(text("INSERT INTO names (text) VALUES (:text) RETURNING text"), {
-                        "text": name})
-                except Exception as e:
-                    pass
+            if names:
+                for name in names:
+                    # Added RETURNING id to verify success
+                    try:
+                        result = await db.execute(text("INSERT INTO names (text) VALUES (:text) RETURNING text"), {
+                            "text": name})
+                    except Exception as e:
+                        pass
 
-                result = await db.execute(text("INSERT INTO ingredient_names (ingredient_id, name_text) VALUES (:ingredient_id, :name) RETURNING ingredient_id"), {
-                    "ingredient_id": ingredient.Id, "name": name})
-                if result.scalar() is None:
-                    raise HTTPException(
-                        status_code=500, detail="Failed to associate name with ingredient in database")
+                    result = await db.execute(text("INSERT INTO ingredient_names (ingredient_id, name_text) VALUES (:ingredient_id, :name) RETURNING ingredient_id"), {
+                        "ingredient_id": ingredient.Id, "name": name})
+                    if result.scalar() is None:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to associate name with ingredient in database")
 
-            for label in labels:
-                label_id = uuid.uuid4()
-                result = await db.execute(text("INSERT INTO labels (id, type, payload, origin) VALUES (:id, :type, :payload, :origin) RETURNING id"), {
-                    "id": label_id, "type": label.Type, "payload": label.Payload, "origin": label.Origin})
-                if result.scalar() is None:
-                    raise HTTPException(
-                        status_code=500, detail="Failed to insert label into database")
+            if labels:
+                for label in labels:
+                    label_id = uuid.uuid4()
+                    result = await db.execute(text("INSERT INTO labels (id, type, payload, origin) VALUES (:id, :type, :payload, :origin) RETURNING id"), {
+                        "id": label_id, "type": label.Type, "payload": label.Payload, "origin": label.Origin})
+                    if result.scalar() is None:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to insert label into database")
 
-                # Returning ingredient_id (or label_id) since join tables often don't have a singular primary key
-                result = await db.execute(text("INSERT INTO ingredient_labels (ingredient_id, label_id) VALUES (:ingredient_id, :label_id) RETURNING ingredient_id"), {
-                    "ingredient_id": ingredient.Id, "label_id": label_id})
-                if result.scalar() is None:
-                    raise HTTPException(
-                        status_code=500, detail="Failed to associate label with ingredient in database")
+                    # Returning ingredient_id (or label_id) since join tables often don't have a singular primary key
+                    result = await db.execute(text("INSERT INTO ingredient_labels (ingredient_id, label_id) VALUES (:ingredient_id, :label_id) RETURNING ingredient_id"), {
+                        "ingredient_id": ingredient.Id, "label_id": label_id})
+                    if result.scalar() is None:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to associate label with ingredient in database")
 
         await db.commit()
 
     except Exception as e:
         await db.rollback()
-        raise e
+
     cache[name] = ingredient
 
 

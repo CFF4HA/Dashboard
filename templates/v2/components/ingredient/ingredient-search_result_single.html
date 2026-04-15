@@ -1,11 +1,14 @@
 {{ if .Ingredient }}
 
-<div class="card rounded-4 shadow-sm mb-4 border-0 bg-white" data-id="{{ .Ingredient.Id }}">
+{{- $ingredient := (index .Ingredient 0) -}}
+
+<div hx-get="/htmx/ingredient-search_result?primary_name={{ $ingredient.PrimaryName | urlquery }}" hx-trigger="click" hx-swap="outerHTML"
+  class="card rounded-4 shadow-sm mb-4 border-0 bg-white" data-id="{{ $ingredient.Id }}">
   <div class="card-body p-4 p-lg-5">
     <div class="row">
       <div class="col-lg-4 border-end-lg mb-4 mb-lg-0">
-        <h2 class="h3 fw-bold text-dark mb-1">{{ (index .Ingredient.Names 0).Text }}</h2>
-        <p class="text-muted small mb-4">Last Updated: {{ .Ingredient.Updated.Format "Jan 02, 2006" }}</p>
+        <h2 class="h3 fw-bold text-dark mb-1">{{ (index $ingredient.Names 0).Text }}</h2>
+        <p class="text-muted small mb-4">Last Updated: {{ $ingredient.Updated.Format "Jan 02, 2006" }}</p>
         
         <div class="stats-grid d-flex flex-column gap-2">
           <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
@@ -38,7 +41,7 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 detail-container">
-            {{ range $i, $name := .Ingredient.Names }}
+            {{ range $i, $name := $ingredient.Names }}
             <span class="badge bg-light text-dark border fw-normal px-3 py-2 detail-item {{ if gt $i 20 }}d-none{{ end }}" 
                   data-search="{{ .Text | lower }}">
               {{ .Text }}
@@ -57,7 +60,7 @@
           </div>
 
           <div class="row g-3 detail-container">
-            {{ range $i, $label := .Ingredient.Labels }}
+            {{ range $i, $label := $ingredient.Labels }}
             <div class="col-md-6 detail-item {{ if gt $i 20 }}d-none{{ end }}" data-search="{{ .Payload | lower }} {{ .Type | lower }}">
               <a href="{{ .Origin }}" target="_blank" class="text-decoration-none d-block h-100 p-3 rounded-3 border-start border-4 detail-card-link
                 {{ if eq .Type "hazard" }}border-hazard bg-soft-hazard
