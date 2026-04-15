@@ -2,12 +2,11 @@ module github.com/CFF4HA/Dashboard
 
 go 1.26.1
 
-replace github.com/DAlba-sudo/verb => /Users/dalba/Projects/.all/verb
-
 require (
 	github.com/DAlba-sudo/pbf v1.0.0
 	github.com/DAlba-sudo/pff v1.0.1 // direct
-	github.com/DAlba-sudo/verb v0.0.7
+	github.com/DAlba-sudo/verb v0.0.9
+	github.com/DAlba-sudo/verbs v0.0.2
 	github.com/google/uuid v1.6.0
 	golang.org/x/crypto v0.49.0
 	gorm.io/driver/postgres v1.6.0

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+CF_CLIENT_ID="5130be68df401afe4e6571fe6a87a377.access"
+CF_CLIENT_SECRET="4246438b20ce00fecaea7f0f4471989f412d6e8b1d77d63b8d7f05d4cd6acaa1"
+
 # Function to shut down background processes
 cleanup() {
   echo "Shutting down services..."
@@ -22,8 +25,8 @@ sleep 5 # Wait for the database to initialize
 PUBCHEM=$!
 
 # Start the web server
-#(go run cmd/web/main.go --backend "http://localhost:8081" --backend http://localhost:8082 --reload --llm https://ollama.godiegogo.me --db $POSTGRES_URL --cf_client_id $CF_CLIENT_ID --cf_client_secret $CF_CLIENT_SECRET) &
-(go run cmd/web/main.go --backend "http://localhost:8081" --llm http://localhost:11434 --backend http://localhost:8082 --reload --db $POSTGRES_URL) &
+(go run cmd/web/main.go --backend "http://localhost:8081" --backend http://localhost:8082 --reload --llm https://ollama.godiegogo.me --db $POSTGRES_URL --cf_client_id $CF_CLIENT_ID --cf_client_secret $CF_CLIENT_SECRET) &
+#(go run cmd/web/main.go --backend "http://localhost:8081" --llm http://localhost:11434 --backend http://localhost:8082 --reload --db $POSTGRES_URL) &
 WEB=$!
 echo "Running the website (pid=$WEB)!"
 

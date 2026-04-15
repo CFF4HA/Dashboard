@@ -1,5 +1,7 @@
 github.com/DAlba-sudo/verb v0.0.6 h1:Ui1UyBU1IwwSkhIPvhZy5ga6g4pK6g9Ct7fhDILcxLY=
 github.com/DAlba-sudo/verb v0.0.6/go.mod h1:CYsJOmrp2qAwjL14sSqb3gQ5tCbcQOMYHSvCdiiRMBg=
+github.com/DAlba-sudo/verb v0.0.9/go.mod h1:CYsJOmrp2qAwjL14sSqb3gQ5tCbcQOMYHSvCdiiRMBg=
+github.com/DAlba-sudo/verbs v0.0.2/go.mod h1:4W6/p3yjNU5eeLXoT9D9sGOce8H6rZy3L3iy9hk+28c=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/kr/pretty v0.3.0/go.mod h1:640gp4NfQd8pI5XOwp5fnNeVWj67G7CFk/SaSQn7NBk=
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
