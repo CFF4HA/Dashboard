@@ -10,15 +10,15 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/types"
 )
 
+// SyncDatabaseWithIngredient triggers a PubChem scrape on the Python backend
+// for the given ingredient name, populating the local database.
 func SyncDatabaseWithIngredient(name string) {
-	// this will do a request to the python backend that should trigger a
-	// scrape of PubChem
-	request, err := http.NewRequest("GET", core.BackendAddress+"/ingredient?name="+url.QueryEscape(name), nil)
+	req, err := http.NewRequest("GET", core.BackendAddress+"/ingredient?name="+url.QueryEscape(name), nil)
 	if err != nil {
 		return
 	}
 
-	resp, err := http.DefaultClient.Do(request)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -31,11 +31,10 @@ func SyncDatabaseWithIngredient(name string) {
 	core.Logger.Info("synced database with ingredient", "name", name)
 }
 
-// this ingredient function will serve as the bridge between the
-// server and the database. It expects the existence of an "id",
-// or "name" query parameter.
+// Ingredient is the acquisition policy used by the cached ingredient bridge.
+// It looks up an ingredient by ID (preferred) or primary_name, triggering a
+// backend sync if the record is not found locally.
 func Ingredient(w http.ResponseWriter, r *http.Request, m map[string]any) (any, error) {
-	ingredient := &types.Ingredient{}
 	db, err := database.Database()
 	if err != nil {
 		return nil, nil
@@ -44,67 +43,52 @@ func Ingredient(w http.ResponseWriter, r *http.Request, m map[string]any) (any, 
 	id := strings.Trim(r.FormValue("id"), " ")
 	name := strings.ToLower(strings.Trim(r.FormValue("primary_name"), " "))
 
-	// this is the search by ID path and takes
-	// precence over the name search path
-	if id != "" {
-		err := db.Preload("Names").Preload("Labels").First(ingredient, "id = ?", id).Error
-		if err != nil {
-			SyncDatabaseWithIngredient(name)
+	ingredient := &types.Ingredient{}
 
-			core.Logger.Info("ingredient not found in database, syncing with backend", "name", name)
+	// ID takes precedence over name when both are present.
+	if id != "" {
+		if err := db.Preload("Names").Preload("Labels").First(ingredient, "id = ?", id).Error; err != nil {
+			SyncDatabaseWithIngredient(name)
+			core.Logger.Info("ingredient not found by ID, syncing with backend", "id", id)
 			return nil, err
 		}
-
 		return ingredient, nil
 	}
 
-	// the following assumes that you are searching by primary name only
-	err = db.Preload("Names").Preload("Labels").First(ingredient, "primary_name = ?", name).Error
-	if err != nil {
+	// Fall back to primary_name lookup.
+	if err := db.Preload("Names").Preload("Labels").First(ingredient, "primary_name = ?", name).Error; err != nil {
 		SyncDatabaseWithIngredient(name)
-
-		core.Logger.Info("ingredient not found in database, syncing with backend", "name", name)
+		core.Logger.Info("ingredient not found by name, syncing with backend", "name", name)
 		return nil, err
 	}
 
 	core.Logger.Info("ingredient found in database", "name", name)
-	return nil, nil
+	return ingredient, nil
 }
 
+// IngredientMetadataProvider counts label types on the ingredient stored under
+// KeyIngredient in the model map, returning an IngredientMetadata summary.
 func IngredientMetadataProvider(r *http.Request, model map[string]any) (any, error) {
-	var meta types.IngredientMetadata
-
-	v, ok := model["Ingredient"]
+	v, ok := model[KeyIngredient]
 	if !ok {
 		return nil, nil
 	}
 
-	ingrdient, ok := v.(*types.Ingredient)
+	ingredient, ok := v.(*types.Ingredient)
 	if !ok {
 		return nil, nil
 	}
 
 	counts := map[string]int{}
-	for _, label := range ingrdient.Labels {
-		switch label.Type {
-		case "hazard":
-			counts["hazard"]++
-		case "effect":
-			counts["effect"]++
-		case "symptom":
-			counts["symptom"]++
-		case "general":
-			counts["general"]++
-		case "regulation":
-			counts["regulation"]++
-		}
+	for _, label := range ingredient.Labels {
+		counts[label.Type]++
 	}
 
-	meta.CountHazards = counts["hazard"]
-	meta.CountEffects = counts["effect"]
-	meta.CountSymptoms = counts["symptom"]
-	meta.CountGeneral = counts["general"]
-	meta.CountRegulations = counts["regulation"]
-
-	return meta, nil
+	return types.IngredientMetadata{
+		CountHazards:     counts["hazard"],
+		CountEffects:     counts["effect"],
+		CountSymptoms:    counts["symptom"],
+		CountGeneral:     counts["general"],
+		CountRegulations: counts["regulation"],
+	}, nil
 }

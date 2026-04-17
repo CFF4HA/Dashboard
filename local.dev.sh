@@ -25,8 +25,8 @@ sleep 5 # Wait for the database to initialize
 PUBCHEM=$!
 
 # Start the web server
-(go run cmd/web/main.go --backend "http://localhost:8081" --backend http://localhost:8082 --reload --llm https://ollama.godiegogo.me --db $POSTGRES_URL --cf_client_id $CF_CLIENT_ID --cf_client_secret $CF_CLIENT_SECRET) &
-#(go run cmd/web/main.go --backend "http://localhost:8081" --llm http://localhost:11434 --backend http://localhost:8082 --reload --db $POSTGRES_URL) &
+(go run ./cmd/web/ --backend "http://localhost:8081" --backend http://localhost:8082 --reload --llm https://ollama.godiegogo.me --db $POSTGRES_URL --cf_client_id $CF_CLIENT_ID --cf_client_secret $CF_CLIENT_SECRET) &
+#(go run ./cmd/web/ --backend "http://localhost:8081" --llm http://localhost:11434 --backend http://localhost:8082 --reload --db $POSTGRES_URL) &
 WEB=$!
 echo "Running the website (pid=$WEB)!"
 

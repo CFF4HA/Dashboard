@@ -4,8 +4,6 @@ import (
 	"github.com/DAlba-sudo/auxrouter"
 )
 
-var ()
-
 func Aux(llm string, cf_client, cf_secret string) auxrouter.Aux {
 	aux := auxrouter.Aux{
 		LlmServerEndpoint: llm,
