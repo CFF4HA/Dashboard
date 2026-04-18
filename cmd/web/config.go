@@ -1,34 +1,51 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"log/slog"
+)
 
-// Config holds all application configuration parsed from command-line flags.
+var (
+	Cfg Config
+)
+
 type Config struct {
-	TemplateDir    string
-	StaticDir      string
-	Address        string
-	Port           int
-	LiveReload     bool
-	BackendAddr    string
-	LLMAddr        string
-	DatabaseConn   string
-	CFClientID     string
-	CFClientSecret string
+	// the address and port to bind to for the web server
+	Address     string
+	Port        int
+	TemplateDir string
+	StaticDir   string
+	Reload      bool
+
+	// the ollama information required for the different pieces like
+	// routing, generation, etc.
+	Ollama struct {
+		HttpAddress string
+	}
+
+	// the database information rquired for the web app to function.
+	Database struct {
+		URL string
+	}
+
+	// this is information pertaining to the python backend.
+	PubChemBackend struct {
+		URL string
+	}
+
+	// the following is app specific misc configuartion like debug levels, etc.
+	LogLevel int
 }
 
-// parseConfig reads command-line flags and returns a populated Config.
-func parseConfig() Config {
-	var cfg Config
-	flag.StringVar(&cfg.TemplateDir, "template", "templates", "directory for template files")
-	flag.StringVar(&cfg.StaticDir, "static", "static", "directory for static files")
-	flag.StringVar(&cfg.Address, "address", "127.0.0.1", "address to bind the server to")
-	flag.IntVar(&cfg.Port, "port", 8080, "port to bind the server to")
-	flag.BoolVar(&cfg.LiveReload, "reload", true, "enable live template reloading")
-	flag.StringVar(&cfg.BackendAddr, "backend", "http://localhost:8081", "backend service address")
-	flag.StringVar(&cfg.LLMAddr, "llm", "http://localhost:8082", "LLM service address")
-	flag.StringVar(&cfg.DatabaseConn, "db", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable", "PostgreSQL connection string")
-	flag.StringVar(&cfg.CFClientID, "cf_client_id", "", "Cloudflare Access client ID")
-	flag.StringVar(&cfg.CFClientSecret, "cf_client_secret", "", "Cloudflare Access client secret")
+func RegisterConfigFlags() {
+	flag.StringVar(&Cfg.Address, "address", "127.0.0.1", "the itnerface address to bind to")
+	flag.IntVar(&Cfg.Port, "port", 8080, "the port to bind to")
+	flag.StringVar(&Cfg.TemplateDir, "template-dir", "./templates", "the directory where the html templates are located")
+	flag.StringVar(&Cfg.StaticDir, "static-dir", "./static", "the directory where the static files are located")
+	flag.BoolVar(&Cfg.Reload, "reload", false, "whether to enable live reloading of templates and static files")
+	flag.StringVar(&Cfg.Ollama.HttpAddress, "ollama-http-address", "http://localhost:11434", "the address of the ollama http server")
+	flag.StringVar(&Cfg.Database.URL, "database-url", "postgres://user:password@localhost:5432/dbname?sslmode=disable", "the database connection URL")
+	flag.StringVar(&Cfg.PubChemBackend.URL, "pubchem-backend-url", "http://localhost:5000", "the address of the pubchem backend server")
+	flag.IntVar(&Cfg.LogLevel, "log-level", int(slog.LevelInfo), "the log level for the application (0=debug, 1=info, 2=warn, 3=error)")
 	flag.Parse()
-	return cfg
 }
