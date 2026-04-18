@@ -1,8 +1,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"log/slog"
+
+	"github.com/CFF4HA/Dashboard/internal/core"
 )
 
 var (
@@ -48,4 +51,11 @@ func RegisterConfigFlags() {
 	flag.StringVar(&Cfg.PubChemBackend.URL, "pubchem-backend-url", "http://localhost:5000", "the address of the pubchem backend server")
 	flag.IntVar(&Cfg.LogLevel, "log-level", int(slog.LevelInfo), "the log level for the application (0=debug, 1=info, 2=warn, 3=error)")
 	flag.Parse()
+}
+
+func DatabaseConfig() error {
+	if Cfg.Database.URL == "" {
+		return errors.New("no database url is provided")
+	}
+	return core.InitializeDatabase(Cfg.Database.URL)
 }

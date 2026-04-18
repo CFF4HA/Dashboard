@@ -18,6 +18,9 @@ func main() {
 		},
 	)
 
+	// this is some further configuration that we have to do with regards to
+	// database, etc.
+
 	// this registers all components, actions, and pages related to rendering
 	// the index page.
 	Index(v)
