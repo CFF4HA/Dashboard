@@ -78,7 +78,19 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 
 		PrimaryName: name,
 		Failed:      false,
+		Metadata: types.IngredientMetadata{
+			Model: types.Model{
+				Id:      uuid.New(),
+				Created: time.Now(),
+				Updated: time.Now(),
+			},
+		},
 	}
+	ingredient.Metadata.IngredientId = ingredient.Id
+	ingredient.Metadata.NumHazards = len(hazards)
+	ingredient.Metadata.NumEffects = len(effects)
+	ingredient.Metadata.NumSymptoms = len(symptoms)
+	ingredient.Metadata.NumRegulations = len(regulations)
 
 	for _, name := range names {
 		ingredient.Names = append(ingredient.Names, types.Name{
@@ -150,6 +162,11 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 
 		*label.Origin = fmt.Sprintf("https://pubchem.ncbi.nlm.nih.gov/compound/%d", pubchem_id)
 		ingredient.Labels = append(ingredient.Labels, label)
+	}
+
+	if tx := core.DB.Create(ingredient); tx.Error != nil {
+		core.Logger.Error("failed to create ingredient in database", "name", name, "err", tx.Error)
+		return ingredient, tx.Error
 	}
 
 	return ingredient, nil

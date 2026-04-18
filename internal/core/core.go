@@ -4,6 +4,7 @@ import (
 	"log"
 	"log/slog"
 
+	"github.com/CFF4HA/Dashboard/internal/types"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -20,7 +21,14 @@ func InitializeDatabase(url string) error {
 		Logger.Error("failed to connect to database", "error", err)
 		return err
 	}
-
 	DB = d
+	DB.AutoMigrate(
+		&types.Ingredient{},
+		&types.IngredientMetadata{},
+		&types.Product{},
+		&types.ProductMetadata{},
+		&types.Name{},
+		&types.Label{},
+	)
 	return nil
 }
