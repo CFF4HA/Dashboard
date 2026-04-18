@@ -31,11 +31,6 @@ type Config struct {
 		URL string
 	}
 
-	// this is information pertaining to the python backend.
-	PubChemBackend struct {
-		URL string
-	}
-
 	// the following is app specific misc configuartion like debug levels, etc.
 	LogLevel int
 }
@@ -48,7 +43,6 @@ func RegisterConfigFlags() {
 	flag.BoolVar(&Cfg.Reload, "reload", false, "whether to enable live reloading of templates and static files")
 	flag.StringVar(&Cfg.Ollama.HttpAddress, "ollama-http-address", "http://localhost:11434", "the address of the ollama http server")
 	flag.StringVar(&Cfg.Database.URL, "database-url", "postgres://user:password@localhost:5432/dbname?sslmode=disable", "the database connection URL")
-	flag.StringVar(&Cfg.PubChemBackend.URL, "pubchem-backend-url", "http://localhost:5000", "the address of the pubchem backend server")
 	flag.IntVar(&Cfg.LogLevel, "log-level", int(slog.LevelInfo), "the log level for the application (0=debug, 1=info, 2=warn, 3=error)")
 	flag.Parse()
 }

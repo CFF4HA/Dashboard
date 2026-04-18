@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/google/uuid"
 )
@@ -55,7 +56,24 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 	// exist then we simply create a failed ingredient in the database
 	// so resolutions don't continue.
 
-	// TODO
+	for _, ingredient_name := range ingredient_names {
+		var ing *types.Ingredient
+		tx := core.DB.Model(&types.Ingredient{}).Where("primary_name =~ ?", ingredient_name).First(ing)
+		if tx.Error != nil {
+			if tx.Error.Error() != "record not found" {
+				return tx.Error
+			}
+
+			i, err := ingredient.RetrieveIngredient(ingredient_name)
+			if err != nil {
+				return err
+			}
+
+			ing = i
+		}
+
+		product.Ingredients = append(product.Ingredients, *ing)
+	}
 
 	// saves the product to the database, which will also save the metadata and the
 	tx := core.DB.Create(&product)

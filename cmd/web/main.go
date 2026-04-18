@@ -20,9 +20,17 @@ func main() {
 
 	// this is some further configuration that we have to do with regards to
 	// database, etc.
+	if err := DatabaseConfig(); err != nil {
+		// do potential recover here if we want to save to to a local
+		// storage?
+		panic(err)
+	}
 
-	// this registers all components, actions, and pages related to rendering
-	// the index page.
+	// The following are the general use component routes
+	Ingredients(v)
+	Products(v)
+
+	// The following are the general use page creation routes
 	Index(v)
 
 	if err := v.Serve(); err != nil {
