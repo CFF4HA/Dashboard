@@ -57,8 +57,8 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 	// so resolutions don't continue.
 
 	for _, ingredient_name := range ingredient_names {
-		var ing *types.Ingredient
-		tx := core.DB.Model(&types.Ingredient{}).Where("primary_name =~ ?", ingredient_name).First(ing)
+		var ing types.Ingredient
+		tx := core.DB.Model(&types.Ingredient{}).Where("primary_name ~* ?", ingredient_name).First(&ing)
 		if tx.Error != nil {
 			if tx.Error.Error() != "record not found" {
 				return tx.Error
@@ -69,10 +69,10 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 				return err
 			}
 
-			ing = i
+			ing = *i
 		}
 
-		product.Ingredients = append(product.Ingredients, *ing)
+		product.Ingredients = append(product.Ingredients, ing)
 	}
 
 	// saves the product to the database, which will also save the metadata and the
@@ -82,6 +82,5 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 		return tx.Error
 	}
 
-	tx.Commit()
-	return tx.Error
+	return nil
 }
