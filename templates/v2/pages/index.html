@@ -1,14 +1,131 @@
+<canvas id="bg-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
+
 <div class="container-fluid py-5 g-5">
   <div class="row">
     {{/* Content */}}
     <div class="col my-3">
       <div class="text-center">
-        <img src="/static/github-ff-banner.png" class="img-fluid"/> 
+        <img src="/static/github-ff-banner.png" class="img-fluid"/>
         <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
       </div>
 
       <div hx-get="/htmx/searchbar-manual_search" hx-trigger="load" hx-swap="outerHTML" class="col my-4"></div>
 
-    </div> 
+    </div>
   </div>
 </div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  const SPACING  = 52;   // grid cell size in px
+  const P_COUNT  = 5;    // number of background particles
+  const P_RAD    = 220;  // particle influence radius
+  const P_STR    = 45;   // particle influence strength (px displacement)
+  const M_RAD    = 200;  // mouse influence radius
+  const M_STR    = 70;   // mouse influence strength
+
+  let W, H, mouse = { x: -9999, y: -9999 }, particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function mkParticle() {
+    return {
+      x:  Math.random() * W,
+      y:  Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: (Math.random() - 0.5) * 0.45,
+    };
+  }
+
+  function init() { particles = Array.from({ length: P_COUNT }, mkParticle); }
+
+  // Returns {dx,dy} displacement of grid point (gx,gy) from a single influencer
+  function pull(gx, gy, ix, iy, radius, strength) {
+    const dx = gx - ix, dy = gy - iy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0 || dist > radius) return { dx: 0, dy: 0 };
+    const t = 1 - dist / radius;
+    const f = t * t * strength / dist;
+    return { dx: -dx * f, dy: -dy * f };
+  }
+
+  // Final displaced position of a grid vertex
+  function displaced(gx, gy) {
+    let tdx = 0, tdy = 0;
+    for (const p of particles) {
+      const d = pull(gx, gy, p.x, p.y, P_RAD, P_STR);
+      tdx += d.dx; tdy += d.dy;
+    }
+    const m = pull(gx, gy, mouse.x, mouse.y, M_RAD, M_STR);
+    tdx += m.dx; tdy += m.dy;
+    return { x: gx + tdx, y: gy + tdy };
+  }
+
+  function tick() {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    const cols  = Math.ceil(W / SPACING) + 2;
+    const rows  = Math.ceil(H / SPACING) + 2;
+    const ox    = -SPACING + ((W % SPACING) / 2);
+    const oy    = -SPACING + ((H % SPACING) / 2);
+
+    ctx.strokeStyle = 'rgba(180,180,180,0.55)';
+    ctx.lineWidth   = 0.75;
+
+    // Horizontal lines
+    for (let r = 0; r < rows; r++) {
+      const baseY = oy + r * SPACING;
+      ctx.beginPath();
+      for (let c = 0; c < cols; c++) {
+        const pt = displaced(ox + c * SPACING, baseY);
+        c === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.stroke();
+    }
+
+    // Vertical lines
+    for (let c = 0; c < cols; c++) {
+      const baseX = ox + c * SPACING;
+      ctx.beginPath();
+      for (let r = 0; r < rows; r++) {
+        const pt = displaced(baseX, oy + r * SPACING);
+        r === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.stroke();
+    }
+
+    // Intersection dots
+    ctx.fillStyle = 'rgba(160,160,160,0.5)';
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const pt = displaced(ox + c * SPACING, oy + r * SPACING);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Move particles
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; else if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; else if (p.y > H) p.y = 0;
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  window.addEventListener('resize',    () => { resize(); init(); });
+  window.addEventListener('mousemove', e  => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave',() => { mouse.x = -9999; mouse.y = -9999; });
+
+  resize(); init(); tick();
+})();
+</script>
