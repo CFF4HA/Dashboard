@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/CFF4HA/Dashboard/internal/handlers/ai"
 )
 
 var (
@@ -52,4 +53,12 @@ func DatabaseConfig() error {
 		return errors.New("no database url is provided")
 	}
 	return core.InitializeDatabase(Cfg.Database.URL)
+}
+
+func LlmConfig() error {
+	if Cfg.Ollama.HttpAddress == "" {
+		return nil
+	}
+
+	return ai.Initialize(Cfg.Ollama.HttpAddress)
 }

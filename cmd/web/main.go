@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/DAlba-sudo/verb"
 	"strings"
+
+	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/DAlba-sudo/verb"
 )
 
 func main() {
@@ -34,6 +36,13 @@ func main() {
 		// do potential recover here if we want to save to to a local
 		// storage?
 		panic(err)
+	}
+
+	// this is the llm configuration portion
+	if err := LlmConfig(); err != nil {
+		core.Logger.Warn("ollama configuration error, llm features will be disabled", "error", err)
+	} else {
+		core.Logger.Info("ollama client configured successfully")
 	}
 
 	// The following are the general use component routes
