@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/CFF4HA/Dashboard/internal/bridges"
+	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
 	"github.com/CFF4HA/Dashboard/internal/handlers/product"
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
@@ -19,7 +20,12 @@ func Index(v *verb.Verb) {
 }
 
 func Ingredients(v *verb.Verb) {
+	v.Page("/ingredients", "v2/pages/ingredients.html")
 
+	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
+		Bridge(bridges.IngredientSearchBridge)
+
+	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
 }
 
 func Products(v *verb.Verb) {
@@ -29,6 +35,10 @@ func Products(v *verb.Verb) {
 	// this is the components that are rendered as part of the
 	// product page.
 	v.Component("v2/forms/form-product_create.html", htmx.Div())
+
+	// search results component used by the shared searchbar
+	v.Component("v2/components/product-search_results.html", htmx.Div()).
+		Bridge(bridges.ProductSearchBridge)
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html").

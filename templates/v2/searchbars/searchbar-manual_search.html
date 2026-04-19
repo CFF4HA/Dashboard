@@ -95,8 +95,10 @@
 
       hx-get="{{ .Active.Target }}"
       hx-trigger="keyup changed delay:500ms"
-      hx-swap="None"
+      hx-target="#search-results"
+      hx-swap="innerHTML"
       hx-include="this"
+      hx-vals='{"results_target": "#search-results"}'
     >
     <div class="dropdown">
       <button class="searchbar-type-btn dropdown-toggle dropdown-toggle-split"
@@ -119,6 +121,7 @@
     </div>
   </div>
   <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">{{ .Active.Description }}</p>
+  <div id="search-results" class="mt-3"></div>
 </div>
 {{- else }}
 <h5 class="text-center text-muted">No search configuration found.</h5>
