@@ -1,4 +1,46 @@
 {{- with .Search }}
+<script>
+  function filterSynonyms(input) {
+    const q = input.value.toLowerCase().trim();
+    const scroll = input.nextElementSibling;
+    const emptyMsg = scroll.nextElementSibling;
+    const pills = scroll.querySelectorAll('.ingredient-synonym-pill');
+    let visible = 0;
+    pills.forEach(pill => {
+      const match = pill.dataset.name.includes(q);
+      pill.hidden = !match;
+      if (match) visible++;
+    });
+    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  async function retrieveFromPubChem(name, resultsSelector) {
+    const resultsEl = document.querySelector(resultsSelector);
+    resultsEl.innerHTML = `
+      <p class="text-muted" style="font-size:0.88rem;">
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Retrieving <strong>${name}</strong> from PubChem…
+      </p>`;
+
+    const resp = await fetch('/ingredient', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'name=' + encodeURIComponent(name),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      document.getElementById('notification').innerHTML =
+        `<div class="alert alert-danger py-1 px-3" style="font-size:0.85rem;">${text || 'Failed to retrieve ingredient.'}</div>`;
+    }
+
+    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
+      target: resultsSelector,
+      swap: 'innerHTML',
+    });
+  }
+</script>
+
 <style>
 /* ── Ingredient card ────────────────────────────────────────── */
   .ingredient-card {
@@ -284,47 +326,5 @@
   </div>
   {{- end }}
 </div>
-
-<script>
-  function filterSynonyms(input) {
-    const q = input.value.toLowerCase().trim();
-    const scroll = input.nextElementSibling;
-    const emptyMsg = scroll.nextElementSibling;
-    const pills = scroll.querySelectorAll('.ingredient-synonym-pill');
-    let visible = 0;
-    pills.forEach(pill => {
-      const match = pill.dataset.name.includes(q);
-      pill.hidden = !match;
-      if (match) visible++;
-    });
-    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
-  }
-
-  async function retrieveFromPubChem(name, resultsSelector) {
-    const resultsEl = document.querySelector(resultsSelector);
-    resultsEl.innerHTML = `
-      <p class="text-muted" style="font-size:0.88rem;">
-        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-        Retrieving <strong>${name}</strong> from PubChem…
-      </p>`;
-
-    const resp = await fetch('/ingredient', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'name=' + encodeURIComponent(name),
-    });
-
-    if (!resp.ok) {
-      const text = await resp.text();
-      document.getElementById('notification').innerHTML =
-        `<div class="alert alert-danger py-1 px-3" style="font-size:0.85rem;">${text || 'Failed to retrieve ingredient.'}</div>`;
-    }
-
-    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
-      target: resultsSelector,
-      swap: 'innerHTML',
-    });
-  }
-</script>
 {{- end }}
 {{- end }}
