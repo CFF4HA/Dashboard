@@ -25,4 +25,14 @@ func Ingredients(v *verb.Verb) {
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
 	v.Action(http.MethodPut, "/product", product.CreateProduct)
+
+	// this is the components that are rendered as part of the
+	// product page.
+	v.Component("v2/forms/form-product_create.html", htmx.Div())
+
+	// this will be the primary products page.
+	v.Page("/products", "v2/pages/products.html").
+		Bridge(bridges.ProductBridge(20, map[string]string{
+			"name": " ILIKE ",
+		}))
 }

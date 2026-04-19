@@ -3,6 +3,7 @@ package ingredient
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
@@ -20,6 +21,19 @@ import (
 func RetrieveIngredient(name string) (*types.Ingredient, error) {
 	pubchem_id, err := pubchem.GetCompoundId(name)
 	if err != nil {
+		if strings.Contains(err.Error(), "404") {
+			ing := &types.Ingredient{
+				Model: types.Model{
+					Id:      uuid.New(),
+					Created: time.Now(),
+					Updated: time.Now(),
+				},
+				PrimaryName: name,
+				Failed:      true,
+			}
+
+			return ing, core.DB.Create(ing).Error
+		}
 		return nil, err
 	}
 
@@ -92,15 +106,21 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 	ingredient.Metadata.NumSymptoms = len(symptoms)
 	ingredient.Metadata.NumRegulations = len(regulations)
 
-	for _, name := range names {
-		ingredient.Names = append(ingredient.Names, types.Name{
-			Model: types.Model{
-				Id:      uuid.New(),
-				Created: time.Now(),
-				Updated: time.Now(),
-			},
-			Text: name,
-		})
+	for _, n := range names {
+		var existing types.Name
+		tx := core.DB.Where("text = ?", n).First(&existing)
+		if tx.Error == nil {
+			ingredient.Names = append(ingredient.Names, existing)
+		} else {
+			ingredient.Names = append(ingredient.Names, types.Name{
+				Model: types.Model{
+					Id:      uuid.New(),
+					Created: time.Now(),
+					Updated: time.Now(),
+				},
+				Text: n,
+			})
+		}
 	}
 
 	for _, hazard := range hazards {
