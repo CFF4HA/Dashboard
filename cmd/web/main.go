@@ -27,6 +27,7 @@ func main() {
 	}
 
 	// The following are the general use component routes
+	SearchBars(v)
 	Ingredients(v)
 	Products(v)
 

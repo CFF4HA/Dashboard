@@ -3,12 +3,19 @@ package main
 import (
 	"net/http"
 
+	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/handlers/product"
 	"github.com/DAlba-sudo/verb"
+	"github.com/DAlba-sudo/verb/htmx"
 )
 
-func Index(v *verb.Verb) {
+func SearchBars(v *verb.Verb) {
+	v.Component("v2/searchbars/searchbar-manual_search.html", htmx.Div().Classes("p-2")).
+		Bridge(bridges.ManualSearchMultiplexer)
+}
 
+func Index(v *verb.Verb) {
+	v.Page("", "v2/pages/index.html")
 }
 
 func Ingredients(v *verb.Verb) {

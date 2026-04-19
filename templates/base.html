@@ -9,13 +9,20 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   </head>
   <body>
-    <div class="d-flex flex-direction-row gap-1"></div>
-      <div id="notification" class="m-2 p-1">
-      </div>
+    <div id="notification" class="m-2 p-1">
+    </div>
 
-      <div class="m-2 p-1">
-        {{ template "content" . }}
+    <div class="m-2 p-1">
+      {{ template "content" . }}
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div id="modal-content" class="modal-content">
+        </div>
       </div>
+    </div>
     <script src="/static/htmx/htmx.min.js"></script>
     <script src="/static/bootstrap/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
