@@ -14,14 +14,14 @@ func RetrieveIngredientHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	name := strings.TrimSpace(r.FormValue("name"))
+	name := strings.ToLower(strings.TrimSpace(r.FormValue("name")))
 	if name == "" {
 		return errors.New("ingredient name is required")
 	}
 
 	// Return early if ingredient already exists by primary name.
 	var existing types.Ingredient
-	if tx := core.DB.Where("primary_name ILIKE ?", name).First(&existing); tx.Error == nil {
+	if tx := core.DB.Where("primary_name ILIKE ?", name).Preload("Labels").Preload("Names").First(&existing); tx.Error == nil {
 		return nil
 	}
 

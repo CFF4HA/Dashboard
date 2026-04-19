@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/CFF4HA/Dashboard/internal/handlers/ai"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/google/uuid"
@@ -57,8 +58,9 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 	// so resolutions don't continue.
 
 	for _, ingredient_name := range ingredient_names {
+		ingredient_name = strings.ToLower(strings.TrimSpace(ingredient_name))
 		var ing types.Ingredient
-		tx := core.DB.Model(&types.Ingredient{}).Preload("Metadata").Where("primary_name ~* ?", ingredient_name).First(&ing)
+		tx := core.DB.Model(&types.Ingredient{}).Preload("Metadata").Preload("Labels").Preload("Names").Where("primary_name ~* ?", ingredient_name).First(&ing)
 		if tx.Error != nil {
 			if tx.Error.Error() != "record not found" {
 				return tx.Error
@@ -86,5 +88,5 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 		return tx.Error
 	}
 
-	return nil
+	return ai.ProductBlurb(r.Context(), product)
 }

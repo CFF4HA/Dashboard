@@ -52,4 +52,5 @@ go run ./cmd/web/ \
   --static-dir ./static \
   --reload \
   --database-url "$DATABASE_URL" \
+  --ollama-http-address "http://localhost:11434" \
   --log-level 0
