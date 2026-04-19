@@ -1,110 +1,50 @@
 package main
 
 import (
-	"flag"
+	"github.com/DAlba-sudo/verb"
 	"strings"
-
-	"github.com/CFF4HA/Dashboard/internal/bridges"
-	"github.com/CFF4HA/Dashboard/internal/core"
-	"github.com/DAlba-sudo/pff"
 )
 
-// This is what the frontend will modify.
-func Frontend(a *pff.App) {
-
-	//PAGES//########//
-	a.RegisterTemplate("", "index/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
-
-	a.RegisterTemplate("/admin", "admin/admin.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
-
-	a.RegisterTemplate("/user", "admin/user.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
-
-	a.RegisterTemplate("/login", "login/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
-
-	a.RegisterTemplate("/home", "dashboard/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
-
-	a.RegisterTemplate("/settings", "settings/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	})
-	//-------------------//
-
-	//COMPONENTS//########//
-	a.RegisterTemplate("/navbar", "components/navbar/navbar.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-
-	a.RegisterTemplate("/products", "components/products/product_card.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	}).RegisterBridge("product", &bridges.ProductBridge{})
-
-	a.RegisterTemplate("/ingredients", "components/ingredients/ingredients_card.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	}).RegisterBridge("ingredient", &bridges.IngredientBridge{})
-
-	comparator := a.RegisterTemplate("/product-comparator", "components/products/product_comparator.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-	comparator.RegisterBridge("product_comparator", &bridges.ProductComparator{})
-	comparator.RegisterBridge("Count", &bridges.ProductCount{})
-
-	a.RegisterTemplate("/searchbar", "components/searchbar/searchbar.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: false,
-	})
-
-	search_ingredients := a.RegisterTemplate("/component/search/ingredient", "components/searchbar/ingredients.html", pff.TemplateRegistrationOpts{})
-	search_ingredients.RegisterBridge("Ingredients", bridges.SearchIngredients{})
-
-	a.RegisterTemplate("/product", "product/page.html", pff.TemplateRegistrationOpts{
-		IncludeBaseTemplate: true,
-	}).RegisterBridge("Products", bridges.ProductList{})
-
-	product_draft := a.RegisterTemplate("/component/product/draft", "components/product/product.build.html", pff.TemplateRegistrationOpts{})
-	product_draft.RegisterBridge("Product", bridges.DraftProduct{})
-
-	a.RegisterTemplate("/component/product/draft/ingredient", "components/product/product.draft.ingredient.html", pff.TemplateRegistrationOpts{}).
-		RegisterBridge("Ingredient", bridges.DraftProductIngredient{})
-
-	a.RegisterTemplate("/component/product/recent", "components/product/product.html", pff.TemplateRegistrationOpts{}).
-		RegisterBridge("Products", bridges.ProductList{})
-
-	a.RegisterTemplate("/component/search/product", "components/product/search.html", pff.TemplateRegistrationOpts{})
-
-	//-------------------//
-}
-
-// This is all basic boiler plate, as the frontend you will not have to touch this.
 func main() {
-	templateDir := flag.String("template", "templates", "the directory for the templates")
-	staticDir := flag.String("static", "static", "the directory for the static files")
-	address := flag.String("address", "127.0.0.1", "the address to bind the server to")
-	port := flag.Int("port", 8080, "the port to bind the server to")
-	live := flag.Bool("reload", true, "whether to do live reloads on the template files")
-	backend := flag.String("backend", "http://localhost:8081", "the address of the backend server")
-	flag.Parse()
+	RegisterConfigFlags()
 
-	core.BackendAddress = strings.TrimRight(*backend, "/")
+	v := verb.New(
+		Cfg.Address,
+		Cfg.Port,
+		verb.Settings{
+			Templates:  Cfg.TemplateDir,
+			Static:     Cfg.StaticDir,
+			LiveReload: Cfg.Reload,
+			Bridges:    []verb.Bridge{},
+		},
+	)
 
-	app := pff.CreateApp(pff.Configuration{
-		TemplateDirectoryPath: *templateDir,
-		FileSystemPath:        *staticDir,
-		Address:               *address,
-		Port:                  *port,
-		Live:                  *live,
+	v.Func("deref", func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
 	})
+	v.Func("sub", func(a, b int) int { return a - b })
+	v.Func("lower", func(a string) string { return strings.ToLower(a) })
 
-	Frontend(app)
+	// this is some further configuration that we have to do with regards to
+	// database, etc.
+	if err := DatabaseConfig(); err != nil {
+		// do potential recover here if we want to save to to a local
+		// storage?
+		panic(err)
+	}
 
-	if err := app.Start(); err != nil {
+	// The following are the general use component routes
+	SearchBars(v)
+	Ingredients(v)
+	Products(v)
+
+	// The following are the general use page creation routes
+	Index(v)
+
+	if err := v.Serve(); err != nil {
 		panic(err)
 	}
 }

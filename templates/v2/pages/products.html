@@ -1,0 +1,315 @@
+<style>
+  .product-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .product-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .product-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .product-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .product-card-origin {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    min-width: 0;
+  }
+
+  .product-card-origin a {
+    color: #0d6efd;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .product-card-origin a:hover {
+    text-decoration: underline;
+  }
+
+  .product-card-divider {
+    border: none;
+    border-top: 1px solid #dee2e6;
+    margin: 0;
+  }
+
+  .product-card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+
+  .ingredient-search-input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: #495057;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .ingredient-search-input::placeholder {
+    color: #adb5bd;
+  }
+
+  .ingredient-search-input:focus {
+    border-color: #0d6efd;
+  }
+
+  .ingredient-pills-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-pills-scroll::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .ingredient-pills-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .ingredient-pills-scroll::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 2px;
+  }
+
+  .ingredient-pill {
+    font-size: 0.75rem;
+    color: #495057;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .ingredient-pill[hidden] {
+    display: none;
+  }
+
+  .ingredient-empty-msg {
+    font-size: 0.78rem;
+    color: #adb5bd;
+    display: none;
+  }
+
+  .product-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+  }
+
+  .product-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .product-stat-icon {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    width: 1rem;
+    text-align: center;
+  }
+
+  .product-stat-value {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .product-stat-name {
+    color: #adb5bd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .product-ai-blurb {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .product-card-footer {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: #adb5bd;
+  }
+</style>
+
+<div class="container">
+  <div class="row mb-3">
+    <div class="col">
+      <h4 class="mb-4">Products</h4>
+      <p class="text-muted">
+        Browse our repository of products using the search bar, or create your own products by clicking
+        the "Create Product" button.
+      </p>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col">
+      <a class="btn btn-dark"
+        data-bs-toggle="modal"
+        data-bs-target="#modal"
+        hx-get="/htmx/form-product_create"
+        hx-trigger="click"
+        hx-target="#modal-content"
+      >
+        <i class="bi bi-plus-md"></i> Create Product
+      </a>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    {{- range .Products }}
+    <div class="col-md-5 mb-4">
+      <div class="product-card">
+
+        {{/* Header: name + optional origin link */}}
+        <div class="product-card-header">
+          <p class="product-card-name">{{ .Name }}</p>
+          {{- if .Origin }}
+          <div class="product-card-origin">
+            <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
+            <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
+          </div>
+          {{- end }}
+        </div>
+
+        <hr class="product-card-divider">
+
+        {{/* Ingredients: searchable + scrollable */}}
+        <div>
+          <div class="product-card-label">Ingredients ({{ len .Ingredients }})</div>
+          <input
+            class="ingredient-search-input"
+            type="text"
+            placeholder="&#128269; Filter ingredients..."
+            oninput="filterIngredients(this)">
+          <div class="ingredient-pills-scroll">
+            {{- range .Ingredients }}
+            <span class="ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
+            {{- end }}
+          </div>
+          <span class="ingredient-empty-msg">No ingredients match.</span>
+        </div>
+
+        <hr class="product-card-divider">
+
+        {{/* Metadata stats */}}
+        <div>
+          <div class="product-card-label">Metrics</div>
+          <div class="product-stats">
+            <div class="product-stat">
+              <i class="bi bi-exclamation-triangle product-stat-icon"></i>
+              <span class="product-stat-value">{{ .Metadata.NumHazard }}</span>
+              <span class="product-stat-name">Hazards</span>
+            </div>
+            <div class="product-stat">
+              <i class="bi bi-activity product-stat-icon"></i>
+              <span class="product-stat-value">{{ .Metadata.NumEffect }}</span>
+              <span class="product-stat-name">Effects</span>
+            </div>
+            <div class="product-stat">
+              <i class="bi bi-heart-pulse product-stat-icon"></i>
+              <span class="product-stat-value">{{ .Metadata.NumSymptom }}</span>
+              <span class="product-stat-name">Symptoms</span>
+            </div>
+            <div class="product-stat">
+              <i class="bi bi-shield-check product-stat-icon"></i>
+              <span class="product-stat-value">{{ .Metadata.NumReglations }}</span>
+              <span class="product-stat-name">Regulations</span>
+            </div>
+          </div>
+        </div>
+
+        {{/* AI blurb — only shown when present */}}
+        {{- if .Metadata.AiBlurb }}
+        <hr class="product-card-divider">
+        <p class="product-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+        {{- end }}
+
+        {{/* Footer: created date */}}
+        <div class="product-card-footer">
+          Added {{ .Created.Format "Jan 2, 2006" }}
+        </div>
+
+      </div>
+    </div>
+    {{- else }}
+    <p class="text-muted">No products found. Try creating one?</p>
+    {{- end }}
+  </div>
+
+</div>
+
+<script>
+  function filterIngredients(input) {
+    const query = input.value.toLowerCase().trim();
+    const container = input.nextElementSibling;
+    const emptyMsg = container.nextElementSibling;
+    const pills = container.querySelectorAll('.ingredient-pill');
+    let visible = 0;
+
+    pills.forEach(pill => {
+      const match = pill.dataset.name.includes(query);
+      pill.hidden = !match;
+      if (match) visible++;
+    });
+
+    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+  }
+</script>

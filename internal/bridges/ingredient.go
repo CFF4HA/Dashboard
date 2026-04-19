@@ -1,63 +1,58 @@
 package bridges
 
 import (
-	"encoding/json"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/types"
+	"github.com/DAlba-sudo/verb"
 )
 
-type SearchIngredients struct{}
+type IngredientSearchResult struct {
+	Ingredients   []types.Ingredient
+	Query         string
+	ResultsTarget string // CSS selector for the container that holds these results
+}
 
-func (s SearchIngredients) Data(w http.ResponseWriter, r *http.Request) (any, error) {
+var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[string]any) (any, error) {
+	q := strings.TrimSpace(r.FormValue("query"))
+
 	var ingredients []types.Ingredient
-	name := strings.Trim(r.FormValue("name"), " \r\n\t")
-	if name == "" {
-		return nil, nil
-	} else if strings.Contains(name, ",") {
-		return nil, nil
+
+	if q == "" {
+		tx := core.DB.Preload("Metadata").Preload("Names").Preload("Labels").
+			Order("created DESC").Limit(20).Find(&ingredients)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
+	} else {
+		// Two-step: get matching IDs via JOIN, then preload associations separately
+		// to avoid GROUP BY conflicts with GORM's Preload.
+		var ids []string
+		tx := core.DB.Model(&types.Ingredient{}).
+			Select("DISTINCT ingredients.id").
+			Joins("LEFT JOIN ingredient_names ing_n ON ing_n.ingredient_id = ingredients.id").
+			Joins("LEFT JOIN names n ON n.id = ing_n.name_id").
+			Where("ingredients.primary_name ILIKE ? OR n.text ILIKE ?", "%"+q+"%", "%"+q+"%").
+			Pluck("id", &ids)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
+
+		if len(ids) > 0 {
+			tx = core.DB.Preload("Metadata").Preload("Names").Preload("Labels").
+				Where("id IN ?", ids).Find(&ingredients)
+			if tx.Error != nil {
+				return nil, tx.Error
+			}
+		}
 	}
 
-	req, err := http.NewRequest("GET", core.BackendAddress+"/ingredient/search?name="+url.QueryEscape(name), nil)
-	if err != nil {
-		return nil, err
+	target := r.FormValue("results_target")
+	if target == "" {
+		target = "#search-results"
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if err := json.NewDecoder(resp.Body).Decode(&ingredients); err != nil {
-		return nil, err
-	}
-
-	return ingredients, nil
-}
-
-type IngredientBridge struct{}
-
-func (i IngredientBridge) Data(w http.ResponseWriter, r *http.Request) (any, error) {
-	id := strings.Trim(r.FormValue("id"), " \r\n\t")
-
-	req, err := http.NewRequest("GET", core.BackendAddress+"/ingredient?id="+url.QueryEscape(id), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var Ingredient types.Ingredient
-	if err := json.NewDecoder(resp.Body).Decode(&Ingredient); err != nil {
-		return nil, err
-	}
-
-	return Ingredient, nil
-}
+	return IngredientSearchResult{Ingredients: ingredients, Query: q, ResultsTarget: target}, nil
+})

@@ -1,0 +1,14 @@
+<div class="container-fluid py-5 g-5">
+  <div class="row">
+    {{/* Content */}}
+    <div class="col my-3">
+      <div class="text-center">
+        <img src="/static/github-ff-banner.png" class="img-fluid"/> 
+        <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
+      </div>
+
+      <div hx-get="/htmx/searchbar-manual_search" hx-trigger="load" hx-swap="outerHTML" class="col my-4"></div>
+
+    </div> 
+  </div>
+</div>

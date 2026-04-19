@@ -1,0 +1,213 @@
+{{- with .Search }}
+{{- if and (eq (len .Products) 0) (ne .Query "") }}
+<p class="text-muted" style="font-size:0.88rem;">
+  No products found for <strong>{{ .Query }}</strong>.
+  <a href="/products" style="font-size:0.88rem;">Create one?</a>
+</p>
+{{- else if eq (len .Products) 0 }}
+<p class="text-muted" style="font-size:0.88rem;">No products yet. <a href="/products" style="font-size:0.88rem;">Create one?</a></p>
+{{- else }}
+<style>
+  .sr-product-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .sr-product-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
+
+  .sr-product-card-header { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .sr-product-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .sr-product-card-origin {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    min-width: 0;
+  }
+
+  .sr-product-card-origin a {
+    color: #0d6efd;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sr-product-card-origin a:hover { text-decoration: underline; }
+
+  .sr-divider { border: none; border-top: 1px solid #dee2e6; margin: 0; }
+
+  .sr-card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+
+  .sr-ingredient-search {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
+  }
+
+  .sr-ingredient-search::placeholder { color: #adb5bd; }
+  .sr-ingredient-search:focus { border-color: #0d6efd; }
+
+  .sr-ingredient-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .sr-ingredient-scroll::-webkit-scrollbar { width: 3px; }
+  .sr-ingredient-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sr-ingredient-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .sr-ingredient-pill {
+    font-size: 0.75rem;
+    color: #495057;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .sr-ingredient-pill[hidden] { display: none; }
+
+  .sr-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+
+  .sr-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; min-width: 0; overflow: hidden; }
+  .sr-stat-icon { flex-shrink: 0; font-size: 0.75rem; color: #adb5bd; width: 1rem; text-align: center; }
+  .sr-stat-value { flex-shrink: 0; font-weight: 600; color: #495057; }
+  .sr-stat-name { color: #adb5bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .sr-ai-blurb {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .sr-card-footer { margin-top: auto; font-size: 0.72rem; color: #adb5bd; }
+</style>
+
+<div class="row">
+  {{- range .Products }}
+  <div class="col-md-4 mb-4">
+    <div class="sr-product-card">
+
+      <div class="sr-product-card-header">
+        <p class="sr-product-card-name">{{ .Name }}</p>
+        {{- if .Origin }}
+        <div class="sr-product-card-origin">
+          <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
+          <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
+        </div>
+        {{- end }}
+      </div>
+
+      <hr class="sr-divider">
+
+      <div>
+        <div class="sr-card-label">Ingredients ({{ len .Ingredients }})</div>
+        <input class="sr-ingredient-search" type="text"
+               placeholder="&#128269; Filter ingredients..."
+               autocomplete="off"
+               oninput="srFilterIngredients(this)">
+        <div class="sr-ingredient-scroll">
+          {{- range .Ingredients }}
+          <span class="sr-ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
+          {{- end }}
+        </div>
+      </div>
+
+      <hr class="sr-divider">
+
+      <div>
+        <div class="sr-card-label">Metrics</div>
+        <div class="sr-stats">
+          <div class="sr-stat">
+            <i class="bi bi-exclamation-triangle sr-stat-icon"></i>
+            <span class="sr-stat-value">{{ .Metadata.NumHazard }}</span>
+            <span class="sr-stat-name">Hazards</span>
+          </div>
+          <div class="sr-stat">
+            <i class="bi bi-activity sr-stat-icon"></i>
+            <span class="sr-stat-value">{{ .Metadata.NumEffect }}</span>
+            <span class="sr-stat-name">Effects</span>
+          </div>
+          <div class="sr-stat">
+            <i class="bi bi-heart-pulse sr-stat-icon"></i>
+            <span class="sr-stat-value">{{ .Metadata.NumSymptom }}</span>
+            <span class="sr-stat-name">Symptoms</span>
+          </div>
+          <div class="sr-stat">
+            <i class="bi bi-shield-check sr-stat-icon"></i>
+            <span class="sr-stat-value">{{ .Metadata.NumReglations }}</span>
+            <span class="sr-stat-name">Regulations</span>
+          </div>
+        </div>
+      </div>
+
+      {{- if .Metadata.AiBlurb }}
+      <hr class="sr-divider">
+      <p class="sr-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+      {{- end }}
+
+      <div class="sr-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+
+    </div>
+  </div>
+  {{- end }}
+</div>
+
+<script>
+  function srFilterIngredients(input) {
+    const q = input.value.toLowerCase().trim();
+    const scroll = input.nextElementSibling;
+    scroll.querySelectorAll('.sr-ingredient-pill').forEach(pill => {
+      pill.hidden = !pill.dataset.name.includes(q);
+    });
+  }
+</script>
+{{- end }}
+{{- end }}

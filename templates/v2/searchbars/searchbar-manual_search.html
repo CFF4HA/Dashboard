@@ -1,0 +1,128 @@
+<style>
+  :root {
+    --searchbar-bg: #f8f9fa;
+    --searchbar-border: #dee2e6;
+    --searchbar-hover: #e9ecef;
+    --searchbar-focus: #0d6efd;
+    --searchbar-text: #495057;
+    --dropdown-bg: #ffffff;
+    --dropdown-hover: #f8f9fa;
+  }
+
+  .searchbar-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: var(--searchbar-bg);
+    border: 1px solid var(--searchbar-border);
+    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    gap: 0.5rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .searchbar-wrapper:focus-within {
+    border-color: var(--searchbar-focus);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .searchbar-icon {
+    flex-shrink: 0;
+    color: #adb5bd;
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .searchbar-input {
+    flex: 1 1 0;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0;
+    color: var(--searchbar-text);
+    font-size: 0.9rem;
+    outline: none;
+  }
+
+  .searchbar-input::placeholder {
+    color: #adb5bd;
+  }
+
+  .searchbar-type-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    padding: 0.1rem 0.25rem;
+    font-size: 0.8rem;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .searchbar-type-btn:hover {
+    color: var(--searchbar-text);
+  }
+
+  .searchbar-dropdown-menu {
+    border-radius: 10px;
+    border: 1px solid var(--searchbar-border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  .searchbar-dropdown-menu .dropdown-item {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--searchbar-text);
+  }
+
+  .searchbar-dropdown-menu .dropdown-item:hover {
+    background: var(--dropdown-hover);
+  }
+</style>
+
+{{- with .Search }}
+<div id="searchbar-manual_search" class="d-flex flex-column">
+  <div  class="searchbar-wrapper">
+    <span class="searchbar-icon">&#128269;</span>
+    <input type="text"
+      class="searchbar-input"
+      placeholder="Select a search type on the right!"
+      aria-label="Search"
+      name="query"
+
+      hx-get="{{ .Active.Target }}"
+      hx-trigger="keyup changed delay:500ms"
+      hx-target="#search-results"
+      hx-swap="innerHTML"
+      hx-include="this"
+      hx-vals='{"results_target": "#search-results"}'
+    >
+    <div class="dropdown">
+      <button class="searchbar-type-btn dropdown-toggle dropdown-toggle-split"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              aria-label="Select search type">
+        {{- .Active.ActiveSearchMode -}}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end searchbar-dropdown-menu">
+        {{- range .Others }}
+        <li><a class="dropdown-item" 
+          hx-get="/htmx/searchbar-manual_search?search_mode={{ .ActiveSearchMode | urlquery }}"
+          hx-trigger="click"
+          hx-target="#searchbar-manual_search"
+          hx-swap="outerHTML"
+        >{{ .ActiveSearchMode }}</a></li>
+        {{- end }}
+      </ul>
+    </div>
+  </div>
+  <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">{{ .Active.Description }}</p>
+  <div id="search-results" class="mt-3"></div>
+</div>
+{{- else }}
+<h5 class="text-center text-muted">No search configuration found.</h5>
+{{- end }}

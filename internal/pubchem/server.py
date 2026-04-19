@@ -55,68 +55,64 @@ async def process_ingredient(name: str, db: AsyncSession = Depends(get_db)):
 
     if name in cache:
         return cache[name]
-    
-    names, labels = pubchem.Ingredient(name)
 
+    names, labels = pubchem.Ingredient(name)
     ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
 
     try:
         # First insert, fetching the returned ID
-        result = await db.execute(text("INSERT INTO ingredients (id, failed) VALUES (:id, :failed) RETURNING id"), {
-            "id": ingredient.Id, "failed": names is None or labels is None})
+        result = await db.execute(text("INSERT INTO ingredients (id, failed, primary_name) VALUES (:id, :failed, :name) RETURNING id"), {
+            "id": ingredient.Id, "failed": names is None or labels is None, "name": name})
         if result.scalar() is None:
             raise HTTPException(
                 status_code=500, detail="Failed to insert ingredient into database")
 
-        if names is None or labels is None:
-            # insert the name so that we can cache the miss on purpose
-            result = await db.execute(text("INSERT INTO names (text, ingredient_id) VALUES (:text, :ingredient_id) RETURNING text"), {
-                "text": name,
-                "ingredient_id": ingredient.Id})
-            if result.scalar() is None:
-                raise HTTPException(
-                    status_code=500, detail="Failed to insert name into database")
         else:
-            # Cache the original name as well, since it's a valid synonym
-            if name not in names:
-                names.append(name)
+            if names:
+                for name in names:
+                    # Added RETURNING id to verify success
+                    try:
+                        result = await db.execute(text("INSERT INTO names (text) VALUES (:text) RETURNING text"), {
+                            "text": name})
+                    except Exception as e:
+                        pass
 
-            for name in names:
-                # Added RETURNING id to verify success
-                result = await db.execute(text("INSERT INTO names (text, ingredient_id) VALUES (:text, :ingredient_id) RETURNING text"), {
-                    "id": uuid.uuid4(), "text": name, "ingredient_id": ingredient.Id})
-                if result.scalar() is None:
-                    raise HTTPException(
-                        status_code=500, detail="Failed to insert name into database")
+                    result = await db.execute(text("INSERT INTO ingredient_names (ingredient_id, name_text) VALUES (:ingredient_id, :name) RETURNING ingredient_id"), {
+                        "ingredient_id": ingredient.Id, "name": name})
+                    if result.scalar() is None:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to associate name with ingredient in database")
 
-            for label in labels:
-                label_id = uuid.uuid4()
-                result = await db.execute(text("INSERT INTO labels (id, type, payload, origin) VALUES (:id, :type, :payload, :origin) RETURNING id"), {
-                    "id": label_id, "type": label.Type, "payload": label.Payload, "origin": label.Origin})
-                if result.scalar() is None:
-                    raise HTTPException(
-                        status_code=500, detail="Failed to insert label into database")
+            if labels:
+                for label in labels:
+                    label_id = uuid.uuid4()
+                    result = await db.execute(text("INSERT INTO labels (id, type, payload, origin) VALUES (:id, :type, :payload, :origin) RETURNING id"), {
+                        "id": label_id, "type": label.Type, "payload": label.Payload, "origin": label.Origin})
+                    if result.scalar() is None:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to insert label into database")
 
-                # Returning ingredient_id (or label_id) since join tables often don't have a singular primary key
-                result = await db.execute(text("INSERT INTO ingredient_labels (ingredient_id, label_id) VALUES (:ingredient_id, :label_id) RETURNING ingredient_id"), {
-                    "ingredient_id": ingredient.Id, "label_id": label_id})
-                if result.scalar() is None:
-                    raise HTTPException(
-                        status_code=500, detail="Failed to associate label with ingredient in database")
+                    # Returning ingredient_id (or label_id) since join tables often don't have a singular primary key
+                    result = await db.execute(text("INSERT INTO ingredient_labels (ingredient_id, label_id) VALUES (:ingredient_id, :label_id) RETURNING ingredient_id"), {
+                        "ingredient_id": ingredient.Id, "label_id": label_id})
+                    if result.scalar() is None:
+                        raise HTTPException(
+                            status_code=500, detail="Failed to associate label with ingredient in database")
 
         await db.commit()
 
     except Exception as e:
         await db.rollback()
-        raise e
+
     cache[name] = ingredient
+
 
 @app.get("/ingredient/compare")
 async def compare_products(product1: str, product2: str, db: AsyncSession = Depends(get_db)):
     product1 = product1.split(",")
     product2 = product2.split(",")
-    ingredients1 : list[models.Ingredient] = []
-    ingredients2 : list[models.Ingredient] = []
+    ingredients1: list[models.Ingredient] = []
+    ingredients2: list[models.Ingredient] = []
     for ing in product1:
         if ing in cache:
             ingredients1.append(cache[ing])
