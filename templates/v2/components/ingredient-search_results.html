@@ -1,0 +1,330 @@
+{{- with .Search }}
+<style>
+/* ── Ingredient card ────────────────────────────────────────── */
+  .ingredient-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .ingredient-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .ingredient-card--failed {
+    opacity: 0.6;
+  }
+
+  .ingredient-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .ingredient-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .ingredient-card-badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+    margin-top: 0.1rem;
+  }
+
+  .ingredient-card-badge--failed {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+  }
+
+  .ingredient-card-divider {
+    border: none;
+    border-top: 1px solid #dee2e6;
+    margin: 0;
+  }
+
+  .ingredient-card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── Synonym pills ──────────────────────────────────────────── */
+  .ingredient-synonym-search {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
+  }
+
+  .ingredient-synonym-search::placeholder { color: #adb5bd; }
+  .ingredient-synonym-search:focus { border-color: #0d6efd; }
+
+  .ingredient-synonym-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-synonym-scroll::-webkit-scrollbar { width: 3px; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .ingredient-synonym-pill {
+    font-size: 0.75rem;
+    color: #495057;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .ingredient-synonym-pill[hidden] { display: none; }
+
+  /* ── Metric stats ───────────────────────────────────────────── */
+  .ingredient-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+  }
+
+  .ingredient-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ingredient-stat-icon {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    width: 1rem;
+    text-align: center;
+  }
+
+  .ingredient-stat-value {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .ingredient-stat-name {
+    color: #adb5bd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ingredient-ai-blurb {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .ingredient-card-footer {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: #adb5bd;
+  }
+
+  /* ── Empty / retrieve state ─────────────────────────────────── */
+  .ingredient-empty-state {
+    padding: 1rem 0;
+  }
+
+  .btn-retrieve-pubchem {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-retrieve-pubchem:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+  }
+
+  .btn-retrieve-pubchem.loading {
+    color: #adb5bd;
+    pointer-events: none;
+  }
+</style>
+{{- if and (eq (len .Ingredients) 0) (ne .Query "") }}
+<div class="ingredient-empty-state">
+  <p class="text-muted mb-2" style="font-size:0.88rem;">
+    No results for <strong>{{ .Query }}</strong> in the database.
+  </p>
+  <button class="btn-retrieve-pubchem" onclick="retrieveFromPubChem({{ .Query | js }}, {{ .ResultsTarget | js }})">
+    <i class="bi bi-cloud-download me-1"></i>Retrieve from PubChem
+  </button>
+</div>
+{{- else if eq (len .Ingredients) 0 }}
+<p class="text-muted" style="font-size:0.88rem;">No ingredients yet. Search above to retrieve one from PubChem.</p>
+{{- else }}
+<div class="row">
+  {{- range .Ingredients }}
+  <div class="col-md-4 mb-4">
+    <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}">
+
+      <div class="ingredient-card-header">
+        <p class="ingredient-card-name">{{ .PrimaryName }}</p>
+        {{- if .Failed }}
+        <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
+        {{- end }}
+      </div>
+
+      {{- if not .Failed }}
+      <hr class="ingredient-card-divider">
+
+      <div>
+        <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
+        {{- if gt (len .Names) 0 }}
+        <input
+          class="ingredient-synonym-search"
+          type="text"
+          placeholder="&#128269; Filter synonyms..."
+          autocomplete="off"
+          oninput="filterSynonyms(this)">
+        <div class="ingredient-synonym-scroll">
+          {{- range .Names }}
+          <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+          {{- end }}
+        </div>
+        <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:#adb5bd;">No synonyms match.</span>
+        {{- else }}
+        <span style="font-size:0.78rem;color:#adb5bd;">No synonyms on record.</span>
+        {{- end }}
+      </div>
+
+      <hr class="ingredient-card-divider">
+
+      <div>
+        <div class="ingredient-card-label">Metrics</div>
+        <div class="ingredient-stats">
+          <div class="ingredient-stat">
+            <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
+            <span class="ingredient-stat-name">Hazards</span>
+          </div>
+          <div class="ingredient-stat">
+            <i class="bi bi-activity ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
+            <span class="ingredient-stat-name">Effects</span>
+          </div>
+          <div class="ingredient-stat">
+            <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
+            <span class="ingredient-stat-name">Symptoms</span>
+          </div>
+          <div class="ingredient-stat">
+            <i class="bi bi-shield-check ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
+            <span class="ingredient-stat-name">Regulations</span>
+          </div>
+        </div>
+      </div>
+
+      {{- if .Metadata.AiBlurb }}
+      <hr class="ingredient-card-divider">
+      <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+      {{- end }}
+      {{- end }}
+
+      <div class="ingredient-card-footer">
+        Added {{ .Created.Format "Jan 2, 2006" }}
+      </div>
+
+    </div>
+  </div>
+  {{- end }}
+</div>
+
+<script>
+  function filterSynonyms(input) {
+    const q = input.value.toLowerCase().trim();
+    const scroll = input.nextElementSibling;
+    const emptyMsg = scroll.nextElementSibling;
+    const pills = scroll.querySelectorAll('.ingredient-synonym-pill');
+    let visible = 0;
+    pills.forEach(pill => {
+      const match = pill.dataset.name.includes(q);
+      pill.hidden = !match;
+      if (match) visible++;
+    });
+    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  async function retrieveFromPubChem(name, resultsSelector) {
+    const resultsEl = document.querySelector(resultsSelector);
+    resultsEl.innerHTML = `
+      <p class="text-muted" style="font-size:0.88rem;">
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Retrieving <strong>${name}</strong> from PubChem…
+      </p>`;
+
+    const resp = await fetch('/ingredient', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'name=' + encodeURIComponent(name),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      document.getElementById('notification').innerHTML =
+        `<div class="alert alert-danger py-1 px-3" style="font-size:0.85rem;">${text || 'Failed to retrieve ingredient.'}</div>`;
+    }
+
+    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
+      target: resultsSelector,
+      swap: 'innerHTML',
+    });
+  }
+</script>
+{{- end }}
+{{- end }}

@@ -1,2 +1,299 @@
-{{ . }}
-{{ .Ingredients }}
+<style>
+  /* ── Search bar ─────────────────────────────────────────────── */
+  .ingredient-searchbar-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    gap: 0.5rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .ingredient-searchbar-wrapper:focus-within {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .ingredient-searchbar-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    outline: none;
+  }
+
+  .ingredient-searchbar-input::placeholder {
+    color: #adb5bd;
+  }
+
+  .ingredient-searchbar-icon {
+    flex-shrink: 0;
+    color: #adb5bd;
+    font-size: 0.85rem;
+  }
+
+  .ingredient-searchbar-hint {
+    font-size: 0.78rem;
+    color: #adb5bd;
+    margin-top: 0.4rem;
+  }
+
+  /* ── Ingredient card ────────────────────────────────────────── */
+  .ingredient-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .ingredient-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .ingredient-card--failed {
+    opacity: 0.6;
+  }
+
+  .ingredient-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .ingredient-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .ingredient-card-badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+    margin-top: 0.1rem;
+  }
+
+  .ingredient-card-badge--failed {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+  }
+
+  .ingredient-card-divider {
+    border: none;
+    border-top: 1px solid #dee2e6;
+    margin: 0;
+  }
+
+  .ingredient-card-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── Synonym pills ──────────────────────────────────────────── */
+  .ingredient-synonym-search {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
+  }
+
+  .ingredient-synonym-search::placeholder { color: #adb5bd; }
+  .ingredient-synonym-search:focus { border-color: #0d6efd; }
+
+  .ingredient-synonym-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-synonym-scroll::-webkit-scrollbar { width: 3px; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .ingredient-synonym-pill {
+    font-size: 0.75rem;
+    color: #495057;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .ingredient-synonym-pill[hidden] { display: none; }
+
+  /* ── Metric stats ───────────────────────────────────────────── */
+  .ingredient-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+  }
+
+  .ingredient-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ingredient-stat-icon {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    width: 1rem;
+    text-align: center;
+  }
+
+  .ingredient-stat-value {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .ingredient-stat-name {
+    color: #adb5bd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ingredient-ai-blurb {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .ingredient-card-footer {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: #adb5bd;
+  }
+
+  /* ── Empty / retrieve state ─────────────────────────────────── */
+  .ingredient-empty-state {
+    padding: 1rem 0;
+  }
+
+  .btn-retrieve-pubchem {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-retrieve-pubchem:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+  }
+
+  .btn-retrieve-pubchem.loading {
+    color: #adb5bd;
+    pointer-events: none;
+  }
+</style>
+
+<div class="container">
+  <div class="row mb-3">
+    <div class="col">
+      <h4 class="mb-2">Ingredients</h4>
+      <p class="text-muted">
+        Search our database by name or synonym. Press <kbd style="font-size:0.75rem;">Enter</kbd>
+        to retrieve an ingredient directly from PubChem when it isn't found locally.
+      </p>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <div class="ingredient-searchbar-wrapper">
+        <i class="bi bi-search ingredient-searchbar-icon"></i>
+        <input
+          id="ingredient-search-input"
+          class="ingredient-searchbar-input"
+          type="text"
+          name="query"
+          placeholder="Search by name or synonym…"
+          autocomplete="off"
+          hx-get="/htmx/ingredient-search_results"
+          hx-trigger="keyup changed delay:400ms"
+          hx-target="#ingredient-results"
+          hx-swap="innerHTML"
+          hx-include="this"
+          hx-vals='{"results_target": "#ingredient-results"}'
+          onkeydown="handleIngredientSearchKeydown(event)">
+      </div>
+      <p class="ingredient-searchbar-hint">
+        Searches primary names and all known synonyms.
+      </p>
+    </div>
+  </div>
+
+  <div id="ingredient-results"
+       hx-get="/htmx/ingredient-search_results?results_target=%23ingredient-results"
+       hx-trigger="load"
+       hx-swap="innerHTML">
+    <p class="text-muted" style="font-size:0.88rem;">Loading…</p>
+  </div>
+</div>
+
+<script>
+  function handleIngredientSearchKeydown(e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const query = e.target.value.trim();
+    if (!query) return;
+    // retrieveFromPubChem is defined by the ingredient-search_results component
+    if (typeof retrieveFromPubChem === 'function') {
+      retrieveFromPubChem(query, '#ingredient-results');
+    }
+  }
+</script>

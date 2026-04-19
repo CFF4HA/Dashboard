@@ -11,6 +11,7 @@
   <style>
     .navbar-shell {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       background: #f8f9fa;
@@ -36,6 +37,7 @@
 
     .navbar-nav-group {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 0.25rem;
     }
@@ -79,7 +81,7 @@
         <a href="/ingredients" class="navbar-nav-btn">
           <i class="bi bi-droplet-half"></i> Ingredient
         </a>
-        <a href="/profile" class="navbar-nav-btn">
+        <a href="/profile" class="navbar-nav-btn" disabled>
           <i class="bi bi-person-circle"></i> User Profile
         </a>
       </div>
@@ -88,7 +90,7 @@
     <div id="notification" class="m-2 p-1">
     </div>
 
-    <div class="m-2 p-1">
+    <div class="">
       {{ template "content" . }}
     </div>
 
