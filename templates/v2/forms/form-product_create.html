@@ -245,7 +245,8 @@
     const parts = raw.split(', ');
     if (parts.length > 1) {
       parts.slice(0, -1).forEach(p => commitIngredient(p.trim()));
-      e.target.value = parts[parts.length - 1];
+      commitIngredient(parts[parts.length - 1].trim());
+      e.target.value = "";
     }
   }
 
