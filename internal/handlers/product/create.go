@@ -19,7 +19,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	ingredient_names := core.RequestValuesAsSlice(r, "ingredient_names")
+	ingredient_names := r.Form["ingredient_names"]
 	origin := strings.TrimSpace(r.FormValue("origin"))
 	name := strings.TrimSpace(r.FormValue("name"))
 
