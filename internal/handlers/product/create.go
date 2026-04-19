@@ -58,7 +58,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 
 	for _, ingredient_name := range ingredient_names {
 		var ing types.Ingredient
-		tx := core.DB.Model(&types.Ingredient{}).Where("primary_name ~* ?", ingredient_name).First(&ing)
+		tx := core.DB.Model(&types.Ingredient{}).Preload("Metadata").Where("primary_name ~* ?", ingredient_name).First(&ing)
 		if tx.Error != nil {
 			if tx.Error.Error() != "record not found" {
 				return tx.Error
