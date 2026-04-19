@@ -73,6 +73,10 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		product.Ingredients = append(product.Ingredients, ing)
+		product.Metadata.NumHazard += ing.Metadata.NumHazards
+		product.Metadata.NumEffect += ing.Metadata.NumEffects
+		product.Metadata.NumSymptom += ing.Metadata.NumSymptoms
+		product.Metadata.NumReglations += ing.Metadata.NumRegulations
 	}
 
 	// saves the product to the database, which will also save the metadata and the

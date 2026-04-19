@@ -4,6 +4,7 @@ go 1.26.1
 
 require (
 	github.com/DAlba-sudo/verb v0.1.3
+	github.com/DAlba-sudo/verbs v0.0.2
 	github.com/google/uuid v1.6.0
 	github.com/tidwall/gjson v1.18.0
 	gorm.io/driver/postgres v1.6.0

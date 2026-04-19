@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/DAlba-sudo/verb"
+	"strings"
 )
 
 func main() {
@@ -17,6 +18,15 @@ func main() {
 			Bridges:    []verb.Bridge{},
 		},
 	)
+
+	v.Func("deref", func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
+	})
+	v.Func("sub", func(a, b int) int { return a - b })
+	v.Func("lower", func(a string) string { return strings.ToLower(a) })
 
 	// this is some further configuration that we have to do with regards to
 	// database, etc.
