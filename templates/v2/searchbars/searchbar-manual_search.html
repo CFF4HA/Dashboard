@@ -166,7 +166,7 @@
     </div>
   </div>
 
-  {{- if eq .Active.ActiveSearchMode "Product" }}
+  {{- if or (eq .Active.ActiveSearchMode "Product") (eq .Active.ActiveSearchMode "Ingredient") }}
   <div class="sb-filter-row">
     <select name="label_filter_op" class="sb-filter-op"
             aria-label="Label filter operator"
@@ -180,7 +180,7 @@
       <option value="excludes">Label doesn't contain</option>
     </select>
     <input type="text" name="label_filter_text" class="sb-filter-input"
-           placeholder="Filter by ingredient label payload (e.g. 'carcinogen')"
+           placeholder="Filter by label payload (e.g. 'carcinogen')"
            aria-label="Label filter text"
            autocomplete="off"
            hx-get="{{ .Active.Target }}"
