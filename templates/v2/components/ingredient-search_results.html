@@ -64,6 +64,9 @@
     opacity: 0.6;
   }
 
+  .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
+  .btn-star:hover { color: #ffc107; }
+
   .ingredient-card-header {
     display: flex;
     align-items: flex-start;
@@ -256,9 +259,20 @@
 
       <div class="ingredient-card-header">
         <p class="ingredient-card-name">{{ .PrimaryName }}</p>
-        {{- if .Failed }}
-        <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
-        {{- end }}
+        <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+          {{- if .Failed }}
+          <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
+          {{- end }}
+          {{- if exists $.FavoriteIngredients .Id }}
+          <button class="btn-star starred" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
+            <i class="bi bi-star-fill"></i>
+          </button>
+          {{- else }}
+          <button class="btn-star" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save ingredient">
+            <i class="bi bi-star"></i>
+          </button>
+          {{- end }}
+        </div>
       </div>
 
       {{- if not .Failed }}

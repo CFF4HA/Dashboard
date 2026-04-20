@@ -67,6 +67,18 @@
     opacity: 0.6;
   }
 
+  .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
+  .btn-star:hover, .btn-star.starred { color: #ffc107; }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
   .ingredient-card-header {
     display: flex;
     align-items: flex-start;
@@ -251,6 +263,80 @@
       </p>
     </div>
   </div>
+
+  {{- if .FavoriteIngredients }}
+  <div class="row mb-1">
+    <div class="col">
+      <p class="section-label"><i class="bi bi-star-fill me-1" style="color:#ffc107;"></i>Starred</p>
+    </div>
+  </div>
+  <div class="row mb-4">
+    {{- range .FavoriteIngredients }}
+    <div class="col-md-4 mb-4">
+      <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}">
+        <div class="ingredient-card-header">
+          <p class="ingredient-card-name">{{ .PrimaryName }}</p>
+          <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+            {{- if .Failed }}
+            <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
+            {{- end }}
+            <button class="btn-star starred"
+                    hx-post="/user/ingredient"
+                    hx-vals='{"id": "{{ .Id }}"}'
+                    hx-swap="outerHTML"
+                    title="Starred">
+              <i class="bi bi-star-fill"></i>
+            </button>
+          </div>
+        </div>
+        {{- if not .Failed }}
+        <hr class="ingredient-card-divider">
+        <div>
+          <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
+          <input class="ingredient-synonym-search" type="text" placeholder="&#128269; Filter synonyms..." autocomplete="off" oninput="filterSynonyms(this)">
+          <div class="ingredient-synonym-scroll">
+            {{- range .Names }}
+            <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+            {{- end }}
+          </div>
+        </div>
+        <hr class="ingredient-card-divider">
+        <div>
+          <div class="ingredient-card-label">Metrics</div>
+          <div class="ingredient-stats">
+            <div class="ingredient-stat">
+              <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
+              <span class="ingredient-stat-name">Hazards</span>
+            </div>
+            <div class="ingredient-stat">
+              <i class="bi bi-activity ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
+              <span class="ingredient-stat-name">Effects</span>
+            </div>
+            <div class="ingredient-stat">
+              <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
+              <span class="ingredient-stat-name">Symptoms</span>
+            </div>
+            <div class="ingredient-stat">
+              <i class="bi bi-shield-check ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
+              <span class="ingredient-stat-name">Regulations</span>
+            </div>
+          </div>
+        </div>
+        {{- if .Metadata.AiBlurb }}
+        <hr class="ingredient-card-divider">
+        <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+        {{- end }}
+        {{- end }}
+        <div class="ingredient-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+      </div>
+    </div>
+    {{- end }}
+  </div>
+  {{- end }}
 
   <div class="row mb-4">
     <div class="col">

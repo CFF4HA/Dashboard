@@ -21,10 +21,12 @@ func Index(v *verb.Verb) {
 }
 
 func Ingredients(v *verb.Verb) {
-	v.Page("/ingredients", "v2/pages/ingredients.html")
+	v.Page("/ingredients", "v2/pages/ingredients.html").
+		Bridge(bridges.UserFavoriteIngredientsBridge)
 
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
-		Bridge(bridges.IngredientSearchBridge)
+		Bridge(bridges.IngredientSearchBridge).
+		Bridge(bridges.UserFavoriteIngredientsBridge)
 
 	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
 }
@@ -39,19 +41,23 @@ func Products(v *verb.Verb) {
 
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
-		Bridge(bridges.ProductSearchBridge)
+		Bridge(bridges.ProductSearchBridge).
+		Bridge(bridges.UserFavoriteProductsBridge)
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html").
 		Bridge(bridges.ProductBridge(20, map[string]string{
 			"name": " ILIKE ",
-		}))
+		})).
+		Bridge(bridges.UserFavoriteProductsBridge)
 }
 
 func User(v *verb.Verb) {
 	// handles the user registration part of the user flow.
 	v.Action(http.MethodPut, "/user", user.HandleUserPUT)
 	v.Action(http.MethodPost, "/user/login", user.HandleUserPOST)
+	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
+	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
 
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
 

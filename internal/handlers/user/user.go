@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -116,5 +117,99 @@ func HandleUserPOST(w http.ResponseWriter, r *http.Request) error {
 		to = "/"
 	}
 	http.Redirect(w, r, to, http.StatusSeeOther)
+	return nil
+}
+
+func sessionUserID(r *http.Request) (uuid.UUID, error) {
+	c, err := r.Cookie("session")
+	if err != nil {
+		return uuid.Nil, errors.New("not authenticated")
+	}
+	sessionID, err := uuid.Parse(c.Value)
+	if err != nil {
+		return uuid.Nil, errors.New("invalid session cookie")
+	}
+	userID, ok := GetSession(sessionID)
+	if !ok {
+		return uuid.Nil, errors.New("invalid session")
+	}
+	return userID, nil
+}
+
+func HandleAddUserProduct(w http.ResponseWriter, r *http.Request) error {
+	userID, err := sessionUserID(r)
+	if err != nil {
+		return err
+	}
+
+	productID, err := uuid.Parse(r.FormValue("id"))
+	if err != nil {
+		return errors.New("invalid product id")
+	}
+
+	u := types.User{}
+	u.Model.Id = userID
+
+	var count int64
+	core.DB.Table("user_products").
+		Where("user_id = ? AND product_id = ?", userID, productID).
+		Count(&count)
+
+	if count > 0 {
+		var product types.Product
+		product.Model.Id = productID
+		core.DB.Model(&u).Association("Products").Delete(&product)
+		return writeStarButton(w, "/user/product", productID.String(), false)
+	}
+
+	var product types.Product
+	if err := core.DB.First(&product, "id = ?", productID).Error; err != nil {
+		return err
+	}
+	core.DB.Model(&u).Association("Products").Append(&product)
+	return writeStarButton(w, "/user/product", productID.String(), true)
+}
+
+func HandleAddUserIngredient(w http.ResponseWriter, r *http.Request) error {
+	userID, err := sessionUserID(r)
+	if err != nil {
+		return err
+	}
+
+	ingredientID, err := uuid.Parse(r.FormValue("id"))
+	if err != nil {
+		return errors.New("invalid ingredient id")
+	}
+
+	u := types.User{}
+	u.Model.Id = userID
+
+	var count int64
+	core.DB.Table("user_ingredients").
+		Where("user_id = ? AND ingredient_id = ?", userID, ingredientID).
+		Count(&count)
+
+	if count > 0 {
+		var ingredient types.Ingredient
+		ingredient.Model.Id = ingredientID
+		core.DB.Model(&u).Association("Ingredients").Delete(&ingredient)
+		return writeStarButton(w, "/user/ingredient", ingredientID.String(), false)
+	}
+
+	var ingredient types.Ingredient
+	if err := core.DB.First(&ingredient, "id = ?", ingredientID).Error; err != nil {
+		return err
+	}
+	core.DB.Model(&u).Association("Ingredients").Append(&ingredient)
+	return writeStarButton(w, "/user/ingredient", ingredientID.String(), true)
+}
+
+func writeStarButton(w http.ResponseWriter, path, id string, starred bool) error {
+	w.Header().Set("Content-Type", "text/html")
+	if starred {
+		fmt.Fprintf(w, `<button class="btn-star starred" hx-post="%s" hx-vals='{"id": "%s"}' hx-swap="outerHTML" title="Starred"><i class="bi bi-star-fill"></i></button>`, path, id)
+	} else {
+		fmt.Fprintf(w, `<button class="btn-star" hx-post="%s" hx-vals='{"id": "%s"}' hx-swap="outerHTML" title="Save"><i class="bi bi-star"></i></button>`, path, id)
+	}
 	return nil
 }

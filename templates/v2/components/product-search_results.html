@@ -23,7 +23,11 @@
 
   .sr-product-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
 
-  .sr-product-card-header { display: flex; flex-direction: column; gap: 0.3rem; }
+  .sr-product-card-header { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  .sr-product-card-header-meta { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 0; }
+
+  .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
+  .btn-star:hover { color: #ffc107; }
 
   .sr-product-card-name {
     font-size: 0.95rem;
@@ -133,12 +137,23 @@
     <div class="sr-product-card">
 
       <div class="sr-product-card-header">
-        <p class="sr-product-card-name">{{ .Name }}</p>
-        {{- if .Origin }}
-        <div class="sr-product-card-origin">
-          <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
-          <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
+        <div class="sr-product-card-header-meta">
+          <p class="sr-product-card-name">{{ .Name }}</p>
+          {{- if .Origin }}
+          <div class="sr-product-card-origin">
+            <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
+            <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
+          </div>
+          {{- end }}
         </div>
+        {{- if exists $.FavoriteProducts .Id }}
+        <button class="btn-star starred" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
+          <i class="bi bi-star-fill"></i>
+        </button>
+        {{- else }}
+        <button class="btn-star" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save product">
+          <i class="bi bi-star"></i>
+        </button>
         {{- end }}
       </div>
 
