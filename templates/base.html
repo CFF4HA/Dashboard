@@ -70,6 +70,8 @@
     }
   </style>
   <body>
+    <canvas id="bg-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
+
     <nav class="navbar-shell">
       <div class="navbar-nav-group">
         <a href="/" class="navbar-nav-btn">
@@ -100,5 +102,119 @@
     </div>
     <script src="/static/htmx/htmx.min.js"></script>
     <script src="/static/bootstrap/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script>
+    (function () {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx    = canvas.getContext('2d');
+
+      const SPACING     = 52;
+      const RAD         = 260;
+      const MAX_DISP    = SPACING * 0.55;
+      const SIGMA       = RAD / 3;
+      const RIPPLE_AMP  = 5;
+      const SPEED       = 1.1;
+      let   time        = 0;
+
+      let W, H;
+      let mouse = null;
+
+      const p = { x: 0, y: 0, vx: SPEED, vy: SPEED * 0.6 };
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        if (p.x === 0 && p.y === 0) { p.x = W * 0.35; p.y = H * 0.4; }
+      }
+
+      function displaced(gx, gy) {
+        const dx   = gx - p.x;
+        const dy   = gy - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist === 0 || dist > RAD) return { x: gx, y: gy };
+        const gauss  = Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
+        const pull   = gauss * MAX_DISP;
+        const ripple = Math.sin(dist * (Math.PI * 3 / RAD) - time * 0.04)
+                       * RIPPLE_AMP * (1 - dist / RAD);
+        const total = pull + ripple;
+        const ux = dx / dist, uy = dy / dist;
+        return { x: gx - ux * total, y: gy - uy * total };
+      }
+
+      function tick() {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+
+        const cols = Math.ceil(W / SPACING) + 2;
+        const rows = Math.ceil(H / SPACING) + 2;
+        const ox   = -SPACING + ((W % SPACING) / 2);
+        const oy   = -SPACING + ((H % SPACING) / 2);
+
+        ctx.lineWidth = 0.75;
+        ctx.strokeStyle = 'rgba(175,175,175,0.55)';
+
+        for (let r = 0; r < rows; r++) {
+          const baseY = oy + r * SPACING;
+          ctx.beginPath();
+          for (let c = 0; c < cols; c++) {
+            const pt = displaced(ox + c * SPACING, baseY);
+            c === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+          }
+          ctx.stroke();
+        }
+
+        for (let c = 0; c < cols; c++) {
+          const baseX = ox + c * SPACING;
+          ctx.beginPath();
+          for (let r = 0; r < rows; r++) {
+            const pt = displaced(baseX, oy + r * SPACING);
+            r === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
+          }
+          ctx.stroke();
+        }
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const pt = displaced(ox + c * SPACING, oy + r * SPACING);
+            const dx   = (ox + c * SPACING) - p.x;
+            const dy   = (oy + r * SPACING) - p.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < RAD) {
+              const t = 1 - dist / RAD;
+              ctx.fillStyle = `rgba(120,120,120,${0.35 + t * 0.55})`;
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 1.5 + t * 1.5, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.fillStyle = 'rgba(175,175,175,0.45)';
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+
+        time++;
+        if (mouse) {
+          p.x += (mouse.x - p.x) * 0.08;
+          p.y += (mouse.y - p.y) * 0.08;
+        } else {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0)  p.x = W;
+          if (p.x > W)  p.x = 0;
+          if (p.y < 0)  p.y = H;
+          if (p.y > H)  p.y = 0;
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      window.addEventListener('resize',    () => resize());
+      window.addEventListener('mousemove', e  => { mouse = { x: e.clientX, y: e.clientY }; });
+      window.addEventListener('mouseleave',()  => { mouse = null; });
+
+      resize();
+      tick();
+    })();
+    </script>
   </body>
 </html>
