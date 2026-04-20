@@ -87,6 +87,45 @@
   .searchbar-dropdown-menu .dropdown-item:hover {
     background: var(--dropdown-hover);
   }
+
+  .sb-filter-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .sb-filter-op,
+  .sb-filter-input {
+    background: #ffffff;
+    border: 1px solid var(--searchbar-border);
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--searchbar-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .sb-filter-op {
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .sb-filter-input {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  .sb-filter-input::placeholder { color: #adb5bd; }
+
+  .sb-filter-op:focus,
+  .sb-filter-input:focus {
+    border-color: var(--searchbar-focus);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
 </style>
 
 {{- with .Search }}
@@ -103,7 +142,7 @@
       hx-trigger="keyup changed delay:500ms"
       hx-target="#search-results"
       hx-swap="innerHTML"
-      hx-include="this"
+      hx-include="[name='label_filter_op'], [name='label_filter_text']"
       hx-vals='{"results_target": "#search-results"}'
     >
     <div class="dropdown">
@@ -126,6 +165,33 @@
       </ul>
     </div>
   </div>
+
+  {{- if eq .Active.ActiveSearchMode "Product" }}
+  <div class="sb-filter-row">
+    <select name="label_filter_op" class="sb-filter-op"
+            aria-label="Label filter operator"
+            hx-get="{{ .Active.Target }}"
+            hx-trigger="change"
+            hx-target="#search-results"
+            hx-swap="innerHTML"
+            hx-include="[name='query'], [name='label_filter_text']"
+            hx-vals='{"results_target": "#search-results"}'>
+      <option value="contains">Label contains</option>
+      <option value="excludes">Label doesn't contain</option>
+    </select>
+    <input type="text" name="label_filter_text" class="sb-filter-input"
+           placeholder="Filter by ingredient label payload (e.g. 'carcinogen')"
+           aria-label="Label filter text"
+           autocomplete="off"
+           hx-get="{{ .Active.Target }}"
+           hx-trigger="keyup changed delay:500ms"
+           hx-target="#search-results"
+           hx-swap="innerHTML"
+           hx-include="[name='query'], [name='label_filter_op']"
+           hx-vals='{"results_target": "#search-results"}'>
+  </div>
+  {{- end }}
+
   <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">{{ .Active.Description }}</p>
   <div id="search-results" class="mt-3"></div>
   <div class="d-flex flex-row">
