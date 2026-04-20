@@ -20,66 +20,61 @@
   const canvas = document.getElementById('bg-canvas');
   const ctx    = canvas.getContext('2d');
 
-  const SPACING  = 52;   // grid cell size in px
-  const P_COUNT  = 5;    // number of background particles
-  const P_RAD    = 220;  // particle influence radius
-  const P_STR    = 45;   // particle influence strength (px displacement)
-  const M_RAD    = 200;  // mouse influence radius
-  const M_STR    = 70;   // mouse influence strength
+  const SPACING     = 52;          // px between grid lines
+  const RAD         = 260;         // influence radius
+  const MAX_DISP    = SPACING * 0.55;  // hard cap: ~28px, never more than 55% of a cell
+  const SIGMA       = RAD / 3;     // Gaussian width (~87px)
+  const RIPPLE_AMP  = 5;           // px — subtle wake ring amplitude
+  const SPEED       = 1.1;         // particle px/frame
+  let   time        = 0;
 
-  let W, H, mouse = { x: -9999, y: -9999 }, particles = [];
+  let W, H;
+  let mouse = null;   // null = off-screen
+
+  // Single particle — starts at a random position with a fixed velocity
+  const p = { x: 0, y: 0, vx: SPEED, vy: SPEED * 0.6 };
 
   function resize() {
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
+    // Seed particle roughly center-ish on first load
+    if (p.x === 0 && p.y === 0) { p.x = W * 0.35; p.y = H * 0.4; }
   }
 
-  function mkParticle() {
-    return {
-      x:  Math.random() * W,
-      y:  Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: (Math.random() - 0.5) * 0.45,
-    };
-  }
-
-  function init() { particles = Array.from({ length: P_COUNT }, mkParticle); }
-
-  // Returns {dx,dy} displacement of grid point (gx,gy) from a single influencer
-  function pull(gx, gy, ix, iy, radius, strength) {
-    const dx = gx - ix, dy = gy - iy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist === 0 || dist > radius) return { dx: 0, dy: 0 };
-    const t = 1 - dist / radius;
-    const f = t * t * strength / dist;
-    return { dx: -dx * f, dy: -dy * f };
-  }
-
-  // Final displaced position of a grid vertex
+  // Displacement of grid vertex (gx, gy) toward the particle
   function displaced(gx, gy) {
-    let tdx = 0, tdy = 0;
-    for (const p of particles) {
-      const d = pull(gx, gy, p.x, p.y, P_RAD, P_STR);
-      tdx += d.dx; tdy += d.dy;
-    }
-    const m = pull(gx, gy, mouse.x, mouse.y, M_RAD, M_STR);
-    tdx += m.dx; tdy += m.dy;
-    return { x: gx + tdx, y: gy + tdy };
+    const dx   = gx - p.x;
+    const dy   = gy - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0 || dist > RAD) return { x: gx, y: gy };
+
+    // Gaussian core — smoothly peaks at dist=0, no singularity, hard-capped magnitude
+    const gauss = Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
+    const pull  = gauss * MAX_DISP;
+
+    // Ripple ring — sinusoidal wake that radiates outward, fades toward the edge
+    const ripple = Math.sin(dist * (Math.PI * 3 / RAD) - time * 0.04)
+                   * RIPPLE_AMP
+                   * (1 - dist / RAD);
+
+    const total = pull + ripple;
+    const ux = dx / dist, uy = dy / dist;   // unit vector away from particle
+    return { x: gx - ux * total, y: gy - uy * total };
   }
 
   function tick() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
-    const cols  = Math.ceil(W / SPACING) + 2;
-    const rows  = Math.ceil(H / SPACING) + 2;
-    const ox    = -SPACING + ((W % SPACING) / 2);
-    const oy    = -SPACING + ((H % SPACING) / 2);
+    const cols = Math.ceil(W / SPACING) + 2;
+    const rows = Math.ceil(H / SPACING) + 2;
+    const ox   = -SPACING + ((W % SPACING) / 2);
+    const oy   = -SPACING + ((H % SPACING) / 2);
 
-    ctx.strokeStyle = 'rgba(180,180,180,0.55)';
-    ctx.lineWidth   = 0.75;
+    // --- Grid lines ---
+    ctx.lineWidth = 0.75;
 
-    // Horizontal lines
+    // Horizontal
     for (let r = 0; r < rows; r++) {
       const baseY = oy + r * SPACING;
       ctx.beginPath();
@@ -87,10 +82,11 @@
         const pt = displaced(ox + c * SPACING, baseY);
         c === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
       }
+      ctx.strokeStyle = 'rgba(175,175,175,0.55)';
       ctx.stroke();
     }
 
-    // Vertical lines
+    // Vertical
     for (let c = 0; c < cols; c++) {
       const baseX = ox + c * SPACING;
       ctx.beginPath();
@@ -98,34 +94,58 @@
         const pt = displaced(baseX, oy + r * SPACING);
         r === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
       }
+      ctx.strokeStyle = 'rgba(175,175,175,0.55)';
       ctx.stroke();
     }
 
-    // Intersection dots
-    ctx.fillStyle = 'rgba(160,160,160,0.5)';
+    // --- Intersection dots (regular gray) ---
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const pt = displaced(ox + c * SPACING, oy + r * SPACING);
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
-        ctx.fill();
+        // Highlight nodes close to the particle
+        const dx   = (ox + c * SPACING) - p.x;
+        const dy   = (oy + r * SPACING) - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < RAD) {
+          const t = 1 - dist / RAD;
+          ctx.fillStyle = `rgba(120,120,120,${0.35 + t * 0.55})`;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 1.5 + t * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = 'rgba(175,175,175,0.45)';
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
 
-    // Move particles
-    for (const p of particles) {
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = W; else if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; else if (p.y > H) p.y = 0;
+
+    // --- Move & wrap ---
+    time++;
+    if (mouse) {
+      // Smoothly follow the cursor (lerp at 8% per frame)
+      p.x += (mouse.x - p.x) * 0.08;
+      p.y += (mouse.y - p.y) * 0.08;
+    } else {
+      // Autonomous drift when mouse is off-screen
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0)  p.x = W;
+      if (p.x > W)  p.x = 0;
+      if (p.y < 0)  p.y = H;
+      if (p.y > H)  p.y = 0;
     }
 
     requestAnimationFrame(tick);
   }
 
-  window.addEventListener('resize',    () => { resize(); init(); });
-  window.addEventListener('mousemove', e  => { mouse.x = e.clientX; mouse.y = e.clientY; });
-  window.addEventListener('mouseleave',() => { mouse.x = -9999; mouse.y = -9999; });
+  window.addEventListener('resize',    () => resize());
+  window.addEventListener('mousemove', e  => { mouse = { x: e.clientX, y: e.clientY }; });
+  window.addEventListener('mouseleave',()  => { mouse = null; });
 
-  resize(); init(); tick();
+  resize();
+  tick();
 })();
 </script>
