@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/bridges"
@@ -26,6 +27,16 @@ func main() {
 		},
 	)
 
+	v.Func("exists", func(m interface{}, key interface{}) bool {
+		if m == nil {
+			return false
+		}
+		rv := reflect.ValueOf(m)
+		if rv.Kind() != reflect.Map {
+			return false
+		}
+		return rv.MapIndex(reflect.ValueOf(key)).IsValid()
+	})
 	v.Func("deref", func(s *string) string {
 		if s == nil {
 			return ""
