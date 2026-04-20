@@ -1,0 +1,107 @@
+<style>
+  .form-shell {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #495057;
+  }
+
+  .form-shell .form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.3rem;
+  }
+
+  .form-shell .form-control {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.9rem;
+    color: #495057;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .form-shell .form-control::placeholder {
+    color: #adb5bd;
+  }
+
+  .form-shell .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    outline: none;
+  }
+
+  .btn-form-submit {
+    background: #0d6efd;
+    border: none;
+    border-radius: 8px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.85rem;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+
+  .btn-form-submit:hover {
+    background: #0b5ed7;
+  }
+
+  .form-divider {
+    border: none;
+    border-top: 1px solid #dee2e6;
+    margin: 1rem 0;
+  }
+</style>
+
+<div id="auth-panel">
+  <form class="form-shell"
+        hx-put="/user"
+        hx-target="#auth-panel"
+        hx-swap="outerHTML">
+
+    <h6 class="mb-3" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.95rem; font-weight: 600; color: #495057;">
+      <i class="bi bi-person-plus me-2" style="color: #adb5bd;"></i>Create an account
+    </h6>
+
+    <div class="mb-3">
+      <label for="signup-username" class="form-label">Username <span style="color: #dc3545;">*</span></label>
+      <input type="text"
+             id="signup-username"
+             name="username"
+             class="form-control"
+             placeholder="Choose a username"
+             autocomplete="username"
+             required
+             autofocus>
+    </div>
+
+    <div class="mb-4">
+      <label for="signup-password" class="form-label">Password <span style="color: #dc3545;">*</span></label>
+      <input type="password"
+             id="signup-password"
+             name="password"
+             class="form-control"
+             placeholder="Choose a password"
+             autocomplete="new-password"
+             required>
+    </div>
+
+    <hr class="form-divider">
+
+    <div class="d-grid mb-3">
+      <button type="submit" class="btn-form-submit">
+        <i class="bi bi-check2 me-1"></i>Sign up
+      </button>
+    </div>
+
+    <div class="text-center" style="font-size: 0.82rem; color: #adb5bd;">
+      Already have an account?
+      <a href="/login" style="color: #0d6efd; text-decoration: none;">Log in</a>
+    </div>
+  </form>
+</div>

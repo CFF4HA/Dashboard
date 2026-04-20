@@ -1,0 +1,34 @@
+<div class="container-fluid py-5 g-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-8 col-md-5 col-lg-4 my-3">
+      <div class="text-center mb-4">
+        <img src="/static/github-ff-banner.png" class="img-fluid"/>
+      </div>
+
+      <div id="auth-panel">
+        <form method="POST" action="/user/login">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required autofocus/>
+          </div>
+          <div class="mb-4">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required/>
+          </div>
+          <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+
+        <div class="text-center" style="font-size: 0.82rem; color: #adb5bd;">
+          Don't have an account?
+          <a hx-get="/htmx/form-user_signup"
+             hx-target="#auth-panel"
+             hx-swap="outerHTML"
+             href="#"
+             style="color: #0d6efd; text-decoration: none;">Sign up</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

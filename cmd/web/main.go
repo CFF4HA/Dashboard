@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 
+	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/verb"
 )
@@ -17,7 +18,11 @@ func main() {
 			Templates:  Cfg.TemplateDir,
 			Static:     Cfg.StaticDir,
 			LiveReload: Cfg.Reload,
-			Bridges:    []verb.Bridge{},
+			Bridges: []verb.Bridge{
+				bridges.UserSessionRequired{
+					Excludes: []string{"/login", "/user", "/user/login", "/htmx/form-user_signup"},
+				},
+			},
 		},
 	)
 
@@ -49,6 +54,7 @@ func main() {
 	SearchBars(v)
 	Ingredients(v)
 	Products(v)
+	User(v)
 
 	// The following are the general use page creation routes
 	Index(v)
