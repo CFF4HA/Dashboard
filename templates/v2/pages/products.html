@@ -66,15 +66,9 @@
     flex: 1;
   }
 
-  .product-card-origin a:hover {
-    text-decoration: underline;
-  }
+  .product-card-origin a:hover { text-decoration: underline; }
 
-  .product-card-divider {
-    border: none;
-    border-top: 1px solid #dee2e6;
-    margin: 0;
-  }
+  .product-card-divider { border: none; border-top: 1px solid #dee2e6; margin: 0; }
 
   .product-card-label {
     font-size: 0.72rem;
@@ -100,13 +94,8 @@
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
-  .ingredient-search-input::placeholder {
-    color: #adb5bd;
-  }
-
-  .ingredient-search-input:focus {
-    border-color: #0d6efd;
-  }
+  .ingredient-search-input::placeholder { color: #adb5bd; }
+  .ingredient-search-input:focus { border-color: #0d6efd; }
 
   .ingredient-pills-scroll {
     display: flex;
@@ -117,18 +106,9 @@
     padding-right: 0.1rem;
   }
 
-  .ingredient-pills-scroll::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  .ingredient-pills-scroll::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .ingredient-pills-scroll::-webkit-scrollbar-thumb {
-    background: #dee2e6;
-    border-radius: 2px;
-  }
+  .ingredient-pills-scroll::-webkit-scrollbar { width: 3px; }
+  .ingredient-pills-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ingredient-pills-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
 
   .ingredient-pill {
     font-size: 0.75rem;
@@ -140,51 +120,14 @@
     white-space: nowrap;
   }
 
-  .ingredient-pill[hidden] {
-    display: none;
-  }
+  .ingredient-pill[hidden] { display: none; }
+  .ingredient-empty-msg { font-size: 0.78rem; color: #adb5bd; display: none; }
 
-  .ingredient-empty-msg {
-    font-size: 0.78rem;
-    color: #adb5bd;
-    display: none;
-  }
-
-  .product-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.35rem;
-  }
-
-  .product-stat {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .product-stat-icon {
-    flex-shrink: 0;
-    font-size: 0.75rem;
-    color: #adb5bd;
-    width: 1rem;
-    text-align: center;
-  }
-
-  .product-stat-value {
-    flex-shrink: 0;
-    font-weight: 600;
-    color: #495057;
-  }
-
-  .product-stat-name {
-    color: #adb5bd;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  .product-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+  .product-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; min-width: 0; overflow: hidden; }
+  .product-stat-icon { flex-shrink: 0; font-size: 0.75rem; color: #adb5bd; width: 1rem; text-align: center; }
+  .product-stat-value { flex-shrink: 0; font-weight: 600; color: #495057; }
+  .product-stat-name { color: #adb5bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .product-ai-blurb {
     font-size: 0.8rem;
@@ -194,11 +137,40 @@
     margin: 0;
   }
 
-  .product-card-footer {
-    margin-top: auto;
-    font-size: 0.72rem;
-    color: #adb5bd;
+  .product-card-footer { margin-top: auto; font-size: 0.72rem; color: #adb5bd; }
+
+  /* ── Search bar ─────────────────────────────────────────────── */
+  .product-searchbar-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    gap: 0.5rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
+
+  .product-searchbar-wrapper:focus-within {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .product-searchbar-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    outline: none;
+  }
+
+  .product-searchbar-input::placeholder { color: #adb5bd; }
+  .product-searchbar-icon { flex-shrink: 0; color: #adb5bd; font-size: 0.85rem; }
 </style>
 
 <div class="container">
@@ -226,6 +198,25 @@
     </div>
   </div>
 
+  <div class="row mb-4">
+    <div class="col">
+      <div class="product-searchbar-wrapper">
+        <i class="bi bi-search product-searchbar-icon"></i>
+        <input
+          class="product-searchbar-input"
+          type="text"
+          name="query"
+          placeholder="Search products by name…"
+          autocomplete="off"
+          hx-get="/htmx/product-search_results"
+          hx-trigger="keyup changed delay:400ms"
+          hx-target="#product-results"
+          hx-swap="innerHTML"
+          hx-include="this">
+      </div>
+    </div>
+  </div>
+
   {{- if .FavoriteProducts }}
   <div class="row mb-1">
     <div class="col">
@@ -246,18 +237,28 @@
             </div>
             {{- end }}
           </div>
-          <button class="btn-star starred"
-                  hx-post="/user/product"
-                  hx-vals='{"id": "{{ .Id }}"}'
-                  hx-swap="outerHTML"
-                  title="Starred">
-            <i class="bi bi-star-fill"></i>
-          </button>
+          <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+            <button class="btn-star"
+              hx-get="/htmx/product-detail?id={{ .Id }}"
+              hx-target="#side-modal_content"
+              hx-swap="innerHTML"
+              hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+              title="View details">
+              <i class="bi bi-arrow-right-circle"></i>
+            </button>
+            <button class="btn-star starred"
+                    hx-post="/user/product"
+                    hx-vals='{"id": "{{ .Id }}"}'
+                    hx-swap="outerHTML"
+                    title="Starred">
+              <i class="bi bi-star-fill"></i>
+            </button>
+          </div>
         </div>
         <hr class="product-card-divider">
         <div>
           <div class="product-card-label">Ingredients ({{ len .Ingredients }})</div>
-          <input class="ingredient-search-input" type="text" placeholder="&#128269; Filter ingredients..." oninput="filterIngredients(this)">
+          <input class="ingredient-search-input" type="text" placeholder="&#128269; Filter ingredients..." autocomplete="off" oninput="filterIngredients(this)">
           <div class="ingredient-pills-scroll">
             {{- range .Ingredients }}
             <span class="ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
@@ -307,77 +308,11 @@
   </div>
   {{- end }}
 
-  <div class="row mb-3">
-    {{- range .Products }}
-    {{- if not (exists $.FavoriteProducts .Id) }}
-    <div class="col-md-5 mb-4">
-      <div class="product-card">
-        <div class="product-card-header">
-          <div class="product-card-header-meta">
-            <p class="product-card-name">{{ .Name }}</p>
-            {{- if .Origin }}
-            <div class="product-card-origin">
-              <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
-              <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
-            </div>
-            {{- end }}
-          </div>
-          <button class="btn-star"
-                  hx-post="/user/product"
-                  hx-vals='{"id": "{{ .Id }}"}'
-                  hx-swap="outerHTML"
-                  title="Save product">
-            <i class="bi bi-star"></i>
-          </button>
-        </div>
-        <hr class="product-card-divider">
-        <div>
-          <div class="product-card-label">Ingredients ({{ len .Ingredients }})</div>
-          <input class="ingredient-search-input" type="text" placeholder="&#128269; Filter ingredients..." oninput="filterIngredients(this)">
-          <div class="ingredient-pills-scroll">
-            {{- range .Ingredients }}
-            <span class="ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
-            {{- end }}
-          </div>
-          <span class="ingredient-empty-msg">No ingredients match.</span>
-        </div>
-        <hr class="product-card-divider">
-        <div>
-          <div class="product-card-label">Metrics</div>
-          <div class="product-stats">
-            <div class="product-stat">
-              <i class="bi bi-exclamation-triangle product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumHazard }}</span>
-              <span class="product-stat-name">Hazards</span>
-            </div>
-            <div class="product-stat">
-              <i class="bi bi-activity product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumEffect }}</span>
-              <span class="product-stat-name">Effects</span>
-            </div>
-            <div class="product-stat">
-              <i class="bi bi-heart-pulse product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumSymptom }}</span>
-              <span class="product-stat-name">Symptoms</span>
-            </div>
-            <div class="product-stat">
-              <i class="bi bi-shield-check product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumReglations }}</span>
-              <span class="product-stat-name">Regulations</span>
-            </div>
-          </div>
-        </div>
-        {{- if .Metadata.AiBlurb }}
-        <hr class="product-card-divider">
-        <p class="product-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-        {{- end }}
-        <div class="product-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
-      </div>
-    </div>
-    {{- end }}
-    {{- else }}
-    <p class="text-muted">No products found. Try creating one?</p>
-    {{- end }}
+  <div id="product-results"
+       hx-get="/htmx/product-search_results"
+       hx-trigger="load"
+       hx-swap="innerHTML">
+    <p class="text-muted" style="font-size:0.88rem;">Loading…</p>
   </div>
 
 </div>
@@ -389,13 +324,11 @@
     const emptyMsg = container.nextElementSibling;
     const pills = container.querySelectorAll('.ingredient-pill');
     let visible = 0;
-
     pills.forEach(pill => {
       const match = pill.dataset.name.includes(query);
       pill.hidden = !match;
       if (match) visible++;
     });
-
     emptyMsg.style.display = visible === 0 ? 'block' : 'none';
   }
 </script>

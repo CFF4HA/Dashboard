@@ -1,0 +1,219 @@
+{{- with .Ingredient }}
+<h5 hx-swap-oob="true" id="side-modal-label">{{ .PrimaryName }}</h5>
+
+<style>
+  .detail-section-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.4rem;
+  }
+
+  .detail-section {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .detail-label-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: #495057;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: normal;
+    word-break: break-word;
+    cursor: default;
+  }
+
+  .detail-label-pill[hidden] { display: none; }
+
+  .detail-label-origin {
+    font-size: 0.68rem;
+    color: #adb5bd;
+  }
+
+  .detail-label-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 8rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .detail-label-scroll::-webkit-scrollbar { width: 3px; }
+  .detail-label-scroll::-webkit-scrollbar-track { background: transparent; }
+  .detail-label-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .detail-filter-input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
+  }
+
+  .detail-filter-input::placeholder { color: #adb5bd; }
+  .detail-filter-input:focus { border-color: #0d6efd; }
+
+  .detail-empty-note {
+    font-size: 0.78rem;
+    color: #adb5bd;
+  }
+</style>
+
+<script>
+  function filterDetailPills(input) {
+    const q = input.value.toLowerCase().trim();
+    const scroll = input.nextElementSibling;
+    const emptyMsg = scroll.nextElementSibling;
+    const pills = scroll.querySelectorAll('[data-name]');
+    let visible = 0;
+    pills.forEach(pill => {
+      const match = q === '' || pill.dataset.name.includes(q);
+      pill.hidden = !match;
+      if (match) visible++;
+    });
+    if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+  }
+</script>
+
+<!-- Metrics -->
+<div class="detail-section">
+  <div class="detail-section-title">Metrics</div>
+  <div class="ingredient-stats">
+    <div class="ingredient-stat">
+      <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
+      <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
+      <span class="ingredient-stat-name">Hazards</span>
+    </div>
+    <div class="ingredient-stat">
+      <i class="bi bi-activity ingredient-stat-icon"></i>
+      <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
+      <span class="ingredient-stat-name">Effects</span>
+    </div>
+    <div class="ingredient-stat">
+      <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
+      <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
+      <span class="ingredient-stat-name">Symptoms</span>
+    </div>
+    <div class="ingredient-stat">
+      <i class="bi bi-shield-check ingredient-stat-icon"></i>
+      <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
+      <span class="ingredient-stat-name">Regulations</span>
+    </div>
+  </div>
+</div>
+
+{{- if .Metadata.AiBlurb }}
+<!-- AI summary -->
+<div class="detail-section">
+  <div class="detail-section-title">Summary</div>
+  <p class="ingredient-ai-blurb" style="-webkit-line-clamp:unset;overflow:visible;">{{ deref .Metadata.AiBlurb }}</p>
+</div>
+{{- end }}
+
+<!-- Names -->
+<div class="detail-section">
+  <div class="detail-section-title">Names ({{ len .Names }})</div>
+  {{- if gt (len .Names) 0 }}
+  <input class="detail-filter-input" type="text" placeholder="&#128269; Filter names..." autocomplete="off" oninput="filterDetailPills(this)">
+  <div class="detail-label-scroll">
+    {{- range .Names }}
+    <span class="ingredient-synonym-pill detail-label-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+    {{- end }}
+  </div>
+  <span class="detail-empty-note" style="display:none;">No names match.</span>
+  {{- else }}
+  <span class="detail-empty-note">No names on record.</span>
+  {{- end }}
+</div>
+
+<!-- Hazards -->
+<div class="detail-section">
+  <div class="detail-section-title">Hazards ({{ .Metadata.NumHazards }})</div>
+  {{- if gt .Metadata.NumHazards 0 }}
+  <input class="detail-filter-input" type="text" placeholder="&#128269; Filter hazards..." autocomplete="off" oninput="filterDetailPills(this)">
+  <div class="detail-label-scroll">
+    {{- range .Labels }}{{- if eq .Type "hazard" }}
+    <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+    </span>
+    {{- end }}{{- end }}
+  </div>
+  <span class="detail-empty-note" style="display:none;">No hazards match.</span>
+  {{- else }}
+  <span class="detail-empty-note">No hazards on record.</span>
+  {{- end }}
+</div>
+
+<!-- Effects -->
+<div class="detail-section">
+  <div class="detail-section-title">Effects ({{ .Metadata.NumEffects }})</div>
+  {{- if gt .Metadata.NumEffects 0 }}
+  <input class="detail-filter-input" type="text" placeholder="&#128269; Filter effects..." autocomplete="off" oninput="filterDetailPills(this)">
+  <div class="detail-label-scroll">
+    {{- range .Labels }}{{- if eq .Type "effect" }}
+    <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+    </span>
+    {{- end }}{{- end }}
+  </div>
+  <span class="detail-empty-note" style="display:none;">No effects match.</span>
+  {{- else }}
+  <span class="detail-empty-note">No effects on record.</span>
+  {{- end }}
+</div>
+
+<!-- Symptoms -->
+<div class="detail-section">
+  <div class="detail-section-title">Symptoms ({{ .Metadata.NumSymptoms }})</div>
+  {{- if gt .Metadata.NumSymptoms 0 }}
+  <input class="detail-filter-input" type="text" placeholder="&#128269; Filter symptoms..." autocomplete="off" oninput="filterDetailPills(this)">
+  <div class="detail-label-scroll">
+    {{- range .Labels }}{{- if eq .Type "symptom" }}
+    <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+    </span>
+    {{- end }}{{- end }}
+  </div>
+  <span class="detail-empty-note" style="display:none;">No symptoms match.</span>
+  {{- else }}
+  <span class="detail-empty-note">No symptoms on record.</span>
+  {{- end }}
+</div>
+
+<!-- Regulations -->
+<div class="detail-section">
+  <div class="detail-section-title">Regulations ({{ .Metadata.NumRegulations }})</div>
+  {{- if gt .Metadata.NumRegulations 0 }}
+  <input class="detail-filter-input" type="text" placeholder="&#128269; Filter regulations..." autocomplete="off" oninput="filterDetailPills(this)">
+  <div class="detail-label-scroll">
+    {{- range .Labels }}{{- if eq .Type "regulation" }}
+    <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+    </span>
+    {{- end }}{{- end }}
+  </div>
+  <span class="detail-empty-note" style="display:none;">No regulations match.</span>
+  {{- else }}
+  <span class="detail-empty-note">No regulations on record.</span>
+  {{- end }}
+</div>
+{{- end }}

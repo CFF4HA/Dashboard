@@ -1,12 +1,14 @@
 package bridges
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/DAlba-sudo/verb"
+	"github.com/google/uuid"
 )
 
 type IngredientSearchResult struct {
@@ -77,4 +79,20 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 	}
 
 	return IngredientSearchResult{Ingredients: ingredients, Query: q, ResultsTarget: target}, nil
+})
+
+var IngredientDetailBridge = verb.Map("Ingredient", func(r *http.Request, m map[string]any) (any, error) {
+	idStr := strings.TrimSpace(r.FormValue("id"))
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return nil, errors.New("invalid ingredient id")
+	}
+
+	var ingredient types.Ingredient
+	tx := core.DB.Preload("Metadata").Preload("Names").Preload("Labels").First(&ingredient, "id = ?", id)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return ingredient, nil
 })

@@ -28,6 +28,9 @@ func Ingredients(v *verb.Verb) {
 		Bridge(bridges.IngredientSearchBridge).
 		Bridge(bridges.UserFavoriteIngredientsBridge)
 
+	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
+		Bridge(bridges.IngredientDetailBridge)
+
 	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
 }
 
@@ -43,6 +46,9 @@ func Products(v *verb.Verb) {
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
 		Bridge(bridges.ProductSearchBridge).
 		Bridge(bridges.UserFavoriteProductsBridge)
+
+	v.Component("v2/components/product-detail.html", htmx.Div()).
+		Bridge(bridges.ProductDetailBridge)
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html").

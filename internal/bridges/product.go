@@ -1,6 +1,7 @@
 package bridges
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/DAlba-sudo/verb"
 	verbs_gorm "github.com/DAlba-sudo/verbs/gorm"
+	"github.com/google/uuid"
 )
 
 func ProductBridge(limit int, modifiers map[string]string) verb.Bridge {
@@ -75,4 +77,26 @@ var ProductSearchBridge = verb.Map("Search", func(r *http.Request, m map[string]
 	}
 
 	return ProductSearchResult{Products: products, Query: q}, nil
+})
+
+var ProductDetailBridge = verb.Map("Product", func(r *http.Request, m map[string]any) (any, error) {
+	idStr := strings.TrimSpace(r.FormValue("id"))
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return nil, errors.New("invalid product id")
+	}
+
+	var product types.Product
+	tx := core.DB.
+		Preload("Metadata").
+		Preload("Ingredients").
+		Preload("Ingredients.Labels").
+		Preload("Ingredients.Names").
+		Preload("Ingredients.Metadata").
+		First(&product, "id = ?", id)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return product, nil
 })

@@ -146,6 +146,14 @@
           </div>
           {{- end }}
         </div>
+        <button class="btn-star"
+          hx-get="/htmx/product-detail?id={{ .Id }}"
+          hx-target="#side-modal_content"
+          hx-swap="innerHTML"
+          hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+          title="View details">
+          <i class="bi bi-arrow-right-circle"></i>
+        </button>
         {{- if exists $.FavoriteProducts .Id }}
         <button class="btn-star starred" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
           <i class="bi bi-star-fill"></i>
