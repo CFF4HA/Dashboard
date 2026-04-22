@@ -78,6 +78,7 @@ func HandleUserPUT(w http.ResponseWriter, r *http.Request) error {
 		HttpOnly: true,
 	})
 
+	w.Header().Set("Hx-Redirect", "/")
 	return core.DB.Create(&user).Error
 }
 
