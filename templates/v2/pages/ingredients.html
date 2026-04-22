@@ -274,33 +274,58 @@
     {{- range .FavoriteIngredients }}
     <div class="col-md-4 mb-4">
       <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}">
+
         <div class="ingredient-card-header">
           <p class="ingredient-card-name">{{ .PrimaryName }}</p>
           <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+            <button class="btn-star"
+              hx-get="/htmx/ingredient-detail?id={{ .Id }}"
+              hx-target="#side-modal_content"
+              hx-swap="innerHTML"
+              hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+              title="View details">
+              <i class="bi bi-arrow-right-circle"></i>
+            </button>
             {{- if .Failed }}
             <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
             {{- end }}
-            <button class="btn-star starred"
-                    hx-post="/user/ingredient"
-                    hx-vals='{"id": "{{ .Id }}"}'
-                    hx-swap="outerHTML"
-                    title="Starred">
+            {{- if exists $.FavoriteIngredients .Id }}
+            <button class="btn-star starred" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
               <i class="bi bi-star-fill"></i>
             </button>
+            {{- else }}
+            <button class="btn-star" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save ingredient">
+              <i class="bi bi-star"></i>
+            </button>
+            {{- end }}
           </div>
         </div>
+
         {{- if not .Failed }}
         <hr class="ingredient-card-divider">
+
         <div>
           <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
-          <input class="ingredient-synonym-search" type="text" placeholder="&#128269; Filter synonyms..." autocomplete="off" oninput="filterSynonyms(this)">
+          {{- if gt (len .Names) 0 }}
+          <input
+            class="ingredient-synonym-search"
+            type="text"
+            placeholder="&#128269; Filter synonyms..."
+            autocomplete="off"
+            oninput="filterSynonyms(this)">
           <div class="ingredient-synonym-scroll">
             {{- range .Names }}
             <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
             {{- end }}
           </div>
+          <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:#adb5bd;">No synonyms match.</span>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No synonyms on record.</span>
+          {{- end }}
         </div>
+
         <hr class="ingredient-card-divider">
+
         <div>
           <div class="ingredient-card-label">Metrics</div>
           <div class="ingredient-stats">
@@ -326,12 +351,17 @@
             </div>
           </div>
         </div>
+
         {{- if .Metadata.AiBlurb }}
         <hr class="ingredient-card-divider">
         <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
         {{- end }}
         {{- end }}
-        <div class="ingredient-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+
+        <div class="ingredient-card-footer">
+          Added {{ .Created.Format "Jan 2, 2006" }}
+        </div>
+
       </div>
     </div>
     {{- end }}

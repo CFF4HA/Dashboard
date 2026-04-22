@@ -153,7 +153,7 @@
   <div class="detail-label-scroll">
     {{- range .Labels }}{{- if eq .Type "hazard" }}
     <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
-      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}" target="_blank">{{ deref .Origin }}</a></span>{{- end }}
     </span>
     {{- end }}{{- end }}
   </div>
@@ -171,7 +171,7 @@
   <div class="detail-label-scroll">
     {{- range .Labels }}{{- if eq .Type "effect" }}
     <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
-      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}" target="_blank">{{ deref .Origin }}</a></span>{{- end }}
     </span>
     {{- end }}{{- end }}
   </div>
@@ -189,7 +189,7 @@
   <div class="detail-label-scroll">
     {{- range .Labels }}{{- if eq .Type "symptom" }}
     <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
-      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}" target="_blank">{{ deref .Origin }}</a></span>{{- end }}
     </span>
     {{- end }}{{- end }}
   </div>
@@ -207,7 +207,7 @@
   <div class="detail-label-scroll">
     {{- range .Labels }}{{- if eq .Type "regulation" }}
     <span class="detail-label-pill" data-name="{{ .Payload | lower }}">
-      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}">{{ deref .Origin }}</a></span>{{- end }}
+      {{ .Payload }}{{- if .Origin }}<span class="detail-label-origin"><a href="{{ .Origin }}" target="_blank">{{ deref .Origin }}</a></span>{{- end }}
     </span>
     {{- end }}{{- end }}
   </div>
