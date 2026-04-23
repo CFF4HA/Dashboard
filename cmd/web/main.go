@@ -2,11 +2,13 @@ package main
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/verb"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -36,6 +38,9 @@ func main() {
 			return false
 		}
 		return rv.MapIndex(reflect.ValueOf(key)).IsValid()
+	})
+	v.Func("uuidExists", func(slice []uuid.UUID, item uuid.UUID) bool {
+		return slices.Contains(slice, item)
 	})
 	v.Func("deref", func(s *string) string {
 		if s == nil {

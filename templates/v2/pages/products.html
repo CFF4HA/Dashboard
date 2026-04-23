@@ -16,6 +16,16 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
+  .product-card--safe {
+    background: linear-gradient(135deg, #f0fdf4, #f8f9fa);
+    border-color: #86efac;
+  }
+
+  .product-card--unsafe {
+    background: linear-gradient(135deg, #fef2f2, #f8f9fa);
+    border-color: #fca5a5;
+  }
+
   .product-card-header {
     display: flex;
     flex-direction: row;
@@ -226,7 +236,7 @@
   <div class="row mb-4">
     {{- range .FavoriteProducts }}
     <div class="col-md-5 mb-4">
-      <div class="product-card">
+      <div class="product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} product-card--unsafe{{ end }}">
         <div class="product-card-header">
           <div class="product-card-header-meta">
             <p class="product-card-name">{{ .Name }}</p>
@@ -310,7 +320,7 @@
 
   <div id="product-results"
        hx-get="/htmx/product-search_results"
-       hx-trigger="load"
+       hx-trigger="load, productCategorized from:body"
        hx-swap="innerHTML">
     <p class="text-muted" style="font-size:0.88rem;">Loading…</p>
   </div>

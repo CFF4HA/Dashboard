@@ -60,6 +60,16 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
+  .ingredient-card--safe {
+    background: linear-gradient(135deg, #f0fdf4, #f8f9fa);
+    border-color: #86efac;
+  }
+
+  .ingredient-card--unsafe {
+    background: linear-gradient(135deg, #fef2f2, #f8f9fa);
+    border-color: #fca5a5;
+  }
+
   .ingredient-card--failed {
     opacity: 0.6;
   }
@@ -255,7 +265,7 @@
 <div class="row">
   {{- range .Ingredients }}
   <div class="col-md-4 mb-4">
-    <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}">
+    <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
 
       <div class="ingredient-card-header">
         <p class="ingredient-card-name">{{ .PrimaryName }}</p>
@@ -270,7 +280,7 @@
           </button>
           {{- if .Failed }}
           <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
-          {{- end }}
+          {{- end }} 
           {{- if exists $.FavoriteIngredients .Id }}
           <button class="btn-star starred" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
             <i class="bi bi-star-fill"></i>
@@ -284,6 +294,23 @@
       </div>
 
       {{- if not .Failed }}
+
+      {{/* the following dropdown allows users to mark ingredients as personally safe or unsafe */}}
+      <div class="dropdown">
+        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.25rem 0.5rem;font-size:0.75rem;">
+          {{- if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }}
+          Safe for Me
+          {{- else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }}
+          Unsafe for Me
+          {{- else }}
+          Categorize
+          {{- end }}
+        </button>
+        <ul class="dropdown-menu">
+          <li><span class="dropdown-item" hx-post="/ingredient/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "safe"}'>Safe for Me</span></li>
+          <li><span class="dropdown-item" hx-post="/ingredient/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}'>Unsafe for Me</span></li>
+        </ul>
+      </div>
       <hr class="ingredient-card-divider">
 
       <div>

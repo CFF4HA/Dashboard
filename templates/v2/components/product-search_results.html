@@ -23,6 +23,16 @@
 
   .sr-product-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
 
+  .sr-product-card--safe {
+    background: linear-gradient(135deg, #f0fdf4, #f8f9fa);
+    border-color: #86efac;
+  }
+
+  .sr-product-card--unsafe {
+    background: linear-gradient(135deg, #fef2f2, #f8f9fa);
+    border-color: #fca5a5;
+  }
+
   .sr-product-card-header { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
   .sr-product-card-header-meta { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 0; }
 
@@ -134,7 +144,7 @@
 <div class="row">
   {{- range .Products }}
   <div class="col-md-4 mb-4">
-    <div class="sr-product-card">
+    <div class="sr-product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} sr-product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} sr-product-card--unsafe{{ end }}">
 
       <div class="sr-product-card-header">
         <div class="sr-product-card-header-meta">
@@ -163,6 +173,22 @@
           <i class="bi bi-star"></i>
         </button>
         {{- end }}
+      </div>
+
+      <div class="dropdown">
+        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.25rem 0.5rem;font-size:0.75rem;">
+          {{- if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }}
+          Safe for Me
+          {{- else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }}
+          Unsafe for Me
+          {{- else }}
+          Categorize
+          {{- end }}
+        </button>
+        <ul class="dropdown-menu">
+          <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "safe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Safe for Me</span></li>
+          <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Unsafe for Me</span></li>
+        </ul>
       </div>
 
       <hr class="sr-divider">

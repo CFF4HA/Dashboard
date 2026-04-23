@@ -22,9 +22,11 @@ func Index(v *verb.Verb) {
 
 func Ingredients(v *verb.Verb) {
 	v.Page("/ingredients", "v2/pages/ingredients.html").
+		Bridge(bridges.CategorizedIngredients{}).
 		Bridge(bridges.UserFavoriteIngredientsBridge)
 
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
+		Bridge(bridges.CategorizedIngredients{}).
 		Bridge(bridges.IngredientSearchBridge).
 		Bridge(bridges.UserFavoriteIngredientsBridge)
 
@@ -32,11 +34,13 @@ func Ingredients(v *verb.Verb) {
 		Bridge(bridges.IngredientDetailBridge)
 
 	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
+	v.Action(http.MethodPost, "/ingredient/categorize", ingredient.Categorize)
 }
 
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
 	v.Action(http.MethodPut, "/product", product.CreateProduct)
+	v.Action(http.MethodPost, "/product/categorize", product.Categorize)
 
 	// this is the components that are rendered as part of the
 	// product page.
@@ -44,6 +48,7 @@ func Products(v *verb.Verb) {
 
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
+		Bridge(bridges.CategorizedProducts{}).
 		Bridge(bridges.ProductSearchBridge).
 		Bridge(bridges.UserFavoriteProductsBridge)
 
@@ -52,6 +57,7 @@ func Products(v *verb.Verb) {
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html").
+		Bridge(bridges.CategorizedProducts{}).
 		Bridge(bridges.ProductBridge(20, map[string]string{
 			"name": " ILIKE ",
 		})).
