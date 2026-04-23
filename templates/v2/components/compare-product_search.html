@@ -1,0 +1,29 @@
+{{/*
+  Purpose: This template will render a list of search results names for products 
+  and will trigger the addition of a new product to the compare product list 
+  when clicked.
+*/}}
+<ul class="list-group list-group-flush">
+  {{- if and .Search .Search.Products }}
+  {{- range .Search.Products }}
+  <li class="list-group-item list-group-item-action" onclick="addProductToCompare('{{ .Id }}')">{{ .Name }}</li>
+  {{- end }}
+  {{- else }}
+  <li class="list-group-item">No products found.</li>
+  {{- end }}
+</ul>
+
+<script>
+  function addProductToCompare(productId) {
+    const input = document.getElementById('compare-product-ids');
+    if (!input) return;
+
+    const ids = input.value ? input.value.split(',') : [];
+    if (ids.includes(productId)) return;
+
+    ids.push(productId);
+    input.value = ids.join(',');
+
+    window.dispatchEvent(new CustomEvent('addProductToCompare', { detail: { productId } }));
+  }
+</script>
