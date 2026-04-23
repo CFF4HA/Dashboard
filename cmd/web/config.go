@@ -7,6 +7,7 @@ import (
 
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ai"
+	"github.com/CFF4HA/Dashboard/internal/types"
 )
 
 var (
@@ -52,7 +53,31 @@ func DatabaseConfig() error {
 	if Cfg.Database.URL == "" {
 		return errors.New("no database url is provided")
 	}
+
 	return core.InitializeDatabase(Cfg.Database.URL)
+}
+
+func RoleBasedAccessConfig() error {
+	predefinedRoles := []types.Role{
+		{
+			Name:        "Administrator",
+			Description: "Has full access to all features and settings.",
+		},
+		{
+			Name:        "StandardUser",
+			Description: "A standard user with access to general features but no administrative privileges.",
+		},
+		{
+			Name:        "Anonymous",
+			Description: "A user with limited access, typically for unauthenticated users or guests.",
+		},
+	}
+
+	for _, role := range predefinedRoles {
+		core.DB.Where(types.Role{Name: role.Name}).FirstOrCreate(&role)
+	}
+
+	return nil
 }
 
 func LlmConfig() error {

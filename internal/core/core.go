@@ -30,6 +30,7 @@ func InitializeDatabase(url string) error {
 		&types.Name{},
 		&types.Label{},
 		&types.User{},
+		&types.Role{},
 	)
 	return nil
 }
