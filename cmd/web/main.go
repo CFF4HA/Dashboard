@@ -74,6 +74,7 @@ func main() {
 
 	// The following are the general use page creation routes
 	Index(v)
+	Compare(v)
 
 	if err := v.Serve(); err != nil {
 		panic(err)
