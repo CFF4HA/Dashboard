@@ -69,6 +69,8 @@ func main() {
 		core.Logger.Info("ollama client configured successfully")
 	}
 
+	RoleBasedAccessConfig()
+
 	// The following are the general use component routes
 	SearchBars(v)
 	Ingredients(v)
