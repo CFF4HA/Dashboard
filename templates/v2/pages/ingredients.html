@@ -63,6 +63,16 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
+  .ingredient-card--safe {
+    background: linear-gradient(135deg, #f0fdf4, #f8f9fa);
+    border-color: #86efac;
+  }
+
+  .ingredient-card--unsafe {
+    background: linear-gradient(135deg, #fef2f2, #f8f9fa);
+    border-color: #fca5a5;
+  }
+
   .ingredient-card--failed {
     opacity: 0.6;
   }
@@ -273,7 +283,7 @@
   <div class="row mb-4">
     {{- range .FavoriteIngredients }}
     <div class="col-md-4 mb-4">
-      <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}">
+      <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
 
         <div class="ingredient-card-header">
           <p class="ingredient-card-name">{{ .PrimaryName }}</p>

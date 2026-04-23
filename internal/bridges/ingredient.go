@@ -11,6 +11,43 @@ import (
 	"github.com/google/uuid"
 )
 
+type CategorizedIngredients struct {
+}
+
+func (c CategorizedIngredients) Data(w http.ResponseWriter, r *http.Request, m map[string]any) (any, error) {
+	var Payload struct {
+		Safe   []uuid.UUID `json:"safe"`
+		Unsafe []uuid.UUID `json:"unsafe"`
+	}
+
+	user, ok := m["User"]
+	if !ok {
+		core.Logger.Warn("No user in context")
+		return nil, nil
+	} else if _, ok := user.(*types.User); !ok {
+		core.Logger.Warn("User in context is not of type User")
+		return nil, nil
+	}
+	user_object := user.(*types.User)
+
+	if core.DB.Preload("GoodIngredient").Preload("BadIngreidients").First(&user_object, "id = ?", user_object.Model.Id).Error != nil {
+		return nil, errors.New("failed to load user with ingredients")
+	}
+	for _, user_good := range user_object.GoodIngredient {
+		Payload.Safe = append(Payload.Safe, user_good.Model.Id)
+	}
+
+	for _, user_bad := range user_object.BadIngreidients {
+		Payload.Unsafe = append(Payload.Unsafe, user_bad.Model.Id)
+	}
+
+	return Payload, nil
+}
+
+func (c CategorizedIngredients) Name() string {
+	return "Categories"
+}
+
 type IngredientSearchResult struct {
 	Ingredients   []types.Ingredient
 	Query         string

@@ -3,6 +3,7 @@ package bridges
 import (
 	"errors"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
@@ -11,6 +12,65 @@ import (
 	verbs_gorm "github.com/DAlba-sudo/verbs/gorm"
 	"github.com/google/uuid"
 )
+
+type CategorizedProducts struct{}
+
+func (c CategorizedProducts) Data(w http.ResponseWriter, r *http.Request, m map[string]any) (any, error) {
+	var Payload struct {
+		Safe   []uuid.UUID `json:"safe"`
+		Unsafe []uuid.UUID `json:"unsafe"`
+	}
+
+	user, ok := m["User"]
+	if !ok {
+		core.Logger.Warn("No user in context")
+		return nil, nil
+	} else if _, ok := user.(*types.User); !ok {
+		core.Logger.Warn("User in context is not of type User")
+		return nil, nil
+	}
+	user_object := user.(*types.User)
+
+	if core.DB.Preload("GoodProducts").Preload("BadProducts").Preload("BadIngreidients").First(&user_object, "id = ?", user_object.Model.Id).Error != nil {
+		return nil, errors.New("failed to load user with products")
+	}
+
+	// Explicit bad products.
+	for _, p := range user_object.BadProducts {
+		Payload.Unsafe = append(Payload.Unsafe, p.Model.Id)
+	}
+
+	// Products that contain at least one of the user's bad ingredients are also unsafe.
+	var badIngIDs []uuid.UUID
+	for _, ing := range user_object.BadIngreidients {
+		badIngIDs = append(badIngIDs, ing.Model.Id)
+	}
+	if len(badIngIDs) > 0 {
+		var derived []uuid.UUID
+		core.DB.Table("product_ingredients").
+			Select("DISTINCT product_id").
+			Where("ingredient_id IN ?", badIngIDs).
+			Pluck("product_id", &derived)
+		for _, pid := range derived {
+			if !slices.Contains(Payload.Unsafe, pid) {
+				Payload.Unsafe = append(Payload.Unsafe, pid)
+			}
+		}
+	}
+
+	// Explicit good products, excluding any now derived as unsafe.
+	for _, p := range user_object.GoodProducts {
+		if !slices.Contains(Payload.Unsafe, p.Model.Id) {
+			Payload.Safe = append(Payload.Safe, p.Model.Id)
+		}
+	}
+
+	return Payload, nil
+}
+
+func (c CategorizedProducts) Name() string {
+	return "Categories"
+}
 
 func ProductBridge(limit int, modifiers map[string]string) verb.Bridge {
 	return verbs_gorm.GORM("Products", types.Product{}, types.Product{}, core.DB, verbs_gorm.GormOptions{
