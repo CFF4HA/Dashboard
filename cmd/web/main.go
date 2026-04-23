@@ -48,6 +48,9 @@ func main() {
 		}
 		return *s
 	})
+	v.Func("join", func(items []string, joiner string) string {
+		return strings.Join(items, joiner)
+	})
 	v.Func("sub", func(a, b int) int { return a - b })
 	v.Func("lower", func(a string) string { return strings.ToLower(a) })
 
@@ -74,6 +77,7 @@ func main() {
 
 	// The following are the general use page creation routes
 	Index(v)
+	Compare(v)
 
 	if err := v.Serve(); err != nil {
 		panic(err)

@@ -1,0 +1,349 @@
+{{/*
+  This page will be used to compare product ingredient lists.
+
+  * It requires a carousel that all selected products can be viewed from.
+  * It requires a search bar that allows users to select existing products to be included in the comparison.
+  * It requires the ability to integrate the existing create product form if the user would like to instead
+    use a new product.
+
+  Organization:
+  * The first "row" will contain the product carousel,
+  * The first item in the "product" carousel will always be a button
+    that allows users to add a new product.
+  * The carousel will be scrollable and any overflow will simply be hidden until
+    the user scrolls.
+
+*/}}
+<style>
+  /* ── Compare carousel ───────────────────────────────────────── */
+  .compare-carousel-wrapper {
+    overflow: hidden;
+  }
+
+  .compare-carousel {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: 0.5rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .compare-carousel::-webkit-scrollbar { height: 3px; }
+  .compare-carousel::-webkit-scrollbar-track { background: transparent; }
+  .compare-carousel::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .compare-carousel-item {
+    flex-shrink: 0;
+    width: 200px;
+    scroll-snap-align: start;
+  }
+
+  /* ── Add-product card ───────────────────────────────────────── */
+  .compare-add-card {
+    width: 100%;
+    min-height: 130px;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    padding: 1rem;
+  }
+
+  .compare-add-card:hover {
+    border-color: #0d6efd;
+    background: #f0f5ff;
+  }
+
+  .compare-add-card:hover .compare-add-icon { color: #0d6efd; }
+
+  .compare-add-icon {
+    font-size: 1.4rem;
+    color: #adb5bd;
+    transition: color 0.2s ease;
+  }
+
+  .compare-add-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #adb5bd;
+  }
+
+  /* ── Product card in carousel ───────────────────────────────── */
+  .compare-product-card {
+    min-height: 130px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background: #f8f9fa;
+    padding: 0.85rem 0.9rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    transition: box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+
+  .compare-product-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+  .compare-product-card--active {
+    border-color: #0d6efd;
+    background: linear-gradient(135deg, #f0f5ff, #f8f9fa);
+  }
+
+  .compare-product-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .compare-product-meta {
+    font-size: 0.72rem;
+    color: #adb5bd;
+    margin-top: auto;
+  }
+
+  .compare-product-remove {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #adb5bd;
+    font-size: 0.75rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+  }
+
+  .compare-product-remove:hover { color: #dc3545; }
+
+  /* ── Search bar ─────────────────────────────────────────────── */
+  .compare-searchbar-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 0.35rem 0.75rem;
+    gap: 0.5rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .compare-searchbar-wrapper:focus-within {
+    border-color: #0d6efd;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .compare-searchbar-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    outline: none;
+  }
+
+  .compare-searchbar-input::placeholder { color: #adb5bd; }
+  .compare-searchbar-icon { flex-shrink: 0; color: #adb5bd; font-size: 0.85rem; }
+
+  /* ── Search dropdown ────────────────────────────────────────── */
+  .compare-search-dropdown {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    max-height: 280px;
+    overflow-y: auto;
+    display: none;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .compare-search-dropdown.show { display: block; }
+
+  .compare-search-dropdown::-webkit-scrollbar { width: 3px; }
+  .compare-search-dropdown::-webkit-scrollbar-track { background: transparent; }
+  .compare-search-dropdown::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .compare-search-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid #f1f3f5;
+    gap: 0.5rem;
+  }
+
+  .compare-search-result:last-child { border-bottom: none; }
+  .compare-search-result:hover { background: #f8f9fa; }
+
+  .compare-search-result-name {
+    font-size: 0.88rem;
+    color: #495057;
+    font-weight: 500;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .compare-search-result-count {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    flex-shrink: 0;
+  }
+</style>
+
+<div class="container py-3">
+
+  <div class="row mb-3">
+    <div class="col">
+      <h4 class="mb-2">Compare Products</h4>
+      <p class="text-muted">Select products to compare their ingredient lists side by side.</p>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6" style="position: relative;">
+      <div class="compare-searchbar-wrapper">
+        <i class="bi bi-search compare-searchbar-icon"></i>
+        <input
+          id="compare-search-input"
+          class="compare-searchbar-input"
+          type="text"
+          name="query"
+          placeholder="Search products to add…"
+          autocomplete="off"
+          hx-get="/htmx/compare-product_search"
+          hx-trigger="keyup changed delay:350ms"
+          hx-target="#compare-search-results"
+          hx-swap="innerHTML"
+          hx-include="this"
+          hx-on::after-request="compareShowDropdown()">
+      </div>
+      <div id="compare-search-results" class="compare-search-dropdown"></div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <div class="compare-carousel-wrapper">
+        <input type="hidden" name="compare_product_ids" id="compare-product-ids" value="{{ join .CompareProductIds "," }}">
+        <div id="compare-carousel" class="compare-carousel"
+             hx-get="/htmx/compare-product_card"
+             hx-trigger="addProductToCompare from:window"
+             hx-swap="beforeend"
+             hx-vals="js:{id: event.detail.productId}"
+             hx-on::after-swap="compareAfterProductAdd()">
+
+          <div class="compare-carousel-item">
+            <button
+              class="compare-add-card"
+              data-bs-toggle="modal"
+              data-bs-target="#modal"
+              hx-get="/htmx/form-product_create"
+              hx-trigger="click"
+              hx-target="#modal-content">
+              <i class="bi bi-plus-circle compare-add-icon"></i>
+              <span class="compare-add-label">New Product</span>
+            </button>
+          </div>
+
+          {{- range .CompareProducts }}
+          <div class="compare-carousel-item" id="compare-item-{{ .Id }}">
+            <div
+              class="compare-product-card"
+              hx-get="/htmx/compare-product_view"
+              hx-vals='{"id": "{{ .Id }}"}'
+              hx-trigger="click"
+              hx-target="#compare-view"
+              hx-swap="innerHTML">
+              <button class="compare-product-remove" onclick="compareRemoveProduct('{{ .Id }}', event)" title="Remove">
+                <i class="bi bi-x-lg"></i>
+              </button>
+              <p class="compare-product-name">{{ .Name }}</p>
+              <div class="compare-product-meta">{{ len .Ingredients }} ingredients</div>
+            </div>
+          </div>
+          {{- end }}
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="compare-view">
+    {{- if not .CompareProducts }}
+    <p class="text-muted" style="font-size:0.88rem;">Add products above to begin comparing.</p>
+    {{- end }}
+  </div>
+
+  <div hx-get="/htmx/investigation" hx-trigger="addProductToCompare from:window delay:500ms" hx-include="#compare-product-ids"></div>
+
+</div>
+
+<script>
+  function compareShowDropdown() {
+    const input = document.getElementById('compare-search-input');
+    const dropdown = document.getElementById('compare-search-results');
+    if (input.value.trim().length > 0) {
+      dropdown.classList.add('show');
+    } else {
+      dropdown.classList.remove('show');
+    }
+  }
+
+  function compareAfterProductAdd() {
+    const carousel = document.getElementById('compare-carousel');
+    carousel.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
+    const emptyMsg = document.querySelector('#compare-view > p.text-muted');
+    if (emptyMsg) emptyMsg.remove();
+    compareCloseDropdown();
+  }
+
+  function compareRemoveProduct(id, event) {
+    event.stopPropagation();
+    const item = document.getElementById('compare-item-' + id);
+    if (item) item.remove();
+  }
+
+  function compareCloseDropdown() {
+    const input = document.getElementById('compare-search-input');
+    const dropdown = document.getElementById('compare-search-results');
+    input.value = '';
+    dropdown.classList.remove('show');
+    dropdown.innerHTML = '';
+  }
+
+  document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('compare-search-input')?.closest('[style*="position"]') ??
+                    document.getElementById('compare-search-input')?.parentElement?.parentElement;
+    const dropdown = document.getElementById('compare-search-results');
+    if (dropdown && !dropdown.contains(e.target) && e.target.id !== 'compare-search-input') {
+      dropdown.classList.remove('show');
+    }
+  });
+</script>

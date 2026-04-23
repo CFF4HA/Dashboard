@@ -20,6 +20,17 @@ func Index(v *verb.Verb) {
 	v.Page("", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
 }
 
+func Compare(v *verb.Verb) {
+	v.Page("/compare", "v2/pages/compare.html")
+	v.Component("v2/components/compare-product_search.html", htmx.Div()).
+		Bridge(bridges.ProductSearchBridge)
+	v.Component("v2/components/investigation.html", htmx.Div()).
+		Bridge(bridges.InvestigationBridge{})
+
+	v.Component("v2/components/compare-product_card.html", htmx.Div()).
+		Bridge(bridges.ProductDetailBridge)
+}
+
 func Ingredients(v *verb.Verb) {
 	v.Page("/ingredients", "v2/pages/ingredients.html").
 		Bridge(bridges.CategorizedIngredients{}).
