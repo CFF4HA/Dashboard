@@ -1,0 +1,117 @@
+{{/*
+  Purpose: This will render the list of products
+  being compared in the "/compare" page.
+
+  * It should have the name of the product.
+  * It should have the list of ingredients in small pills.
+  * The list of ingredients should be a fixed height, scrollable in the y-axis.
+  * Clicking the card activates the corresponding Unique tab in the investigation view.
+  * Good/Bad vote buttons allow the user to mark the product.
+*/}}
+{{- with .Product }}
+<style>
+  .cpc-pill {
+    font-size: 0.73rem;
+    color: #495057;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .cpc-vote-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: auto;
+  }
+
+  .cpc-vote-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.2rem 0.4rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .cpc-vote-btn:hover { border-color: #adb5bd; color: #6c757d; }
+  .cpc-vote-btn.cpc-vote-good--active { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+  .cpc-vote-btn.cpc-vote-bad--active  { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+</style>
+
+<div class="compare-carousel-item" id="compare-item-{{ .Id }}">
+  <div class="compare-product-card"
+       data-bs-toggle="tab"
+       data-bs-target="#unique-tab-{{ .Id }}"
+       role="button"
+       tabindex="0">
+    <button class="compare-product-remove" onclick="compareRemoveProduct('{{ .Id }}', event)" title="Remove">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <p class="compare-product-name">{{ .Name }}</p>
+    <div style="display:flex; flex-wrap:wrap; gap:0.3rem; max-height:5rem; overflow-y:auto; padding-right:0.1rem;">
+      {{- range .Ingredients }}
+      <span class="cpc-pill">{{ .PrimaryName }}</span>
+      {{- end }}
+    </div>
+    <div class="compare-product-meta">{{ len .Ingredients }} ingredients</div>
+    <div class="cpc-vote-row">
+      <button class="cpc-vote-btn" id="cpc-good-{{ .Id }}"
+              onclick="cpcToggleVote(event, 'good', '{{ .Id }}')" title="Mark as good">
+        <i class="bi bi-hand-thumbs-up"></i> Good
+      </button>
+      <button class="cpc-vote-btn" id="cpc-bad-{{ .Id }}"
+              onclick="cpcToggleVote(event, 'bad', '{{ .Id }}')" title="Mark as bad">
+        <i class="bi bi-hand-thumbs-down"></i> Bad
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.__cpcProductIngredients = window.__cpcProductIngredients || {};
+  window.__cpcProductIngredients['{{ .Id }}'] = [
+    {{- range .Ingredients }}
+    { id: '{{ .Id }}', name: '{{ .PrimaryName | js }}' },
+    {{- end }}
+  ];
+
+  function cpcToggleVote(event, type, id) {
+    event.stopPropagation();
+    const goodBtn = document.getElementById('cpc-good-' + id);
+    const badBtn  = document.getElementById('cpc-bad-' + id);
+
+    let active = false;
+
+    if (type === 'good') {
+      const wasActive = goodBtn.classList.contains('cpc-vote-good--active');
+      active = !wasActive;
+      goodBtn.classList.toggle('cpc-vote-good--active', active);
+      badBtn.classList.remove('cpc-vote-bad--active');
+      if (window.invUpdateBadIngredients) {
+        window.invUpdateBadIngredients(id, 'good', active);
+        window.invUpdateBadIngredients(id, 'bad', false);
+      }
+    } else {
+      const wasActive = badBtn.classList.contains('cpc-vote-bad--active');
+      active = !wasActive;
+      badBtn.classList.toggle('cpc-vote-bad--active', active);
+      goodBtn.classList.remove('cpc-vote-good--active');
+      if (window.invUpdateBadIngredients) {
+        window.invUpdateBadIngredients(id, 'good', false);
+        window.invUpdateBadIngredients(id, 'bad', active);
+      }
+    }
+  }
+</script>
+{{- end }}
