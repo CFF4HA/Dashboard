@@ -2,6 +2,9 @@
 import pubchem
 from collections import Counter, defaultdict
 import models
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+import uuid
 
 """
 Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
@@ -401,3 +404,88 @@ def massCompareRegulations(ingList1, ingList2):
     print("Unique to Ingredient List 1:", uniqueRegulations1 if uniqueRegulations1 else "None")
     print("Unique to Ingredient List 2:", uniqueRegulations2 if uniqueRegulations2 else "None")
 
+def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
+    # Setup stuff
+    symptoms, effects, hazards, regs = None, None, None, None
+    name = name.capitalize()
+    if expSym:
+        symptoms = getSymptomList(ing.Labels)
+        symptoms = [f"{i+1}: {line}" for i, line in enumerate(symptoms)]
+    if expEff:
+        effects = getEffectList(ing.Labels)
+        effects = [f"{i+1}: {line}" for i, line in enumerate(effects)]
+    if expHaz:
+        hazards = getHazardList(ing.Labels)
+        hazards = [f"{i+1}: {line}" for i, line in enumerate(hazards)]
+    if expReg:
+        regs = getRegulationList(ing.Labels)
+        regs = [f"{i+1}: {line}" for i, line in enumerate(regs)]
+    categories = [
+        ("Symptoms", expSym),
+        ("Effects", expEff),
+        ("Hazards", expHaz),
+        ("Regulations", expReg),
+    ]
+    
+    # PDF setup
+    fileName = f"{name}_Report.pdf"
+    docTitle = "Report"
+    title = f"{name} Report"
+
+    subtitle = ", ".join(name for name, enabled in categories if enabled)
+    
+    pdf = canvas.Canvas(fileName)
+    width, height = pdf._pagesize
+    pdf.setTitle(docTitle)
+    pdf.setFont("Times-Bold", 36)
+    pdf.drawCentredString(width / 2, 770, title)
+
+    pdf.setFont("Times-Bold", 24)
+    pdf.drawCentredString(width / 2, 720, subtitle)
+
+    pdf.line(30, 710, 550, 710)
+
+    text = pdf.beginText(40, 680)
+
+    if expSym:
+        addSectionHeader(text, pdf, "Symptoms")
+        for sym in symptoms:
+            text.textLine(sym)
+        text.textLine("")
+    if expEff:
+        addSectionHeader(text, pdf, "Effects")
+        for eff in effects:
+            text.textLine(eff)
+        text.textLine("")
+    if expHaz:
+        addSectionHeader(text, pdf, "Hazards")
+        for haz in hazards:
+            text.textLine(haz)
+        text.textLine("")
+    if expReg:
+        addSectionHeader(text, pdf, "Regulations")
+        for reg in regs:
+            text.textLine(reg)
+    pdf.drawText(text)
+    pdf.save()
+    return 0
+
+def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=20, underlineOffset=2, textColor=colors.black):
+    textObj.setFont(fontName, fontSize)
+    textObj.setFillColor(textColor)
+
+    x = textObj.getX()
+    y = textObj.getY()
+    textObj.textLine(title)
+
+    textWidth = pdfCanvas.stringWidth(title, fontName, fontSize)
+
+    pdfCanvas.setStrokeColor(textColor)
+    pdfCanvas.line(x, y - underlineOffset, x + textWidth, y - underlineOffset)
+
+    textObj.setFont("Times-Roman", 18)
+    return 1
+
+_, labels = pubchem.Ingredient("Linalool")
+ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+ingredientPDF(ingredient, "linalool", True, False, True, True)

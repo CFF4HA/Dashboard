@@ -1,3 +1,5 @@
 .venv
 *.env
 .claude
+internal/pubchem/__pycache__/
+internal/pubchem/*.pdf
