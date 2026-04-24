@@ -5,6 +5,9 @@ import models
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 import uuid
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
 
 """
 Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
@@ -406,12 +409,12 @@ def massCompareRegulations(ingList1, ingList2):
 
 def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
     # Setup stuff
-    symptoms, effects, hazards, regs = None, None, None, None
     name = name.capitalize()
+
     if expSym:
         symptoms = getSymptomList(ing.Labels)
         symptoms = [f"{i+1}: {line}" for i, line in enumerate(symptoms)]
-    if expEff:
+    if expEff: 
         effects = getEffectList(ing.Labels)
         effects = [f"{i+1}: {line}" for i, line in enumerate(effects)]
     if expHaz:
@@ -420,54 +423,87 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
     if expReg:
         regs = getRegulationList(ing.Labels)
         regs = [f"{i+1}: {line}" for i, line in enumerate(regs)]
+
     categories = [
         ("Symptoms", expSym),
         ("Effects", expEff),
         ("Hazards", expHaz),
         ("Regulations", expReg),
     ]
+
+    subtitle = ", ".join(label for label, enabled in categories if enabled)
     
     # PDF setup
     fileName = f"{name}_Report.pdf"
-    docTitle = "Report"
-    title = f"{name} Report"
+    doc = SimpleDocTemplate(fileName)
 
-    subtitle = ", ".join(name for name, enabled in categories if enabled)
+    styles = getSampleStyleSheet()
+
+    # Custom styles
+    titleStyle = ParagraphStyle(
+        "TitleStyle",
+        parent=styles["Title"],
+        alignment=TA_CENTER,
+        fontName="Times-Bold",
+        fontSize=28,
+        spaceAfter=12,
+    )
+
+    subtitleStyle = ParagraphStyle(
+        "SubtitleStyle",
+        parent=styles["Normal"],
+        alignment=TA_CENTER,
+        fontName="Times-Bold",
+        fontSize=16,
+        spaceAfter=20,
+    )
+
+    headerStyle = ParagraphStyle(
+        "HeaderStyle",
+        parent=styles["Heading2"],
+        fontName="Times-Bold",
+        spaceBefore=12,
+        spaceAfter=6,
+        underlineWidth=1,  # underline!
+    )
+
+    bodyStyle = ParagraphStyle(
+        "BodyStyle",
+        parent=styles["Normal"],
+        fontName="Times-Roman",
+        fontSize=12,
+        spaceAfter=4,
+    )
+
+    story = []
+
+    # Title
+    story.append(Paragraph(f"{name} Report", titleStyle))
+
+    # Subtitle
+    story.append(Paragraph(subtitle, subtitleStyle))
+
+    # Section helper
+    def addSection(title, items):
+        if not items:
+            return
+        story.append(Paragraph(title, headerStyle))
+        for item in items:
+            story.append(Paragraph(item, bodyStyle))
+        story.append(Spacer(1, 10))
     
-    pdf = canvas.Canvas(fileName)
-    width, height = pdf._pagesize
-    pdf.setTitle(docTitle)
-    pdf.setFont("Times-Bold", 36)
-    pdf.drawCentredString(width / 2, 770, title)
-
-    pdf.setFont("Times-Bold", 24)
-    pdf.drawCentredString(width / 2, 720, subtitle)
-
-    pdf.line(30, 710, 550, 710)
-
-    text = pdf.beginText(40, 680)
-
     if expSym:
-        addSectionHeader(text, pdf, "Symptoms")
-        for sym in symptoms:
-            text.textLine(sym)
-        text.textLine("")
+        addSection("Symptoms", symptoms)
     if expEff:
-        addSectionHeader(text, pdf, "Effects")
-        for eff in effects:
-            text.textLine(eff)
-        text.textLine("")
+        addSection("Effects", effects)
     if expHaz:
-        addSectionHeader(text, pdf, "Hazards")
-        for haz in hazards:
-            text.textLine(haz)
-        text.textLine("")
+        addSection("Hazards", hazards)
     if expReg:
-        addSectionHeader(text, pdf, "Regulations")
-        for reg in regs:
-            text.textLine(reg)
-    pdf.drawText(text)
-    pdf.save()
+        addSection("Regulations", regs)
+
+    # Build PDF
+    doc.build(story)
+
     return 0
 
 def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=20, underlineOffset=2, textColor=colors.black):
@@ -488,9 +524,6 @@ def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=
 
 chem = input("Which chemical to look up?\n")
 _, labels = pubchem.Ingredient(chem)
+print(labels)
 ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
-create = ingredientPDF(ingredient, chem, True, False, True, True)
-if (create == 0):
-    print("PDF created with no issues!")
-else:
-    print("There was... an error...")
+create = ingredientPDF(ingredient, chem, True, True, True, True)
