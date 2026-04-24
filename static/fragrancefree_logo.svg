@@ -1,0 +1,37 @@
+<svg width="100%" viewBox="0 0 690 330" role="img" xmlns="http://www.w3.org/2000/svg" style="">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">FragranceFree logo</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Logo for FragranceFree, featuring a stylized leaf and clean wordmark in white and mint green on a soft green background.</desc>
+
+  <rect width="680" height="320" rx="16" fill="#1a2e1e" style="fill:rgb(26, 46, 30);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Decorative soft circle glow behind icon -->
+  <circle cx="200" cy="160" r="90" fill="#2a4a2e" opacity="0.7" style="fill:rgb(42, 74, 46);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.7;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Leaf / drop icon composed of paths -->
+  <!-- Main leaf shape -->
+  <g transform="translate(200,160)" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+    <!-- Leaf body -->
+    <path d="M0,-62 C28,-42 52,-10 52,18 C52,46 30,66 0,68 C-30,66 -52,46 -52,18 C-52,-10 -28,-42 0,-62 Z" fill="#CFF9C3" opacity="0.15" style="fill:rgb(207, 249, 195);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.15;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M0,-58 C26,-38 48,-8 48,18 C48,44 28,62 0,64 C-28,62 -48,44 -48,18 C-48,-8 -26,-38 0,-58 Z" fill="none" stroke="#CFF9C3" stroke-width="2" style="fill:none;stroke:rgb(207, 249, 195);color:rgb(255, 255, 255);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Inner leaf vein / checkmark -->
+    <path d="M0,52 L0,-30" fill="none" stroke="#CFF9C3" stroke-width="1.5" stroke-linecap="round" opacity="0.5" style="fill:none;stroke:rgb(207, 249, 195);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M0,-30 C12,-14 28,0 36,12" fill="none" stroke="#CFF9C3" stroke-width="1.5" stroke-linecap="round" opacity="0.5" style="fill:none;stroke:rgb(207, 249, 195);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <path d="M0,-30 C-10,-14 -24,2 -30,14" fill="none" stroke="#CFF9C3" stroke-width="1.5" stroke-linecap="round" opacity="0.5" style="fill:none;stroke:rgb(207, 249, 195);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <!-- Clean checkmark in center leaf -->
+    <polyline points="-18,14 -6,26 22,-8" fill="none" stroke="#CFF9C3" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="fill:none;stroke:rgb(207, 249, 195);color:rgb(255, 255, 255);stroke-width:3.5px;stroke-linecap:round;stroke-linejoin:round;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  </g>
+
+  <!-- Wordmark -->
+  <!-- "Fragrance" -->
+  <text x="310" y="145" font-family="Georgia, serif" font-size="42" font-weight="400" fill="#EFEFEF" letter-spacing="1" style="fill:rgb(239, 239, 239);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Georgia, serif;font-size:42px;font-weight:400;text-anchor:start;dominant-baseline:auto">Fragrance</text>
+  <!-- "Free" — accented -->
+  <text x="310" y="196" font-family="Georgia, serif" font-size="42" font-weight="400" fill="#CFF9C3" letter-spacing="3" style="fill:rgb(207, 249, 195);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Georgia, serif;font-size:42px;font-weight:400;text-anchor:start;dominant-baseline:auto">Free</text>
+
+  <!-- Thin divider line -->
+  <line x1="310" y1="210" x2="620" y2="210" stroke="#CFF9C3" stroke-width="0.75" opacity="0.4" style="fill:rgb(0, 0, 0);stroke:rgb(207, 249, 195);color:rgb(255, 255, 255);stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.4;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Tagline -->
+  <text x="310" y="232" font-family="Georgia, serif" font-size="13" fill="#EFEFEF" opacity="0.55" letter-spacing="2" style="fill:rgb(239, 239, 239);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.55;font-family:Georgia, serif;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">clean spaces · healthy living</text>
+</svg>

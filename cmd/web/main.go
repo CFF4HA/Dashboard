@@ -21,7 +21,7 @@ func main() {
 			LiveReload: Cfg.Reload,
 			Bridges: []verb.Bridge{
 				bridges.UserSessionRequired{
-					Excludes: []string{"/login", "/user", "/user/login", "/htmx/form-user_signup"},
+					Excludes: []string{"/", "", "/login", "/user", "/user/login", "/htmx/form-user_signup", "/questionnaire", "/questionnaire/step-2", "/questionnaire/step-3", "/create-login"},
 				},
 			},
 		},

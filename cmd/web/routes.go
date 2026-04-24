@@ -58,8 +58,17 @@ func User(v *verb.Verb) {
 	v.Action(http.MethodPost, "/user/login", user.HandleUserPOST)
 	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
 	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
+	v.Action(http.MethodGet, "/guest", user.HandleGuestLogin)
 
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
 
 	v.Page("/login", "v2/pages/login.html")
+
+	v.Page("/questionnaire", "v2/pages/questionnaire1.html")
+	v.Page("/questionnaire/step-2", "v2/pages/questionnaire2.html")
+	v.Page("/questionnaire/step-3", "v2/pages/questionnaire3.html")
+	v.Page("/create-login", "v2/pages/createLogin.html")
+
+    v.Component("v2/forms/form-user_signup.html", htmx.Div())
+    v.Page("/login", "v2/pages/login.html")
 }

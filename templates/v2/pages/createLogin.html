@@ -1,0 +1,66 @@
+{{ define "content" }}
+<style>
+  .q-container { max-width: 600px; margin: 0 auto; }
+  .q-card {
+    background-color: #274229;
+    border: 2px solid var(--mint-green);
+    border-radius: 15px;
+    padding: 2.5rem;
+  }
+  .brand-logo-container { margin-bottom: 3rem; }
+  .form-label { font-weight: 500; margin-top: 1.5rem; display: block; font-size: 1.1rem; }
+  .form-control { background-color: white; border-radius: 8px; border: none; padding: 0.8rem; }
+  
+  .btn-finish {
+    background-color: #CFF9C3;
+    color: #1a2e1e;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 3rem;
+    font-weight: 700;
+    min-width: 140px;
+  }
+
+  .btn-finish:hover {
+    background-color: #b5e6a8;
+  }
+</style>
+
+<div class="container py-5 q-container">
+  <div class="text-center brand-logo-container">
+    <h1 class="mt-3 mb-0" style="font-size: 3rem;">Fragrance <span style="color: #CFF9C3;">Free</span></h1>
+    <p style="letter-spacing: 2px; font-size: 0.8rem; opacity: 0.8;">clean spaces · healthy living</p>
+  </div>
+
+  <div class="mb-4">
+    <div class="d-flex justify-content-between mb-2">
+      <span class="small" style="color: var(--mint-green); font-weight: 700;">Step 4 of 4</span>
+      <span class="small" style="opacity: 0.7;">100%</span>
+    </div>
+    <div class="progress" style="height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+      <div class="progress-bar" role="progressbar" 
+           style="width: 100%; background-color: #CFF9C3; border-radius: 10px; transition: width 0.5s ease;">
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <h2 class="mb-4" style="font-size: 1.8rem; font-family: 'Playfair Display', serif;">Create Account</h2>
+    
+    <form action="/user" method="POST">
+      <label class="form-label">Enter your email:</label>
+      <input type="email" class="form-control" name="email" required>
+
+      <label class="form-label">Create your username:</label>
+      <input type="text" class="form-control" name="username" required>
+
+      <label class="form-label">Create your password:</label>
+      <input type="password" class="form-control" name="password" required>
+
+      <div class="d-flex justify-content-center mt-5">
+          <button type="submit" class="btn btn-finish">Finish</button>
+      </div>
+    </form>
+  </div>
+</div>
+{{ end }}

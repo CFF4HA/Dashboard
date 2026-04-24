@@ -3,218 +3,53 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
-    <link href="/static/bootstrap/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="/static/bootstrap/icons/font/bootstrap-icons.min.css">
+    <title>Fragrance Free</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+    <link href="/static/bootstrap/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    
+    <style>
+      :root {
+        --forest-green: #1a2e1e;
+        --mint-green: #CFF9C3;
+        --soft-white: #EFEFEF;
+        --regular-green: #274229;
+      }
+
+      body {
+        background-color: var(--forest-green);
+        font-family: 'Lato', sans-serif;
+        color: var(--soft-white);
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      h1, h2, h3 {
+        font-family: 'Playfair Display', serif;
+      }
+
+      /* Simple navbar update to match new theme */
+      .navbar-shell {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(207, 249, 195, 0.2);
+      }
+      
+      .navbar-nav-btn {
+        color: var(--soft-white);
+        text-decoration: none;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+      
+      .navbar-nav-btn:hover { color: var(--mint-green); opacity: 1; }
+    </style>
   </head>
-  <style>
-    .navbar-shell {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 12px;
-      padding: 0.4rem 0.85rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      margin: 0.5rem;
-    }
-
-    .navbar-brand-text {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #495057;
-      text-decoration: none;
-      letter-spacing: 0.01em;
-    }
-
-    .navbar-brand-text:hover {
-      color: #0d6efd;
-    }
-
-    .navbar-nav-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .navbar-nav-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      padding: 0.3rem 0.65rem;
-      font-size: 0.85rem;
-      color: #adb5bd;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .navbar-nav-btn:hover {
-      background: #e9ecef;
-      color: #495057;
-    }
-
-    .navbar-nav-btn.active {
-      background: #e9ecef;
-      color: #0d6efd;
-      font-weight: 500;
-    }
-  </style>
   <body>
-    <canvas id="bg-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
-
-    <nav class="navbar-shell">
-      <div class="navbar-nav-group">
-        <a href="/" class="navbar-nav-btn">
-          <i class="bi bi-search"></i> Search
-        </a>
-        <a href="/products" class="navbar-nav-btn">
-          <i class="bi bi-box-seam"></i> Product
-        </a>
-        <a href="/ingredients" class="navbar-nav-btn">
-          <i class="bi bi-droplet-half"></i> Ingredient
-        </a>
-      </div>
-    </nav>
-
-    <div id="notification" class="m-2 p-1">
-    </div>
-
-    <div class="">
-      {{ template "content" . }}
-    </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div id="modal-content" class="modal-content">
-        </div>
-      </div>
-    </div>
+    <div id="notification"></div>
+    {{ template "content" . }}
     <script src="/static/htmx/htmx.min.js"></script>
-    <script src="/static/bootstrap/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script>
-    (function () {
-      const canvas = document.getElementById('bg-canvas');
-      const ctx    = canvas.getContext('2d');
-
-      const SPACING     = 52;
-      const RAD         = 260;
-      const MAX_DISP    = SPACING * 0.55;
-      const SIGMA       = RAD / 3;
-      const RIPPLE_AMP  = 5;
-      const SPEED       = 1.1;
-      let   time        = 0;
-
-      let W, H;
-      let mouse = null;
-
-      const p = { x: 0, y: 0, vx: SPEED, vy: SPEED * 0.6 };
-
-      function resize() {
-        W = canvas.width  = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-        if (p.x === 0 && p.y === 0) { p.x = W * 0.35; p.y = H * 0.4; }
-      }
-
-      function displaced(gx, gy) {
-        const dx   = gx - p.x;
-        const dy   = gy - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist === 0 || dist > RAD) return { x: gx, y: gy };
-        const gauss  = Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
-        const pull   = gauss * MAX_DISP;
-        const ripple = Math.sin(dist * (Math.PI * 3 / RAD) - time * 0.04)
-                       * RIPPLE_AMP * (1 - dist / RAD);
-        const total = pull + ripple;
-        const ux = dx / dist, uy = dy / dist;
-        return { x: gx - ux * total, y: gy - uy * total };
-      }
-
-      function tick() {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, W, H);
-
-        const cols = Math.ceil(W / SPACING) + 2;
-        const rows = Math.ceil(H / SPACING) + 2;
-        const ox   = -SPACING + ((W % SPACING) / 2);
-        const oy   = -SPACING + ((H % SPACING) / 2);
-
-        ctx.lineWidth = 0.75;
-        ctx.strokeStyle = 'rgba(175,175,175,0.55)';
-
-        for (let r = 0; r < rows; r++) {
-          const baseY = oy + r * SPACING;
-          ctx.beginPath();
-          for (let c = 0; c < cols; c++) {
-            const pt = displaced(ox + c * SPACING, baseY);
-            c === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
-          }
-          ctx.stroke();
-        }
-
-        for (let c = 0; c < cols; c++) {
-          const baseX = ox + c * SPACING;
-          ctx.beginPath();
-          for (let r = 0; r < rows; r++) {
-            const pt = displaced(baseX, oy + r * SPACING);
-            r === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y);
-          }
-          ctx.stroke();
-        }
-
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const pt = displaced(ox + c * SPACING, oy + r * SPACING);
-            const dx   = (ox + c * SPACING) - p.x;
-            const dy   = (oy + r * SPACING) - p.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < RAD) {
-              const t = 1 - dist / RAD;
-              ctx.fillStyle = `rgba(120,120,120,${0.35 + t * 0.55})`;
-              ctx.beginPath();
-              ctx.arc(pt.x, pt.y, 1.5 + t * 1.5, 0, Math.PI * 2);
-              ctx.fill();
-            } else {
-              ctx.fillStyle = 'rgba(175,175,175,0.45)';
-              ctx.beginPath();
-              ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-        }
-
-        time++;
-        if (mouse) {
-          p.x += (mouse.x - p.x) * 0.08;
-          p.y += (mouse.y - p.y) * 0.08;
-        } else {
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < 0)  p.x = W;
-          if (p.x > W)  p.x = 0;
-          if (p.y < 0)  p.y = H;
-          if (p.y > H)  p.y = 0;
-        }
-
-        requestAnimationFrame(tick);
-      }
-
-      window.addEventListener('resize',    () => resize());
-      window.addEventListener('mousemove', e  => { mouse = { x: e.clientX, y: e.clientY }; });
-      window.addEventListener('mouseleave',()  => { mouse = null; });
-
-      resize();
-      tick();
-    })();
-    </script>
   </body>
 </html>

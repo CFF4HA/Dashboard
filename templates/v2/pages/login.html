@@ -1,34 +1,115 @@
-<div class="container-fluid py-5 g-5">
+{{ define "content" }}
+
+<style>
+  #auth-panel-card {
+    background-color: #274229;
+    border: 2px solid #CFF9C3; /* Mint Green Border */
+    border-radius: 15px;
+    padding: 3rem;
+    color: white;
+  }
+
+  .login-header {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-label {
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    color: white;
+  }
+
+  .form-control {
+    background-color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 0.8rem;
+  }
+
+  .btn-login {
+    background-color: #EFEFEF;
+    border: none;
+    border-radius: 8px;
+    color: #1a2e1e;
+    font-weight: 700;
+    padding: 0.8rem;
+  }
+
+  .btn-login:hover {
+    background-color: #c0c0c0;
+  }
+
+  .btn-create-account {
+    background-color: #CFF9C3;
+    color: #1a2e1e;
+    border: none;
+    border-radius: 12px;
+    padding: 0.8rem 2.5rem;
+    font-weight: 700;
+  }
+
+  .btn-create-account:hover {
+    background-color: #819c7a;
+  }
+
+  .brand-logo-container {
+    margin-bottom: 3rem;
+  }
+</style>
+
+<div class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-12 col-sm-8 col-md-5 col-lg-4 my-3">
-      <div class="text-center mb-4">
-        <img src="/static/github-ff-banner.png" class="img-fluid"/>
+    <div class="col-12 col-md-6 col-lg-5">
+      
+      <div class="text-center brand-logo-container">
+        <h1 class="mt-3 mb-0" style="font-size: 3rem;">
+          Fragrance <span style="color: #CFF9C3;">Free</span>
+        </h1>
+        <p style="letter-spacing: 2px; font-size: 0.8rem; opacity: 0.8;">
+          clean spaces · healthy living
+        </p>
       </div>
 
-      <div id="auth-panel">
+      <div id="auth-panel-card">
+        <h2 class="text-center mb-4">Login</h2>
         <form method="POST" action="/user/login">
           <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus/>
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" name="username" required>
           </div>
           <div class="mb-4">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required/>
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" name="password" required>
           </div>
-          <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-primary">Login</button>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-login">Sign In</button>
           </div>
         </form>
+      </div>
 
-        <div class="text-center" style="font-size: 0.82rem; color: #adb5bd;">
-          Don't have an account?
-          <a hx-get="/htmx/form-user_signup"
-             hx-target="#auth-panel"
-             hx-swap="outerHTML"
-             href="#"
-             style="color: #0d6efd; text-decoration: none;">Sign up</a>
+      <div class="text-center mt-5">
+        <p class="mb-1">New to Fragrance Free?</p>
+        <p class="small mb-4" style="opacity: 0.7;">Create an account for personalized results.</p>
+        
+        <a href="/questionnaire" class="btn btn-create-account mb-3 text-decoration-none d-inline-block">
+           Create Account
+        </a>
+      
+        <div class="mt-2">
+          <a href="/guest" 
+             hx-boost="false" 
+             target="_self"
+             class="text-decoration-none" 
+             style="color: #EFEFEF; opacity: 0.8; font-size: 0.9rem;">
+            Or continue as a guest
+          </a>
         </div>
       </div>
+
     </div>
   </div>
 </div>
+
+{{ end }}

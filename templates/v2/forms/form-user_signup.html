@@ -1,10 +1,11 @@
 <style>
   .form-shell {
-    background: #f8f9fa;
+    background: #274229;
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     color: #495057;
+    border: 1px solid #CFF9C3;
   }
 
   .form-shell .form-label {
@@ -36,7 +37,7 @@
   }
 
   .btn-form-submit {
-    background: #0d6efd;
+    background: #CFF9C3;
     border: none;
     border-radius: 8px;
     padding: 0.4rem 1.1rem;
@@ -48,7 +49,7 @@
   }
 
   .btn-form-submit:hover {
-    background: #0b5ed7;
+    background: #819c7a;
   }
 
   .form-divider {
@@ -64,12 +65,12 @@
         hx-target="#auth-panel"
         hx-swap="outerHTML">
 
-    <h6 class="mb-3" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.95rem; font-weight: 600; color: #495057;">
+    <h6 class="mb-3" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.95rem; font-weight: 600; color: #ffffff;">
       <i class="bi bi-person-plus me-2" style="color: #adb5bd;"></i>Create an account
     </h6>
 
     <div class="mb-3">
-      <label for="signup-username" class="form-label">Username <span style="color: #dc3545;">*</span></label>
+      <label for="signup-username" class="form-label" style="color: #ffffff;">Username <span style="color: #dc3545;">*</span></label>
       <input type="text"
              id="signup-username"
              name="username"
@@ -81,7 +82,7 @@
     </div>
 
     <div class="mb-4">
-      <label for="signup-password" class="form-label">Password <span style="color: #dc3545;">*</span></label>
+      <label for="signup-password" class="form-label" style="color: #ffffff;">Password <span style="color: #dc3545;">*</span></label>
       <input type="password"
              id="signup-password"
              name="password"
@@ -101,7 +102,7 @@
 
     <div class="text-center" style="font-size: 0.82rem; color: #adb5bd;">
       Already have an account?
-      <a href="/login" style="color: #0d6efd; text-decoration: none;">Log in</a>
+      <a href="/login" style="color: #CFF9C3; text-decoration: none;">Log in</a>
     </div>
   </form>
 </div>

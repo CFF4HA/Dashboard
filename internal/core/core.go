@@ -18,9 +18,10 @@ var (
 func InitializeDatabase(url string) error {
 	d, err := gorm.Open(postgres.Open(url), &gorm.Config{})
 	if err != nil {
-		Logger.Error("failed to connect to database", "error", err)
-		return err
-	}
+        Logger.Error("failed to connect to database", "error", err)
+        // return err  <-- Add the slashes here to comment this out
+        return nil     // <-- Add this line right below it
+    }
 	DB = d
 	DB.AutoMigrate(
 		&types.Ingredient{},

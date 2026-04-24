@@ -118,6 +118,18 @@ func HandleUserPOST(w http.ResponseWriter, r *http.Request) error {
 	}
 	http.Redirect(w, r, to, http.StatusSeeOther)
 	return nil
+
+	// Inside your login handler after successful authentication:
+	if r.Header.Get("HX-Request") != "" {
+		// If it's an HTMX request
+		w.Header().Set("HX-Redirect", "/")
+		w.WriteHeader(http.StatusOK)
+		return nil // Return nil here because the 'Action' requires an error type
+	}
+
+	// If it's a standard browser form submission
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	return nil
 }
 
 func sessionUserID(r *http.Request) (uuid.UUID, error) {
@@ -212,4 +224,28 @@ func writeStarButton(w http.ResponseWriter, path, id string, starred bool) error
 		fmt.Fprintf(w, `<button class="btn-star" hx-post="%s" hx-vals='{"id": "%s"}' hx-swap="outerHTML" title="Save"><i class="bi bi-star"></i></button>`, path, id)
 	}
 	return nil
+}
+
+// Add 'error' to the return signature
+func HandleGuestLogin(w http.ResponseWriter, r *http.Request) error {
+    
+    // For now, we just push them to the home page
+    if r.Header.Get("HX-Request") != "" {
+        w.Header().Set("HX-Redirect", "/")
+        w.WriteHeader(http.StatusOK)
+    } else {
+        http.Redirect(w, r, "/", http.StatusSeeOther)
+    }
+
+    return nil // This satisfies the 'error' return requirement
+}
+
+func HandleYourFunctionName(w http.ResponseWriter, r *http.Request) error {
+    // ... logic to save user or verify password ...
+
+    // The "Magic" Header that prevents the blank/stuck screen:
+    w.Header().Set("HX-Redirect", "/")
+    w.WriteHeader(http.StatusOK)
+    
+    return nil
 }

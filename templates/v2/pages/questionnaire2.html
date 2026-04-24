@@ -1,0 +1,161 @@
+{{ define "content" }}
+<style>
+  .q-container { max-width: 600px; margin: 0 auto; }
+  .q-card {
+    background-color: #274229;
+    border: 2px solid var(--mint-green);
+    border-radius: 15px;
+    padding: 2.5rem;
+  }
+  .form-label { font-weight: 500; margin-top: 1.5rem; display: block; font-size: 1.1rem; }
+  .form-control { background-color: white; border-radius: 8px; border: none; padding: 0.75rem; }
+  
+  /* Styling Checkboxes/Radios to look like the mock */
+  .form-check-input:checked { background-color: var(--mint-green); border-color: var(--mint-green); }
+  .form-check-label { font-size: 0.95rem; color: rgba(255,255,255,0.9); }
+
+    /* Previous Button - Soft White/Grey background */
+    .btn-previous {
+    background-color: #EFEFEF;
+    color: #1a2e1e;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 2.5rem;
+    font-weight: 700;
+    text-decoration: none; /* Removes underline from <a> tag */
+    display: inline-block;
+    min-width: 140px;
+    text-align: center;
+    }
+
+    .btn-previous:hover {
+    background-color: #d1d1d1;
+    color: #1a2e1e;
+    }
+
+    /* Next Button - Mint Green background */
+    .btn-next {
+    background-color: #CFF9C3;
+    color: #1a2e1e;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 2.5rem;
+    font-weight: 700;
+    min-width: 140px;
+    }
+
+    .btn-next:hover {
+        background-color: #819c7a;
+    }
+
+    .brand-logo-container { margin-bottom: 3rem; }
+</style>
+
+<div class="container py-5 q-container">
+    <div class="text-center brand-logo-container">
+        <h1 class="mt-3 mb-0" style="font-size: 3rem;">
+          Fragrance <span style="color: #CFF9C3;">Free</span>
+        </h1>
+        <p style="letter-spacing: 2px; font-size: 0.8rem; opacity: 0.8;">
+          clean spaces · healthy living
+        </p>
+      </div>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="small" style="color: var(--mint-green); font-weight: 700;">Step 2 of 4</span>
+          <span class="small" style="opacity: 0.7;">33%</span>
+        </div>
+        <div class="progress" style="height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+          <div class="progress-bar" role="progressbar" 
+               style="width: 33%; background-color: #CFF9C3; border-radius: 10px; transition: width 0.5s ease;">
+          </div>
+        </div>
+      </div>
+
+  <div class="q-card">
+    <h2 class="mb-4" style="font-size: 1.8rem;">Health & Sensitivity</h2>
+    
+    <form action="/questionnaire/step-3" method="GET">
+      <label class="form-label">How severe is your sensitivity?</label>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="sensitivity" id="g1" value="mild">
+        <label class="form-check-label" for="g1">Mild — <i>minor irritation or discomfort</i></label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="sensitivity" id="g2" value="moderate">
+        <label class="form-check-label" for="g2">Moderate — <i>noticeable symptoms that affect my day</i></label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="sensitivity" id="g2" value="severe">
+        <label class="form-check-label" for="g2">Severe — <i>strong reactions that require me to leave spaces or avoid products entirely</i></label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="sensitivity" id="g2" value="medical">
+        <label class="form-check-label" for="g2">Medical — <i>I have a diagnosed condition that requires strict avoidance</i></label>
+      </div>
+      <label class="form-label">What are you sensitive or allergic to?</label>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r1" value="Fragrances">
+        <label class="form-check-label" for="r1">Fragrances / perfumes</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="colorants">
+        <label class="form-check-label" for="r2">Synthetic dyes & colorants</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="Parabens">
+        <label class="form-check-label" for="r2">Parabens</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="Sulfates">
+        <label class="form-check-label" for="r2">Sulfates (SLS / SLES)</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="Phthalates">
+        <label class="form-check-label" for="r2">Phthalates</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="Formaldehyde">
+        <label class="form-check-label" for="r2">Formaldehyde & releasing agents</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="preservatives">
+        <label class="form-check-label" for="r2">Artificial preservatives</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="r2" value="not-sure-yet">
+        <label class="form-check-label" for="r2">Not sure yet</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="allergies" id="g-other" value="other" 
+               onclick="document.getElementById('other-text-input').classList.remove('d-none')">
+        <label class="form-check-label" for="g-other">Other</label>
+      </div>
+      
+      <div id="other-text-input" class="ms-4 mb-3 d-none">
+        <input type="text" class="form-control form-control-sm" name="gender_other_details" placeholder="Please specify...">
+      </div>
+      
+      <script>
+        document.querySelectorAll('input[name="gender"]').forEach(radio => {
+          radio.addEventListener('change', () => {
+            if (radio.id !== 'g-other') {
+              document.getElementById('other-text-input').classList.add('d-none');
+            }
+          });
+        });
+      </script>
+        <div class="d-flex justify-content-center gap-3 mt-5">
+            <a href="/questionnaire" class="btn btn-previous">
+            Previous
+            </a>
+        
+            <button type="submit" class="btn btn-next">
+            Next
+            </button>
+        </div>
+    </form>
+  </div>
+</div>
+{{ end }}

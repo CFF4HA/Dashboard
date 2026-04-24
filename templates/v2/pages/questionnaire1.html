@@ -1,0 +1,138 @@
+{{ define "content" }}
+<style>
+  .q-container { max-width: 600px; margin: 0 auto; }
+  .q-card {
+    background-color: #274229;
+    border: 2px solid var(--mint-green);
+    border-radius: 15px;
+    padding: 2.5rem;
+  }
+  .form-label { font-weight: 500; margin-top: 1.5rem; display: block; font-size: 1.1rem; }
+  .form-control { background-color: white; border-radius: 8px; border: none; padding: 0.75rem; }
+  
+  /* Styling Checkboxes/Radios to look like the mock */
+  .form-check-input:checked { background-color: var(--mint-green); border-color: var(--mint-green); }
+  .form-check-label { font-size: 0.95rem; color: rgba(255,255,255,0.9); }
+  
+  .btn-next {
+    background-color: #CFF9C3;
+    color: #1a2e1e;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 2.5rem;
+    font-weight: 700;
+    min-width: 140px; /* Ensures the button has a substantial look */
+}
+
+.btn-next:hover {
+    background-color: #819c7a;
+}
+
+.brand-logo-container { margin-bottom: 3rem; }
+</style>
+
+<div class="container py-5 q-container">
+    <div class="text-center brand-logo-container">
+        <h1 class="mt-3 mb-0" style="font-size: 3rem;">
+          Fragrance <span style="color: #CFF9C3;">Free</span>
+        </h1>
+        <p style="letter-spacing: 2px; font-size: 0.8rem; opacity: 0.8;">
+          clean spaces · healthy living
+        </p>
+      </div>
+  <div class="text-center mb-5">
+    <h1 style="font-size: 1.5rem; font-family: 'Lato', sans-serif;">
+      Let's get you started by asking a few questions.
+    </h1>
+  </div>
+
+  <div class="mb-4">
+    <div class="d-flex justify-content-between mb-2">
+      <span class="small" style="color: var(--mint-green); font-weight: 700;">Step 1 of 4</span>
+      <span class="small" style="opacity: 0.7;">0%</span>
+    </div>
+    <div class="progress" style="height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+      <div class="progress-bar" role="progressbar" 
+           style="width: 0%; background-color: #CFF9C3; border-radius: 10px; transition: width 0.5s ease;">
+      </div>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <h2 class="mb-4" style="font-size: 1.8rem;">Identity & Demographics</h2>
+    
+    <form action="/questionnaire/step-2" method="GET">
+      <label class="form-label">What is your first name?</label>
+      <input type="text" class="form-control" name="first_name">
+
+      <label class="form-label">What is your last name?</label>
+      <input type="text" class="form-control" name="last_name">
+
+      <label class="form-label">When is your birthday?</label>
+      <input type="date" class="form-control" name="birthday">
+
+      <label class="form-label">How do you identify?</label>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="gender" id="g1" value="male">
+        <label class="form-check-label" for="g1">Male</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="gender" id="g2" value="female">
+        <label class="form-check-label" for="g2">Female</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="gender" id="g2" value="non-binary">
+        <label class="form-check-label" for="g2">Non-Binary</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="gender" id="g2" value="prefer-not-to-say">
+        <label class="form-check-label" for="g2">Prefer not to say</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="gender" id="g2" value="other">
+        <label class="form-check-label" for="g2">Other</label>
+      </div>
+      <label class="form-label">What is your race or ethnicity?</label>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r1" value="american-indian">
+        <label class="form-check-label" for="r1">American Indian or Alaska Native</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r1" value="asian">
+        <label class="form-check-label" for="r1">Asian</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r1" value="black">
+        <label class="form-check-label" for="r1">Black or African American</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r1" value="hispanic-latino">
+        <label class="form-check-label" for="r1">Hispanic or Latino</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r1" value="middle-eastern">
+        <label class="form-check-label" for="r1">Middle Eastern or North African</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r1" value="hawaiian">
+        <label class="form-check-label" for="r1">Native Hawaiian or Pacific Islander</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r2" value="white">
+        <label class="form-check-label" for="r2">White</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r2" value="Multiracial">
+        <label class="form-check-label" for="r2">Multiracial</label>
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="race" id="r2" value="prefer-not-to-say">
+        <label class="form-check-label" for="r2">Prefer not to say</label>
+      </div>
+      <div class="d-flex justify-content-center mt-5">
+        <button type="submit" class="btn btn-next">Next</button>
+      </div>
+    </form>
+  </div>
+</div>
+{{ end }}
