@@ -230,5 +230,8 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
     }
     return allInfo
 
+@app.get("/ingredient/export")
+async def exportIngredientPDF(ingredient: str, expSymptoms: bool, expEffects: bool, expHazards: bool, expRegs: bool):
+    return 0
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
