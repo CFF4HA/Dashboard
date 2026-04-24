@@ -486,6 +486,11 @@ def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=
     textObj.setFont("Times-Roman", 18)
     return 1
 
-_, labels = pubchem.Ingredient("Linalool")
+chem = input("Which chemical to look up?\n")
+_, labels = pubchem.Ingredient(chem)
 ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
-ingredientPDF(ingredient, "linalool", True, False, True, True)
+create = ingredientPDF(ingredient, chem, True, False, True, True)
+if (create == 0):
+    print("PDF created with no issues!")
+else:
+    print("There was... an error...")
