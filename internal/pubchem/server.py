@@ -232,6 +232,6 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
 
 @app.get("/ingredient/export")
 async def exportIngredientPDF(ingredient: str, expSymptoms: bool, expEffects: bool, expHazards: bool, expRegs: bool):
-    return 0
+    return 0 # Not sure how to let the user download the PDF on their end, but wanted to get this function header made.
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
