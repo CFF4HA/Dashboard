@@ -1,0 +1,38 @@
+<div class="container py-2">
+  <div class="row">
+    <h3>Tagging Rules</h3>
+    <p>
+      The following table lists the current tagging rules you've created.
+    </p>
+  </div>
+
+  <div class="row">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Tag</th>
+          <th scope="col">Enabled</th>
+          <th scope="col">Pattern</th>
+          <th scope="col">Check Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{- range .Rules }}
+        <tr>
+          <th scope="row">{{ .Tag.Name }}</th>
+          <td>
+            <input type="switch" id="enabled-{{ .ID }}" name="enabled" {{ if .Enabled }}checked{{ end }} disabled>
+          </td>
+          <td>{{ .Regex }}</td>
+          <td>{{ .Contains }}</td>
+        </tr>
+        {{- else }}
+        <tr>
+          <th scope="row" colspan="4" class="text-center">No tagging rules created yet!</th>
+        </tr>
+        {{- end }}
+      </tbody>
+    </table>
+  </div>
+</div>
+

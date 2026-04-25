@@ -6,6 +6,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
 	"github.com/CFF4HA/Dashboard/internal/handlers/product"
+	"github.com/CFF4HA/Dashboard/internal/handlers/tagging"
 	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
@@ -14,6 +15,10 @@ import (
 func SearchBars(v *verb.Verb) {
 	v.Component("v2/searchbars/searchbar-manual_search.html", htmx.Div().Classes("p-2")).
 		Bridge(bridges.ManualSearchMultiplexer)
+}
+
+func Test(v *verb.Verb) {
+	v.Page("/test", "v2/pages/test.html")
 }
 
 func Index(v *verb.Verb) {
@@ -85,4 +90,14 @@ func User(v *verb.Verb) {
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
 
 	v.Page("/login", "v2/pages/login.html")
+	v.Page("/user/dashboard", "v2/pages/user.html")
+}
+
+func Tagging(v *verb.Verb) {
+	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
+	v.Component("v2/tables/table-tagging_rules.html", htmx.Div())
+	v.Component("v2/components/tagging-search_results_sm.html", htmx.Div()).
+		Bridge(bridges.TagsByName)
+
+	v.Action(http.MethodPut, "/tag/rule/create", tagging.HandleTagRuleCreate)
 }
