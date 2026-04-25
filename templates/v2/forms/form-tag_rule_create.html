@@ -52,6 +52,7 @@
         hx-put="/tag/rule/create"
         hx-include="[name='regex'], [name='tag'], [name='operation']"
         hx-swap="none"
+        hx-on::after-request="htmx.trigger('#hx-tagging-table', 'update-tag-table-manual')"
       >Create Rule</button>
     </div>
   </div>

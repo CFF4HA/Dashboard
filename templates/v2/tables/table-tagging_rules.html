@@ -14,17 +14,24 @@
           <th scope="col">Enabled</th>
           <th scope="col">Pattern</th>
           <th scope="col">Check Type</th>
+          <th scope="col">Delete</th>
         </tr>
       </thead>
       <tbody>
         {{- range .Rules }}
-        <tr>
+        <tr id="row-{{ .Model.Id }}">
           <th scope="row">{{ .Tag.Name }}</th>
           <td>
-            <input type="switch" id="enabled-{{ .ID }}" name="enabled" {{ if .Enabled }}checked{{ end }} disabled>
+            <input class="form-check-input" type="checkbox" name="enabled" {{ if .Enabled }}checked{{ else }}disabled{{ end }}>
           </td>
           <td>{{ .Regex }}</td>
-          <td>{{ .Contains }}</td>
+          <td>{{- if .Contains }}Contained by Label{{else}}Not Contained by Label{{end}}</td>
+          <td>
+            <button class="btn btn-sm btn-danger"
+              hx-delete="/tag/rule/delete?id={{ .Model.Id | urlquery }}"
+              hx-target="#row-{{ .Model.Id }}"
+            >Delete</button>
+          </td>
         </tr>
         {{- else }}
         <tr>
