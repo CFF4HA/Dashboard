@@ -221,6 +221,30 @@
     color: #adb5bd;
   }
 
+  /* ── Tag pills ─────────────────────────────────────────────── */
+  .ingredient-tag-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-tag-scroll::-webkit-scrollbar { width: 3px; }
+  .ingredient-tag-scroll::-webkit-scrollbar-track { background: transparent; }
+  .ingredient-tag-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .ingredient-tag-pill {
+    font-size: 0.75rem;
+    color: #3b5bdb;
+    background: #edf2ff;
+    border: 1px solid #bac8ff;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
   /* ── Label list (hazards, effects, symptoms, regulations) ──── */
   .ingredient-label-list {
     list-style: none;
@@ -333,23 +357,6 @@
 
       {{- if not .Failed }}
 
-      {{/* the following dropdown allows users to mark ingredients as personally safe or unsafe */}}
-      <div class="dropdown">
-        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.25rem 0.5rem;font-size:0.75rem;">
-          {{- if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }}
-          Safe for Me
-          {{- else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }}
-          Unsafe for Me
-          {{- else }}
-          Categorize
-          {{- end }}
-        </button>
-        <ul class="dropdown-menu">
-          <li><span class="dropdown-item" hx-post="/ingredient/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "safe"}'>Safe for Me</span></li>
-          <li><span class="dropdown-item" hx-post="/ingredient/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}'>Unsafe for Me</span></li>
-        </ul>
-      </div>
-
       <hr class="ingredient-card-divider">
 
       <ul class="nav nav-tabs" id="tabs-{{ .Id }}" role="tablist">
@@ -374,7 +381,17 @@
       </ul>
       <div class="tab-content" id="tabs-content-{{ .Id }}">
 
-        <div class="tab-pane fade show active pt-2" id="tags-pane-{{ .Id }}" role="tabpanel">...</div>
+        <div class="tab-pane fade show active pt-2" id="tags-pane-{{ .Id }}" role="tabpanel">
+          {{- if and (.Tags) (gt (len .Tags) 0) }}
+          <div class="ingredient-tag-scroll">
+            {{- range .Tags }}
+            <span class="ingredient-tag-pill"{{if .Description}} title="{{ .Description }}"{{end}}>{{ .Name }}</span>
+            {{- end }}
+          </div>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No tags applied.</span>
+          {{- end }}
+        </div>
 
         <div class="tab-pane fade pt-2" id="synonyms-pane-{{ .Id }}" role="tabpanel">
           {{- if gt (len .Names) 0 }}
