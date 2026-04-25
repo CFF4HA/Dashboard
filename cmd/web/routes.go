@@ -95,9 +95,11 @@ func User(v *verb.Verb) {
 
 func Tagging(v *verb.Verb) {
 	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
-	v.Component("v2/tables/table-tagging_rules.html", htmx.Div())
+	v.Component("v2/tables/table-tagging_rules.html", htmx.Div()).
+		Bridge(bridges.TaggingRules{})
 	v.Component("v2/components/tagging-search_results_sm.html", htmx.Div()).
 		Bridge(bridges.TagsByName)
 
 	v.Action(http.MethodPut, "/tag/rule/create", tagging.HandleTagRuleCreate)
+	v.Action(http.MethodDelete, "/tag/rule/delete", tagging.HandleTagRuleDelete)
 }

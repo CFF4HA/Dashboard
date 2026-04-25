@@ -52,7 +52,7 @@ func HandleTagRuleCreate(w http.ResponseWriter, r *http.Request) error {
 	// the name field, which is unique.
 	var tagv types.Tag
 	tx := core.DB.Where("name = ?", tag).First(&tagv)
-	if tx.Error.Error() == "record not found" {
+	if tx.Error != nil && tx.Error.Error() == "record not found" {
 		// here we want to create the tag.
 		tagv.Model.Id = uuid.New()
 		tagv.Model.Created = time.Now()
