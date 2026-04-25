@@ -221,6 +221,44 @@
     color: #adb5bd;
   }
 
+  /* ── Label list (hazards, effects, symptoms, regulations) ──── */
+  .ingredient-label-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-height: 8rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-label-list::-webkit-scrollbar { width: 3px; }
+  .ingredient-label-list::-webkit-scrollbar-track { background: transparent; }
+  .ingredient-label-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .ingredient-label-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.8rem;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .ingredient-label-payload {
+    color: #495057;
+    line-height: 1.4;
+  }
+
+  .ingredient-label-origin {
+    font-size: 0.72rem;
+    color: #adb5bd;
+  }
+
   /* ── Empty / retrieve state ─────────────────────────────────── */
   .ingredient-empty-state {
     padding: 1rem 0;
@@ -311,54 +349,112 @@
           <li><span class="dropdown-item" hx-post="/ingredient/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}'>Unsafe for Me</span></li>
         </ul>
       </div>
+
       <hr class="ingredient-card-divider">
 
-      <div>
-        <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
-        {{- if gt (len .Names) 0 }}
-        <input
-          class="ingredient-synonym-search"
-          type="text"
-          placeholder="&#128269; Filter synonyms..."
-          autocomplete="off"
-          oninput="filterSynonyms(this)">
-        <div class="ingredient-synonym-scroll">
-          {{- range .Names }}
-          <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+      <ul class="nav nav-tabs" id="tabs-{{ .Id }}" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tags-pane-{{ .Id }}" type="button" role="tab">Tags</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#synonyms-pane-{{ .Id }}" type="button" role="tab">Synonyms ({{ len .Names }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hazards-pane-{{ .Id }}" type="button" role="tab">Hazards ({{ .Metadata.NumHazards }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#effects-pane-{{ .Id }}" type="button" role="tab">Effects ({{ .Metadata.NumEffects }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#symptoms-pane-{{ .Id }}" type="button" role="tab">Symptoms ({{ .Metadata.NumSymptoms }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#regulations-pane-{{ .Id }}" type="button" role="tab">Regulations ({{ .Metadata.NumRegulations }})</button>
+        </li>
+      </ul>
+      <div class="tab-content" id="tabs-content-{{ .Id }}">
+
+        <div class="tab-pane fade show active pt-2" id="tags-pane-{{ .Id }}" role="tabpanel">...</div>
+
+        <div class="tab-pane fade pt-2" id="synonyms-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt (len .Names) 0 }}
+          <input
+            class="ingredient-synonym-search"
+            type="text"
+            placeholder="&#128269; Filter synonyms..."
+            autocomplete="off"
+            oninput="filterSynonyms(this)">
+          <div class="ingredient-synonym-scroll">
+            {{- range .Names }}
+            <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+            {{- end }}
+          </div>
+          <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:#adb5bd;">No synonyms match.</span>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No synonyms on record.</span>
           {{- end }}
         </div>
-        <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:#adb5bd;">No synonyms match.</span>
-        {{- else }}
-        <span style="font-size:0.78rem;color:#adb5bd;">No synonyms on record.</span>
-        {{- end }}
-      </div>
 
-      <hr class="ingredient-card-divider">
-
-      <div>
-        <div class="ingredient-card-label">Metrics</div>
-        <div class="ingredient-stats">
-          <div class="ingredient-stat">
-            <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
-            <span class="ingredient-stat-name">Hazards</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-activity ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
-            <span class="ingredient-stat-name">Effects</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
-            <span class="ingredient-stat-name">Symptoms</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-shield-check ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
-            <span class="ingredient-stat-name">Regulations</span>
-          </div>
+        <div class="tab-pane fade pt-2" id="hazards-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumHazards 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "hazard" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No hazards on record.</span>
+          {{- end }}
         </div>
+
+        <div class="tab-pane fade pt-2" id="effects-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumEffects 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "effect" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No effects on record.</span>
+          {{- end }}
+        </div>
+
+        <div class="tab-pane fade pt-2" id="symptoms-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumSymptoms 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "symptom" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No symptoms on record.</span>
+          {{- end }}
+        </div>
+
+        <div class="tab-pane fade pt-2" id="regulations-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumRegulations 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "regulation" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:#adb5bd;">No regulations on record.</span>
+          {{- end }}
+        </div>
+
       </div>
 
       {{- if .Metadata.AiBlurb }}
