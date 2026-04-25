@@ -19,6 +19,45 @@ var (
 	sessionMu  sync.RWMutex
 )
 
+// This is a convenience function that will attempt to retrieve the user associated with
+// the request. It throws an error on many potential failure points.
+func GetUserFromRequest(w http.ResponseWriter, r *http.Request) (*types.User, error) {
+	// request must have session cookie
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/login?to="+r.URL.Path, http.StatusSeeOther)
+		core.Logger.Warn("request missing session cookie")
+		return nil, err
+	}
+
+	// session cookie must be a valid uuid
+	session_id, err := uuid.Parse(c.Value)
+	if err != nil {
+		http.Redirect(w, r, "/login?to="+r.URL.Path, http.StatusSeeOther)
+		core.Logger.Warn("request session cookie was not valid uuid")
+		return nil, err
+	}
+
+	// uuid must be a valid session in the session map
+	user_uid, ok := SessionMap[session_id]
+	if !ok {
+		http.Redirect(w, r, "/login?to="+r.URL.Path, http.StatusSeeOther)
+		core.Logger.Warn("user session cookie was not in session map")
+		return nil, err
+	}
+
+	// the returned user uid must exist in the database
+	user := &types.User{}
+	user.Model.Id = user_uid
+	if core.DB.First(user).Error != nil {
+		core.Logger.Warn("user session cookie had invalid user id not in the database")
+		http.Redirect(w, r, "/login?to="+r.URL.Path, http.StatusSeeOther)
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // getSession returns the user ID for a session token, and whether it exists.
 func GetSession(session uuid.UUID) (uuid.UUID, bool) {
 	sessionMu.RLock()

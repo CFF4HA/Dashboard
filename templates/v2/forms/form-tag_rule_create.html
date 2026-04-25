@@ -1,0 +1,58 @@
+<div class="container">
+  <div class="row mb-2">
+    {{/* Header Row */}}
+    <h4>Automated Tagging</h4>
+    <p class="text-muted mb-0">
+      Create automatic rules for ingredients and use them to filter products automatically!
+    </p>
+  </div>
+
+  {{/* The "Form" row... */}}
+  <div class="row">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <span class="text-nowrap">If the ingredient label</span>
+
+      <select name="operation" class="form-select form-select-sm form-control form-control-sm" style="width: 160px;" aria-label="Default select example">
+        <option value="contains" selected>contains</option>
+        <option value="dncontains">does not contain</option>
+      </select>
+      
+      <input type="text" class="form-control form-control-sm" style="width: 160px;" placeholder="e.g. 'sugar'" name="regex">
+
+      <span class="text-nowrap">set the tag to</span>
+
+      {{/* 
+
+      This input is used to search for tags, will be wired up to a 
+      tag searching endpoint. 
+
+      */}}
+      <div class="position-relative">
+        <input type="text" class="form-control form-control-sm" style="width: 160px;" placeholder="e.g. 'sweetener'" name="name"
+          id="tag-name-input"
+          hx-get="/htmx/tagging-search_results_sm"
+          hx-include="this"
+          hx-target="#tag-search-results"
+          hx-swap="innerHTML"
+          hx-trigger="keyup changed delay:500ms"
+          onkeyup="document.getElementById('tag-name-value').value = this.value;"
+          autoComplete="off"
+        />
+        <input type="hidden" name="tag" id="tag-name-value"/>
+        <div id="tag-search-results" class="position-absolute top-100 start-0 w-100 bg-white border rounded mt-1" style="z-index: 1000;"></div>
+      </div>
+      <span class="text-nowrap">.</span>
+    </div>
+  </div>
+
+  {{/* The "Submit"/Footer Row */}}
+  <div class="row mt-3">
+    <div class="col-auto">
+      <button type="submit" class="btn btn-dark btn-sm"
+        hx-put="/tag/rule/create"
+        hx-include="[name='regex'], [name='tag'], [name='operation']"
+        hx-swap="none"
+      >Create Rule</button>
+    </div>
+  </div>
+</div>

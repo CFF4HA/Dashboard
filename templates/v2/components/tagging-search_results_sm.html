@@ -1,0 +1,16 @@
+{{- if .Name }}
+<ul id='list-group-tag_search_rs' class="list-group">
+  <button class="list-group-item btn btn-secondary btn-sm text-start" onclick='setTagName("{{.Name}}")'>{{ .Name }}</button>
+  {{- range .Tags }}
+  <button class="list-group-item btn btn-secondary btn-sm text-start" onclick='setTagName("{{.Name}}")'>"{{ .Name }}"</button>
+  {{- end}}
+</ul>
+
+<script>
+  function setTagName(name) {
+    document.getElementById('tag-name-input').value = name;
+    document.getElementById('tag-name-value').value = name;
+    document.getElementById('list-group-tag_search_rs').innerHTML = '';
+  }
+</script>
+{{- end }}
