@@ -60,6 +60,10 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 			_california_cosmetics := gjson.GetBytes(data, `Record.Section.#(TOCHeading=="Safety and Hazards").Section.#(TOCHeading=="Regulatory Information").Information.#(Name=="California Safe Cosmetics Program (CSCP) Reportable Ingredient").Value.StringWithMarkup.#.String`)
 			_names := gjson.GetBytes(data, `Record.Section.#(TOCHeading=="Names and Identifiers").Section.#(TOCHeading=="Synonyms").Section.#(TOCHeading=="Depositor-Supplied Synonyms").Information.#.Value.StringWithMarkup.#.String`)
 
+			core.Logger.Info("adverse effects data", "data", _adverse_effects.String())
+			core.Logger.Info("hazards data", "data", _ghs_hazards.String())
+			core.Logger.Info("california cosmetics data", "data", _california_cosmetics.String())
+
 			var names []string
 			if err := json.Unmarshal([]byte(_names.Array()[0].String()), &names); err != nil {
 				core.Logger.Error("failed to unmarshal names for an ingredient", "name", name, "err", err)
@@ -67,7 +71,7 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 
 			var hazards []string
 			if _ghs_hazards.Exists() {
-				if err := json.Unmarshal([]byte(_ghs_hazards.Array()[0].String()), &hazards); err != nil {
+				if err := json.Unmarshal([]byte(_ghs_hazards.String()), &hazards); err != nil {
 					core.Logger.Error("failed to unmarshal hazards for an ingredient", "name", name, "err", err)
 				}
 			}
@@ -88,7 +92,7 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 
 			var regulations []string
 			if _california_cosmetics.Exists() {
-				if err := json.Unmarshal([]byte(_california_cosmetics.Array()[0].String()), &regulations); err != nil {
+				if err := json.Unmarshal([]byte(_california_cosmetics.String()), &regulations); err != nil {
 					core.Logger.Error("failed to unmarshal regulations for an ingredient", "name", name, "err", err)
 				}
 			}

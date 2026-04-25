@@ -14,7 +14,7 @@
           <th scope="col">Enabled</th>
           <th scope="col">Pattern</th>
           <th scope="col">Check Type</th>
-          <th scope="col">Delete</th>
+          <th scope="col">Quick Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -31,6 +31,10 @@
               hx-delete="/tag/rule/delete?id={{ .Model.Id | urlquery }}"
               hx-target="#row-{{ .Model.Id }}"
             >Delete</button>
+            <button class="btn btn-sm btn-dark"
+              hx-post="/tag/rule/run?rule_id={{ .Model.Id | urlquery }}"
+              hx-swap="none"
+            ><i class="bi bi-arrow-clockwise"></i></button>
           </td>
         </tr>
         {{- else }}
