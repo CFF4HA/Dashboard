@@ -60,7 +60,7 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 	labelText := strings.TrimSpace(r.FormValue("label_filter_text"))
 
 	var ingredients []types.Ingredient
-	preload := core.DB.Preload("Metadata").Preload("Names").Preload("Labels")
+	preload := core.DB.Preload("Tags").Preload("Metadata").Preload("Names").Preload("Labels")
 
 	// Fast path — no filters at all, return most recent.
 	if q == "" && labelText == "" {
@@ -126,7 +126,7 @@ var IngredientDetailBridge = verb.Map("Ingredient", func(r *http.Request, m map[
 	}
 
 	var ingredient types.Ingredient
-	tx := core.DB.Preload("Metadata").Preload("Names").Preload("Labels").First(&ingredient, "id = ?", id)
+	tx := core.DB.Preload("Metadata").Preload("Tags").Preload("Names").Preload("Labels").First(&ingredient, "id = ?", id)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

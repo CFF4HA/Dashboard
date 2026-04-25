@@ -69,6 +69,8 @@ func main() {
 		core.Logger.Info("ollama client configured successfully")
 	}
 
+	RoleBasedAccessConfig()
+
 	// The following are the general use component routes
 	SearchBars(v)
 	Ingredients(v)
@@ -78,6 +80,8 @@ func main() {
 	// The following are the general use page creation routes
 	Index(v)
 	Compare(v)
+	Tagging(v)
+	Test(v)
 
 	if err := v.Serve(); err != nil {
 		panic(err)

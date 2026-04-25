@@ -92,6 +92,9 @@
         <a href="/compare" class="navbar-nav-btn">
           <i class="bi bi-book-half"></i> Compare
         </a>
+        <a href="/user/dashboard" class="navbar-nav-btn">
+          <i class="bi bi-person"></i> User Dashboard
+        </a>
       </div>
     </nav>
 
@@ -213,23 +216,16 @@
         }
 
         time++;
-        if (mouse) {
-          p.x += (mouse.x - p.x) * 0.08;
-          p.y += (mouse.y - p.y) * 0.08;
-        } else {
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < 0)  p.x = W;
-          if (p.x > W)  p.x = 0;
-          if (p.y < 0)  p.y = H;
-          if (p.y > H)  p.y = 0;
-        }
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0)  p.x = W;
+        if (p.x > W)  p.x = 0;
+        if (p.y < 0)  p.y = H;
+        if (p.y > H)  p.y = 0;
 
         requestAnimationFrame(tick);
       }
 
       window.addEventListener('resize',    () => resize());
-      window.addEventListener('mousemove', e  => { mouse = { x: e.clientX, y: e.clientY }; });
-      window.addEventListener('mouseleave',()  => { mouse = null; });
 
       resize();
       tick();

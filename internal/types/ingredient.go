@@ -12,6 +12,7 @@ type Ingredient struct {
 	PrimaryName string `json:"primary_name" gorm:"type:text;not null;index;"`
 
 	Labels   []Label            `json:"labels" gorm:"many2many:ingredient_labels;"`
+	Tags     []Tag              `json:"tags" gorm:"many2many:ingredient_tags;"`
 	Names    []Name             `json:"names" gorm:"many2many:ingredient_names"`
 	Metadata IngredientMetadata `json:"metadata" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

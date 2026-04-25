@@ -29,7 +29,14 @@ func InitializeDatabase(url string) error {
 		&types.ProductMetadata{},
 		&types.Name{},
 		&types.Label{},
+
 		&types.User{},
+		&types.Role{},
+
+		&types.Tag{},
+		&types.TaggingRule{},
+		&types.TaggingSet{},
+		&types.TaggingJob{},
 	)
 	return nil
 }

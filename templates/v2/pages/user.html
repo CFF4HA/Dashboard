@@ -1,0 +1,12 @@
+<div class="container">
+  {{/*
+  The user page will contain all kinds of configuration behavior, as well as  
+  summaries of products, ingredients, etc.
+  */}}
+  
+  {{/* Tagging Related Configuration Section */}}
+  <div class="row">
+    <div hx-get="/htmx/form-tag_rule_create" hx-trigger="load"></div>
+    <div id="hx-tagging-table" hx-get="/htmx/table-tagging_rules" hx-trigger="load, update-tag-table-manual"></div>
+  </div>
+</div>

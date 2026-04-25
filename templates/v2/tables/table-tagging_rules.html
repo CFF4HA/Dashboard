@@ -1,0 +1,49 @@
+<div class="container py-2">
+  <div class="row">
+    <h3>Tagging Rules</h3>
+    <p>
+      The following table lists the current tagging rules you've created.
+    </p>
+  </div>
+
+  <div class="row">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Tag</th>
+          <th scope="col">Enabled</th>
+          <th scope="col">Pattern</th>
+          <th scope="col">Check Type</th>
+          <th scope="col">Quick Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{- range .Rules }}
+        <tr id="row-{{ .Model.Id }}">
+          <th scope="row">{{ .Tag.Name }}</th>
+          <td>
+            <input class="form-check-input" type="checkbox" name="enabled" {{ if .Enabled }}checked{{ else }}disabled{{ end }}>
+          </td>
+          <td>{{ .Regex }}</td>
+          <td>{{- if .Contains }}Contained by Label{{else}}Not Contained by Label{{end}}</td>
+          <td>
+            <button class="btn btn-sm btn-danger"
+              hx-delete="/tag/rule/delete?id={{ .Model.Id | urlquery }}"
+              hx-target="#row-{{ .Model.Id }}"
+            >Delete</button>
+            <button class="btn btn-sm btn-dark"
+              hx-post="/tag/rule/run?rule_id={{ .Model.Id | urlquery }}"
+              hx-swap="none"
+            ><i class="bi bi-arrow-clockwise"></i></button>
+          </td>
+        </tr>
+        {{- else }}
+        <tr>
+          <th scope="row" colspan="4" class="text-center">No tagging rules created yet!</th>
+        </tr>
+        {{- end }}
+      </tbody>
+    </table>
+  </div>
+</div>
+
