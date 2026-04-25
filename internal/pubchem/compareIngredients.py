@@ -8,6 +8,7 @@ import uuid
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
+import io
 
 """
 Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
@@ -410,6 +411,7 @@ def massCompareRegulations(ingList1, ingList2):
 def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
     # Setup stuff
     name = name.capitalize()
+    buffer = io.BytesIO()
 
     if expSym:
         symptoms = getSymptomList(ing.Labels)
@@ -434,8 +436,7 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
     subtitle = ", ".join(label for label, enabled in categories if enabled)
     
     # PDF setup
-    fileName = f"{name}_Report.pdf"
-    doc = SimpleDocTemplate(fileName)
+    doc = SimpleDocTemplate(buffer)
 
     styles = getSampleStyleSheet()
 
@@ -504,7 +505,8 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
     # Build PDF
     doc.build(story)
 
-    return 0
+    buffer.seek(0)
+    return buffer
 
 def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=20, underlineOffset=2, textColor=colors.black):
     textObj.setFont(fontName, fontSize)
@@ -524,6 +526,5 @@ def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=
 
 chem = input("Which chemical to look up?\n")
 _, labels = pubchem.Ingredient(chem)
-print(labels)
 ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
 create = ingredientPDF(ingredient, chem, True, True, True, True)

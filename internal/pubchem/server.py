@@ -1,6 +1,7 @@
 import argparse
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
@@ -231,7 +232,23 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
     return allInfo
 
 @app.get("/ingredient/export")
-async def exportIngredientPDF(ingredient: str, expSymptoms: bool, expEffects: bool, expHazards: bool, expRegs: bool):
-    return 0 # Not sure how to let the user download the PDF on their end, but wanted to get this function header made.
+async def exportIngredientPDF(name: str, expSymptoms: bool = False, expEffects: bool = False, expHazards: bool = False, expRegs: bool = False):
+    # First, we get the ingredient object from the cache or database.
+    ingredient = None
+    if name in cache:
+        ingredient = cache[name]
+    else:
+        _, labels = pubchem.Ingredient(name)
+        ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+        cache[name] = ingredient
+    
+    # Then, do the function
+    pdfBuffer = comp.ingredientPDF(name, expSymptoms, expEffects, expHazards, expRegs)
+
+    return StreamingResponse(pdfBuffer, media_type="application/pdf", headers={
+        "Content-Disposition": f"inline; filename={name.capitalize()}_Report.pdf"
+    })
+
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
