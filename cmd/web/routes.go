@@ -25,6 +25,7 @@ func Index(v *verb.Verb) {
 	// New Navigation Targets (mapped to index for stability until pages are built)
 	v.Page("/search", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
 	v.Page("/compare", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("/products", "v2/pages/products.html").Bridge(bridges.UserSessionRequired{})
 }
 
 // Ingredients handles ingredient-specific pages and search results
@@ -51,11 +52,12 @@ func Products(v *verb.Verb) {
 		Bridge(bridges.UserFavoriteProductsBridge)
 
 	v.Page("/products", "v2/pages/products.html").
-		Bridge(bridges.UserSessionRequired{}).
-		Bridge(bridges.ProductBridge(20, map[string]string{
-			"name": " ILIKE ",
-		})).
-		Bridge(bridges.UserFavoriteProductsBridge)
+        Bridge(bridges.UserSessionRequired{}).
+        // This is the "Magic" that fills the {{ range .Products }} in your HTML
+        Bridge(bridges.ProductBridge(20, map[string]string{
+            "name": " ILIKE ",
+        })).
+        Bridge(bridges.UserFavoriteProductsBridge)
 }
 
 // User handles authentication, registration, and questionnaire flows
