@@ -324,7 +324,7 @@
 
   <div id="product-results"
        hx-get="/htmx/product-search_results"
-       hx-trigger="load, productCategorized from:body"
+       hx-trigger="load, productCategorized from:body, productUpdated from:body"
        hx-swap="innerHTML">
     <p class="text-muted" style="font-size:0.88rem;">Loading…</p>
   </div>
