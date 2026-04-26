@@ -54,6 +54,10 @@
     gap: 0.65rem;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     transition: box-shadow 0.2s ease;
+    resize: both;
+    overflow: auto;
+    min-height: 160px;
+    min-width: 200px;
   }
 
   .ingredient-card:hover {
@@ -283,6 +287,27 @@
     color: #adb5bd;
   }
 
+  /* ── Card column ────────────────────────────────────────────── */
+  .ingredient-card-col {
+    position: relative;
+  }
+
+  /* ── Nav tabs ───────────────────────────────────────────────── */
+  .ingredient-card .nav-link {
+    color: #adb5bd;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.55rem;
+  }
+
+  .ingredient-card .nav-link:hover {
+    color: #495057;
+  }
+
+  .ingredient-card .nav-link.active {
+    color: #495057;
+    font-weight: 500;
+  }
+
   /* ── Empty / retrieve state ─────────────────────────────────── */
   .ingredient-empty-state {
     padding: 1rem 0;
@@ -326,7 +351,7 @@
 {{- else }}
 <div class="row">
   {{- range .Ingredients }}
-  <div class="col-md-4 mb-4">
+  <div class="col-md-4 mb-4 ingredient-card-col">
     <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
 
       <div class="ingredient-card-header">
@@ -488,5 +513,20 @@
   </div>
   {{- end }}
 </div>
+<script>
+(function () {
+  const RESET_DELAY = 300;
+  document.querySelectorAll('.ingredient-card').forEach(card => {
+    let timer = null;
+    const col = card.closest('.ingredient-card-col');
+    if (!col) return;
+    new ResizeObserver(() => {
+      col.style.zIndex = '10';
+      clearTimeout(timer);
+      timer = setTimeout(() => { col.style.zIndex = ''; }, RESET_DELAY);
+    }).observe(card);
+  });
+})();
+</script>
 {{- end }}
 {{- end }}
