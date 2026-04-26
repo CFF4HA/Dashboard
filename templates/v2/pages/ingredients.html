@@ -390,13 +390,17 @@
           placeholder="Search by name or synonym…"
           autocomplete="off"
           hx-get="/htmx/ingredient-search_results"
-          hx-trigger="keyup changed delay:400ms"
+          hx-trigger="keyup changed delay:400ms, tagFilterChanged from:body"
           hx-target="#ingredient-results"
           hx-swap="innerHTML"
-          hx-include="this"
+          hx-include="this, [name='tag_filter']"
           hx-vals='{"results_target": "#ingredient-results"}'
           onkeydown="handleIngredientSearchKeydown(event)">
       </div>
+      <div id="tag-filter" class="mt-2"
+           hx-get="/htmx/tag-filter"
+           hx-trigger="load"
+           hx-swap="innerHTML"></div>
       <p class="ingredient-searchbar-hint">
         Searches primary names and all known synonyms.
       </p>

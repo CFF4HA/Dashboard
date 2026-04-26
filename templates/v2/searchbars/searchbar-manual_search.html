@@ -139,10 +139,10 @@
       name="query"
 
       hx-get="{{ .Active.Target }}"
-      hx-trigger="keyup changed delay:500ms"
+      hx-trigger="keyup changed delay:500ms, tagFilterChanged from:body"
       hx-target="#search-results"
       hx-swap="innerHTML"
-      hx-include="[name='label_filter_op'], [name='label_filter_text']"
+      hx-include="[name='label_filter_op'], [name='label_filter_text'], [name='tag_filter']"
       hx-vals='{"results_target": "#search-results"}'
     >
     <div class="dropdown">
@@ -174,7 +174,7 @@
             hx-trigger="change"
             hx-target="#search-results"
             hx-swap="innerHTML"
-            hx-include="[name='query'], [name='label_filter_text']"
+            hx-include="[name='query'], [name='label_filter_text'], [name='tag_filter']"
             hx-vals='{"results_target": "#search-results"}'>
       <option value="contains">Label contains</option>
       <option value="excludes">Label doesn't contain</option>
@@ -187,9 +187,13 @@
            hx-trigger="keyup changed delay:500ms"
            hx-target="#search-results"
            hx-swap="innerHTML"
-           hx-include="[name='query'], [name='label_filter_op']"
+           hx-include="[name='query'], [name='label_filter_op'], [name='tag_filter']"
            hx-vals='{"results_target": "#search-results"}'>
   </div>
+  <div id="tag-filter" class="mt-2"
+       hx-get="/htmx/tag-filter"
+       hx-trigger="load"
+       hx-swap="innerHTML"></div>
   {{- end }}
 
   <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">{{ .Active.Description }}</p>

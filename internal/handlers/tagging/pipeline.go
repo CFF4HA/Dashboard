@@ -5,6 +5,7 @@ import (
 
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/types"
+	"github.com/google/uuid"
 )
 
 func HandleTaggingRuleRun(w http.ResponseWriter, r *http.Request) error {
@@ -49,5 +50,26 @@ func TagIngredients(job types.TaggingRule) error {
 	}
 
 	core.Logger.Info("successfully tagged ingredients", "number_ingredients_tagged", len(ingredients), "tag_id", job.Tag.Id)
+
+	var ingredientIDs []uuid.UUID
+	for _, ing := range ingredients {
+		ingredientIDs = append(ingredientIDs, ing.Id)
+	}
+	if len(ingredientIDs) > 0 {
+		var products []types.Product
+		core.DB.
+			Joins("JOIN product_ingredients ON product_ingredients.product_id = products.id").
+			Where("product_ingredients.ingredient_id IN ?", ingredientIDs).
+			Find(&products)
+
+		for _, product := range products {
+			err := core.DB.Model(&job.Tag).Association("Products").Append(&product)
+			if err != nil {
+				core.Logger.Error("failed to tag product", "product_id", product.Id, "tag_id", job.Tag.Id, "error", err)
+			}
+		}
+		core.Logger.Info("tagged products via ingredient cascade", "count", len(products), "tag_id", job.Tag.Id)
+	}
+
 	return nil
 }

@@ -23,6 +23,7 @@ type Tag struct {
 	// The list of ingredients that have this tag applied to
 	// them.
 	Ingredients []Ingredient `gorm:"many2many:ingredient_tags;"`
+	Products    []Product    `gorm:"many2many:product_tags;"`
 	Users       []User       `gorm:"many2many:user_tags;"`
 }
 

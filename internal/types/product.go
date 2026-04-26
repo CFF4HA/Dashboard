@@ -16,6 +16,7 @@ type Product struct {
 	Name        string       `json:"name" gorm:"type:varchar(255);not null;"`
 	Origin      *string      `json:"origin" gorm:"type:varchar(255);default:null"`
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:product_ingredients;"`
+	Tags        []Tag        `json:"tags" gorm:"many2many:product_tags;"`
 
 	// The product metadata is another object that contains everything from
 	// metrics like number of renders, to AI information blurbs, count of

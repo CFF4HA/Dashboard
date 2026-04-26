@@ -100,6 +100,9 @@ func Tagging(v *verb.Verb) {
 	v.Component("v2/components/tagging-search_results_sm.html", htmx.Div()).
 		Bridge(bridges.TagsByName)
 
+	v.Component("v2/components/tag-filter.html", htmx.Div()).
+		Bridge(bridges.AllTagsBridge)
+
 	v.Action(http.MethodPut, "/tag/rule/create", tagging.HandleTagRuleCreate)
 	v.Action(http.MethodDelete, "/tag/rule/delete", tagging.HandleTagRuleDelete)
 	v.Action(http.MethodPost, "/tag/rule/run", tagging.HandleTaggingRuleRun)
