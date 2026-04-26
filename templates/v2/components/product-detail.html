@@ -302,6 +302,129 @@
     font-size: 0.66rem;
     color: #adb5bd;
   }
+
+  /* ── Inline product edit (shared with search card) ───────── */
+  .pe-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.2rem;
+  }
+
+  .pe-input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.82rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.35rem;
+  }
+  .pe-input::placeholder { color: #adb5bd; }
+  .pe-input:focus { border-color: #0d6efd; }
+
+  .pe-tag-box {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.3rem 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+    cursor: text;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.3rem;
+  }
+  .pe-tag-box:focus-within { border-color: #0d6efd; }
+
+  .pe-btn-save {
+    background: #0d6efd;
+    border: none;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+  .pe-btn-save:hover { background: #0b5ed7; }
+
+  .pe-btn-cancel {
+    background: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .pe-btn-cancel:hover { background: #e9ecef; color: #495057; }
+
+  .ingredient-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.78rem;
+    color: #495057;
+    white-space: nowrap;
+  }
+
+  .ingredient-tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.7rem;
+    color: #adb5bd;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s ease;
+  }
+  .ingredient-tag-remove:hover { color: #495057; }
+
+  .ingredient-tag-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.82rem;
+    color: #495057;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    flex: 1;
+    min-width: 6rem;
+    padding: 0.1rem 0;
+  }
+  .ingredient-tag-input::placeholder { color: #adb5bd; }
+
+  .pe-form { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .pd-edit-toggle {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    color: #6c757d;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  .pd-edit-toggle:hover { background: #e9ecef; border-color: #adb5bd; }
 </style>
 
 <script>
@@ -348,7 +471,160 @@
     card.classList.add('pd-ing-card--highlighted');
     card.addEventListener('animationend', () => card.classList.remove('pd-ing-card--highlighted'), { once: true });
   }
+
+  /* ── Shared ingredient-tag-box helpers (mirrored from search card) ── */
+  function _commitIngredientToBox(boxId, hiddenId, inputId, name) {
+    if (!name) return;
+    const box = document.getElementById(boxId);
+    const hiddenCt = document.getElementById(hiddenId);
+    const input = document.getElementById(inputId);
+    if (!box || !hiddenCt || !input) return;
+    const nameLower = name.toLowerCase();
+    if (box.querySelector('.ingredient-tag[data-name="' + CSS.escape(nameLower) + '"]')) return;
+
+    const tag = document.createElement('span');
+    tag.className = 'ingredient-tag';
+    tag.dataset.name = nameLower;
+    tag.dataset.hiddenId = hiddenId;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ingredient-tag-remove';
+    btn.setAttribute('onclick', '_removeIngredientTagEl(this)');
+    btn.innerHTML = '<i class="bi bi-x"></i>';
+    tag.appendChild(document.createTextNode(name));
+    tag.appendChild(btn);
+    box.insertBefore(tag, input);
+
+    const h = document.createElement('input');
+    h.type = 'hidden';
+    h.name = 'ingredient_names';
+    h.value = name;
+    h.dataset.tag = nameLower;
+    hiddenCt.appendChild(h);
+  }
+
+  function _removeIngredientTagEl(btn) {
+    const tag = btn.parentElement;
+    const hiddenId = tag.dataset.hiddenId;
+    const name = tag.dataset.name;
+    tag.remove();
+    if (hiddenId) {
+      const ct = document.getElementById(hiddenId);
+      if (ct) {
+        const h = ct.querySelector('input[data-tag="' + CSS.escape(name) + '"]');
+        if (h) h.remove();
+      }
+    }
+  }
+
+  /* ── Detail-card edit ──────────────────────────────────────── */
+  function togglePdEdit(id) {
+    const toggle = document.getElementById('pd-edit-toggle-' + id);
+    const form = document.getElementById('pd-edit-form-' + id);
+    if (!form) return;
+    const editing = form.style.display !== 'none';
+    form.style.display = editing ? 'none' : 'flex';
+    if (toggle) {
+      toggle.innerHTML = editing
+        ? '<i class="bi bi-pencil me-1"></i>Edit Details'
+        : '<i class="bi bi-x me-1"></i>Cancel Edit';
+    }
+  }
+
+  function handlePdIngredientInput(e, id) {
+    const raw = e.target.value;
+    const parts = raw.split(', ');
+    if (parts.length > 1) {
+      parts.slice(0, -1).forEach(p => _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, p.trim()));
+      _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, parts[parts.length - 1].trim());
+      e.target.value = '';
+    }
+  }
+
+  function handlePdIngredientKeydown(e, id) {
+    const input = e.target;
+    if ((e.key === 'Enter' || e.key === 'Tab') && input.value.trim()) {
+      e.preventDefault();
+      input.value.split(', ').forEach(p => _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, p.trim()));
+      input.value = '';
+    }
+    if (e.key === 'Backspace' && input.value === '') {
+      const box = document.getElementById('pd-tag-box-' + id);
+      const lastTag = box ? box.querySelector('.ingredient-tag:last-of-type') : null;
+      if (lastTag) {
+        const removeBtn = lastTag.querySelector('.ingredient-tag-remove');
+        if (removeBtn) _removeIngredientTagEl(removeBtn);
+      }
+    }
+  }
+
+  function autoCommitPdIngredient(id) {
+    const input = document.getElementById('pd-tag-input-' + id);
+    if (input && input.value.trim()) {
+      _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, input.value.trim());
+      input.value = '';
+    }
+  }
 </script>
+
+<!-- Edit product details -->
+<div class="pd-section" style="margin-bottom:0.5rem;">
+  <button class="pd-edit-toggle" id="pd-edit-toggle-{{ .Id }}" onclick="togglePdEdit('{{ .Id }}')">
+    <i class="bi bi-pencil me-1"></i>Edit Details
+  </button>
+
+  {{- $pid := .Id }}
+  <div id="pd-edit-form-{{ .Id }}" class="pe-form" style="display:none;margin-top:0.75rem;">
+    <input type="hidden" name="id" value="{{ .Id }}">
+
+    <div>
+      <label class="pe-label">Name *</label>
+      <input type="text" name="name" class="pe-input" value="{{ .Name }}" placeholder="Product name" autocomplete="off">
+    </div>
+
+    <div>
+      <label class="pe-label">Origin</label>
+      <input type="text" name="origin" class="pe-input" value="{{ if .Origin }}{{ deref .Origin }}{{ end }}" placeholder="Origin URL (optional)" autocomplete="off">
+    </div>
+
+    <div>
+      <label class="pe-label">Ingredients *</label>
+      <div class="pe-tag-box" id="pd-tag-box-{{ .Id }}"
+           onclick="document.getElementById('pd-tag-input-{{ .Id }}').focus()">
+        {{- range .Ingredients }}
+        <span class="ingredient-tag" data-name="{{ .PrimaryName | lower }}" data-hidden-id="pd-hidden-{{ $pid }}">
+          {{ .PrimaryName }}<button type="button" class="ingredient-tag-remove" onclick="_removeIngredientTagEl(this)"><i class="bi bi-x"></i></button>
+        </span>
+        {{- end }}
+        <input id="pd-tag-input-{{ .Id }}"
+               class="ingredient-tag-input"
+               type="text"
+               placeholder="Type name, press Enter…"
+               autocomplete="off"
+               oninput="handlePdIngredientInput(event, '{{ .Id }}')"
+               onkeydown="handlePdIngredientKeydown(event, '{{ .Id }}')">
+      </div>
+      <div id="pd-hidden-{{ .Id }}">
+        {{- range .Ingredients }}
+        <input type="hidden" name="ingredient_names" value="{{ .PrimaryName }}" data-tag="{{ .PrimaryName | lower }}">
+        {{- end }}
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end" style="margin-top:0.1rem;">
+      <button type="button" class="pe-btn-cancel" onclick="togglePdEdit('{{ .Id }}')">Cancel</button>
+      <button type="button" class="pe-btn-save"
+              hx-post="/product"
+              hx-include="#pd-edit-form-{{ .Id }}"
+              hx-swap="none"
+              hx-on::before-request="autoCommitPdIngredient('{{ .Id }}')"
+              hx-on::after-request="if(event.detail.successful){ htmx.ajax('GET', '/htmx/product-detail?id={{ .Id }}', {target: '#side-modal_content', swap: 'innerHTML'}); htmx.trigger(document.body, 'productUpdated') }">
+        <i class="bi bi-check2 me-1"></i>Save Changes
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Metrics -->
 <div class="pd-section">
