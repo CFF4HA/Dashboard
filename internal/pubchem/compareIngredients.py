@@ -10,6 +10,45 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 import io
 
+# Styles for PDFs
+styles = getSampleStyleSheet()
+
+# Custom styles
+titleStyle = ParagraphStyle(
+    "TitleStyle",
+    parent=styles["Title"],
+    alignment=TA_CENTER,
+    fontName="Times-Bold",
+    fontSize=28,
+    spaceAfter=12,
+)
+
+subtitleStyle = ParagraphStyle(
+    "SubtitleStyle",
+    parent=styles["Normal"],
+    alignment=TA_CENTER,
+    fontName="Times-Bold",
+    fontSize=16,
+    spaceAfter=20,
+)
+
+headerStyle = ParagraphStyle(
+    "HeaderStyle",
+    parent=styles["Heading2"],
+    fontName="Times-Bold",
+    spaceBefore=12,
+    spaceAfter=6,
+    underlineWidth=1,  # underline!
+)
+
+bodyStyle = ParagraphStyle(
+    "BodyStyle",
+    parent=styles["Normal"],
+    fontName="Times-Roman",
+    fontSize=12,
+    spaceAfter=4,
+)
+
 """
 Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
 Parameters: Name of an ingredient
@@ -438,44 +477,6 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
     # PDF setup
     doc = SimpleDocTemplate(buffer)
 
-    styles = getSampleStyleSheet()
-
-    # Custom styles
-    titleStyle = ParagraphStyle(
-        "TitleStyle",
-        parent=styles["Title"],
-        alignment=TA_CENTER,
-        fontName="Times-Bold",
-        fontSize=28,
-        spaceAfter=12,
-    )
-
-    subtitleStyle = ParagraphStyle(
-        "SubtitleStyle",
-        parent=styles["Normal"],
-        alignment=TA_CENTER,
-        fontName="Times-Bold",
-        fontSize=16,
-        spaceAfter=20,
-    )
-
-    headerStyle = ParagraphStyle(
-        "HeaderStyle",
-        parent=styles["Heading2"],
-        fontName="Times-Bold",
-        spaceBefore=12,
-        spaceAfter=6,
-        underlineWidth=1,  # underline!
-    )
-
-    bodyStyle = ParagraphStyle(
-        "BodyStyle",
-        parent=styles["Normal"],
-        fontName="Times-Roman",
-        fontSize=12,
-        spaceAfter=4,
-    )
-
     story = []
 
     # Title
@@ -508,23 +509,3 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
     buffer.seek(0)
     return buffer
 
-def addSectionHeader(textObj, pdfCanvas, title, fontName="Times-Bold", fontSize=20, underlineOffset=2, textColor=colors.black):
-    textObj.setFont(fontName, fontSize)
-    textObj.setFillColor(textColor)
-
-    x = textObj.getX()
-    y = textObj.getY()
-    textObj.textLine(title)
-
-    textWidth = pdfCanvas.stringWidth(title, fontName, fontSize)
-
-    pdfCanvas.setStrokeColor(textColor)
-    pdfCanvas.line(x, y - underlineOffset, x + textWidth, y - underlineOffset)
-
-    textObj.setFont("Times-Roman", 18)
-    return 1
-
-chem = input("Which chemical to look up?\n")
-_, labels = pubchem.Ingredient(chem)
-ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
-create = ingredientPDF(ingredient, chem, True, True, True, True)

@@ -232,7 +232,7 @@ async def compare_products(product1: str, product2: str, db: AsyncSession = Depe
     return allInfo
 
 @app.get("/ingredient/export")
-async def exportIngredientPDF(name: str, expSymptoms: bool = False, expEffects: bool = False, expHazards: bool = False, expRegs: bool = False):
+async def exportIngredientPDF(name: str, expSymptoms: bool = False, expEffects: bool = False, expHazards: bool = False, expRegs: bool = False, db: AsyncSession = Depends(get_db)):
     # First, we get the ingredient object from the cache or database.
     ingredient = None
     if name in cache:
