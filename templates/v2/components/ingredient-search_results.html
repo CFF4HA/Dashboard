@@ -14,6 +14,18 @@
     emptyMsg.style.display = visible === 0 ? 'block' : 'none';
   }
 
+  function ingredientSyncDone(event) {
+    if (!event.detail.successful) return;
+    const target = document.getElementById('ingredient-results') || document.getElementById('search-results');
+    if (!target) return;
+    const selector = '#' + target.id;
+    const q = (document.querySelector('[name="query"]') || {}).value || '';
+    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
+      target: selector,
+      swap: 'innerHTML',
+    });
+  }
+
   async function retrieveFromPubChem(name, resultsSelector) {
     const resultsEl = document.querySelector(resultsSelector);
     resultsEl.innerHTML = `
@@ -80,6 +92,9 @@
 
   .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
   .btn-star:hover { color: #ffc107; }
+  .btn-danger-icon:hover { color: #dc3545; }
+  .btn-star.htmx-request i.bi-arrow-clockwise { display: inline-block; animation: spin-icon 0.8s linear infinite; }
+  @keyframes spin-icon { to { transform: rotate(360deg); } }
 
   .ingredient-card-header {
     display: flex;
@@ -364,6 +379,22 @@
             hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
             title="View details">
             <i class="bi bi-arrow-right-circle"></i>
+          </button>
+          <button class="btn-star"
+            hx-post="/ingredient/sync"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-swap="none"
+            hx-on::after-request="ingredientSyncDone(event)"
+            title="Sync from PubChem">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+          <button class="btn-star btn-danger-icon"
+            hx-delete="/ingredient"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-target="closest .ingredient-card-col"
+            hx-swap="outerHTML"
+            title="Delete ingredient">
+            <i class="bi bi-trash"></i>
           </button>
           {{- if .Failed }}
           <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>

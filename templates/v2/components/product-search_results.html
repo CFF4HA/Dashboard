@@ -38,6 +38,7 @@
 
   .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
   .btn-star:hover { color: #ffc107; }
+  .btn-danger-icon:hover { color: #dc3545; }
 
   .sr-product-card-name {
     font-size: 0.95rem;
@@ -166,7 +167,7 @@
 
 <div class="row">
   {{- range .Products }}
-  <div class="col-md-4 mb-4">
+  <div class="col-md-4 mb-4 sr-product-card-col">
     <div class="sr-product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} sr-product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} sr-product-card--unsafe{{ end }}">
 
       <div class="sr-product-card-header">
@@ -186,6 +187,14 @@
           hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
           title="View details">
           <i class="bi bi-arrow-right-circle"></i>
+        </button>
+        <button class="btn-star btn-danger-icon"
+          hx-delete="/product/delete"
+          hx-vals='{"id": "{{ .Id }}"}'
+          hx-target="closest .sr-product-card-col"
+          hx-swap="outerHTML"
+          title="Delete product">
+          <i class="bi bi-trash"></i>
         </button>
         {{- if exists $.FavoriteProducts .Id }}
         <button class="btn-star starred" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">

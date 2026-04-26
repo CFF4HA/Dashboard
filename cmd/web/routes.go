@@ -50,12 +50,15 @@ func Ingredients(v *verb.Verb) {
 		Bridge(bridges.IngredientDetailBridge)
 
 	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
+	v.Action(http.MethodDelete, "/ingredient/delete", ingredient.DeleteIngredientHandler)
+	v.Action(http.MethodPost, "/ingredient/sync", ingredient.SyncIngredientHandler)
 	v.Action(http.MethodPost, "/ingredient/categorize", ingredient.Categorize)
 }
 
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
 	v.Action(http.MethodPut, "/product", product.CreateProduct)
+	v.Action(http.MethodDelete, "/product/delete", product.DeleteProductHandler)
 	v.Action(http.MethodPost, "/product/categorize", product.Categorize)
 
 	// this is the components that are rendered as part of the
