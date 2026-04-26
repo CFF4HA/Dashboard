@@ -65,7 +65,7 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 
 	// Fast path — no filters at all, return most recent.
 	if q == "" && labelText == "" && len(tagFilters) == 0 {
-		if tx := preload.Order("created DESC").Limit(20).Find(&ingredients); tx.Error != nil {
+		if tx := preload.Order("failed ASC").Order("created DESC").Limit(20).Find(&ingredients); tx.Error != nil {
 			return nil, tx.Error
 		}
 		target := r.FormValue("results_target")
@@ -113,7 +113,7 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 	}
 
 	if len(ids) > 0 {
-		if tx := preload.Where("id IN ?", ids).Find(&ingredients); tx.Error != nil {
+		if tx := preload.Where("id IN ?", ids).Order("failed ASC").Order("created DESC").Find(&ingredients); tx.Error != nil {
 			return nil, tx.Error
 		}
 	}

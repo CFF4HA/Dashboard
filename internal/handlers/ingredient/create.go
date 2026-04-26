@@ -28,26 +28,38 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 		select {
 		case concurrencyLimiter <- struct{}{}:
 			defer func() { <-concurrencyLimiter }()
+			is_compound := true
 			name = strings.ToLower(strings.TrimSpace(name))
 			pubchem_id, err := pubchem.GetCompoundId(name)
 			if err != nil {
 				if strings.Contains(err.Error(), "404") {
-					ing := &types.Ingredient{
-						Model: types.Model{
-							Id:      uuid.New(),
-							Created: time.Now(),
-							Updated: time.Now(),
-						},
-						PrimaryName: name,
-						Failed:      true,
-					}
+					pubchem_id, err = pubchem.GetSubstanceId(name)
+					if err != nil && strings.Contains(err.Error(), "404") {
+						ing := &types.Ingredient{
+							Model: types.Model{
+								Id:      uuid.New(),
+								Created: time.Now(),
+								Updated: time.Now(),
+							},
+							PrimaryName: name,
+							Failed:      true,
+						}
 
-					return ing, core.DB.Create(ing).Error
+						return ing, core.DB.Create(ing).Error
+					}
+					is_compound = false
+				} else {
+					return nil, err
 				}
-				return nil, err
 			}
 
-			data, err := pubchem.GetCompoundAsJSON(pubchem_id)
+			var data []byte
+			if is_compound {
+				data, err = pubchem.GetCompoundAsJSON(pubchem_id)
+			} else {
+				data, err = pubchem.GetSubstanceAsJSON(pubchem_id)
+				core.Logger.Debug("retrieved substance data from PubChem", "name", name, "data", string(data))
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -65,34 +77,39 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 			core.Logger.Info("california cosmetics data", "data", _california_cosmetics.String())
 
 			var names []string
-			if err := json.Unmarshal([]byte(_names.Array()[0].String()), &names); err != nil {
+			name_data := "[" + strings.Trim(_names.String(), "[]") + "]"
+			if err := json.Unmarshal([]byte(name_data), &names); err != nil {
 				core.Logger.Error("failed to unmarshal names for an ingredient", "name", name, "err", err)
 			}
 
 			var hazards []string
+			hazard_data := "[" + strings.Trim(_ghs_hazards.String(), "[]") + "]"
 			if _ghs_hazards.Exists() {
-				if err := json.Unmarshal([]byte(_ghs_hazards.String()), &hazards); err != nil {
+				if err := json.Unmarshal([]byte(hazard_data), &hazards); err != nil {
 					core.Logger.Error("failed to unmarshal hazards for an ingredient", "name", name, "err", err)
 				}
 			}
 
 			var symptoms []string
+			symptom_data := "[" + strings.Trim(_signs_symptoms.String(), "[]") + "]"
 			if _signs_symptoms.Exists() {
-				if err := json.Unmarshal([]byte(_signs_symptoms.Array()[0].String()), &symptoms); err != nil {
+				if err := json.Unmarshal([]byte(symptom_data), &symptoms); err != nil {
 					core.Logger.Error("failed to unmarshal symptoms for an ingredient", "name", name, "err", err)
 				}
 			}
 
 			var effects []string
+			effect_data := "[" + strings.Trim(_adverse_effects.String(), "[]") + "]"
 			if _adverse_effects.Exists() {
-				if err := json.Unmarshal([]byte(_adverse_effects.Array()[0].String()), &effects); err != nil {
+				if err := json.Unmarshal([]byte(effect_data), &effects); err != nil {
 					core.Logger.Error("failed to unmarshal effects for an ingredient", "name", name, "err", err)
 				}
 			}
 
 			var regulations []string
+			regulation_data := "[" + strings.Trim(_california_cosmetics.String(), "[]") + "]"
 			if _california_cosmetics.Exists() {
-				if err := json.Unmarshal([]byte(_california_cosmetics.String()), &regulations); err != nil {
+				if err := json.Unmarshal([]byte(regulation_data), &regulations); err != nil {
 					core.Logger.Error("failed to unmarshal regulations for an ingredient", "name", name, "err", err)
 				}
 			}
