@@ -447,6 +447,14 @@ def massCompareRegulations(ingList1, ingList2):
     print("Unique to Ingredient List 1:", uniqueRegulations1 if uniqueRegulations1 else "None")
     print("Unique to Ingredient List 2:", uniqueRegulations2 if uniqueRegulations2 else "None")
 
+def addSection(title, story, items):
+        if not items:
+            return
+        story.append(Paragraph(title, headerStyle))
+        for item in items:
+            story.append(Paragraph(item, bodyStyle))
+        story.append(Spacer(1, 10))
+
 def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
     # Setup stuff
     name = name.capitalize()
@@ -484,24 +492,15 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
 
     # Subtitle
     story.append(Paragraph(subtitle, subtitleStyle))
-
-    # Section helper
-    def addSection(title, items):
-        if not items:
-            return
-        story.append(Paragraph(title, headerStyle))
-        for item in items:
-            story.append(Paragraph(item, bodyStyle))
-        story.append(Spacer(1, 10))
     
     if expSym:
-        addSection("Symptoms", symptoms)
+        addSection("Symptoms", story, symptoms)
     if expEff:
-        addSection("Effects", effects)
+        addSection("Effects", story, effects)
     if expHaz:
-        addSection("Hazards", hazards)
+        addSection("Hazards", story, hazards)
     if expReg:
-        addSection("Regulations", regs)
+        addSection("Regulations", story, regs)
 
     # Build PDF
     doc.build(story)
@@ -509,3 +508,62 @@ def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool,
     buffer.seek(0)
     return buffer
 
+"""
+Exports a PDF of information related to the set of effects, symptoms, etc. of the ingredients in a product based on which exp 
+flags are active. 
+
+Parameters:
+product : List of Ingredient objects representing the product.
+name : String, name of the product for report titling purposes.
+expSym : Bool, whether to export symptoms of the product.
+expEff : Bool, whether to export effects of the product.
+expHaz : Bool, whether to export hazards of the product.
+expReg : Bool, whether to export regulations of the product.
+
+Returns:
+Byte buffer representing PDF that can be streamed over to the user.
+"""
+def productPDF(product: list[models.Ingredient], name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
+    # Ensure name is capitalized
+    name = name.capitalize()
+
+    buffer = io.BytesIO()
+
+    if expSym:
+        symptoms = getMassSymptomList(product)
+        symptoms = [f"{i+1}: {line}" for i, line in enumerate(symptoms)]
+    if expEff: 
+        effects = getMassEffectList(product)
+        effects = [f"{i+1}: {line}" for i, line in enumerate(effects)]
+    if expHaz:
+        hazards = getMassHazardList(product)
+        hazards = [f"{i+1}: {line}" for i, line in enumerate(hazards)]
+    if expReg:
+        regs = getMassRegulationList(product)
+        regs = [f"{i+1}: {line}" for i, line in enumerate(regs)]
+
+    categories = [
+        ("Symptoms", expSym),
+        ("Effects", expEff),
+        ("Hazards", expHaz),
+        ("Regulations", expReg),
+    ]
+    subtitle = ", ".join(label for label, enabled in categories if enabled)
+    doc = SimpleDocTemplate(buffer)
+    story = []
+
+    story.append(Paragraph(f"{name} Report", titleStyle))
+    story.append(Paragraph(subtitle, subtitleStyle))
+
+    if expSym:
+        addSection("Symptoms", story, symptoms)
+    if expEff:
+        addSection("Effects", story, effects)
+    if expHaz:
+        addSection("Hazards", story, hazards)
+    if expReg:
+        addSection("Regulations", story, regs)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer

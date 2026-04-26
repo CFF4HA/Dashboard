@@ -249,6 +249,24 @@ async def exportIngredientPDF(name: str, expSymptoms: bool = False, expEffects: 
         "Content-Disposition": f"inline; filename={name.capitalize()}_Report.pdf"
     })
 
+@app.get("product/export")
+async def exportProductPDF(product: str, name: str, expSymptoms: bool = False, expEffects: bool = False, expHazards: bool = False, expRegs: bool = False, db: AsyncSession = Depends(get_db)):
+    product = product.split(",")
+    ingredients : list[models.Ingredient] = []
+    for ing in product:
+        if ing in cache:
+            ingredients.append(cache[ing])
+        else:
+            _, labels = pubchem.Ingredient(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients.append(ingredients)
+            cache[ing] = ingredient
+    
+    pdfBuffer = comp.productPDF(ingredients, name, expSymptoms, expEffects, expHazards, expRegs)
+
+    return StreamingResponse(pdfBuffer, media_type="application/pdf", headers={
+        "Content-Disposition": f"inline; filename={name.capitalize()}_Report.pdf"
+    })
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)
