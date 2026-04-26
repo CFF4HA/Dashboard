@@ -1,0 +1,55 @@
+<div id="tagging-rules-table" style="border: 1px solid rgba(207,249,195,0.35); border-radius: 12px; overflow: hidden;">
+
+    {{/* Header row */}}
+    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr 1.2fr 1.4fr 1.2fr; background: rgba(207,249,195,0.12); padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(207,249,195,0.2);">
+      <span style="font-size: 0.75rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.05em;">Tag</span>
+      <span style="font-size: 0.75rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.05em;">Enabled</span>
+      <span style="font-size: 0.75rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.05em;">Pattern</span>
+      <span style="font-size: 0.75rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.05em;">Check Type</span>
+      <span style="font-size: 0.75rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.05em;">Quick Actions</span>
+    </div>
+  
+    {{/* Rows */}}
+    {{- if .TagRules }}
+      {{- range .TagRules }}
+      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr 1.2fr 1.4fr 1.2fr; padding: 0.65rem 0.75rem; border-bottom: 1px solid rgba(207,249,195,0.1); align-items: center;">
+        <span style="font-size: 0.85rem; font-weight: 500; color: white;">{{ .Tag }}</span>
+        <span>
+          <input type="checkbox" {{ if .Enabled }}checked{{ end }}
+            style="accent-color: #CFF9C3; width: 16px; height: 16px; cursor: pointer;"
+            hx-post="/user/tag-rule/toggle"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-target="#tagging-rules-table"
+            hx-swap="outerHTML">
+        </span>
+        <span style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">{{ .Pattern }}</span>
+        <span style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">{{ .CheckType }}</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button
+            style="background: rgba(220,53,69,0.15); border: 1px solid rgba(220,53,69,0.4); color: #f09595; border-radius: 6px; padding: 0.25rem 0.75rem; font-size: 0.8rem; cursor: pointer;"
+            hx-delete="/user/tag-rule"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-target="#tagging-rules-table"
+            hx-swap="outerHTML"
+            hx-confirm="Delete this rule?">
+            Delete
+          </button>
+          <button
+            style="background: rgba(207,249,195,0.1); border: 1px solid rgba(207,249,195,0.3); color: #CFF9C3; border-radius: 6px; padding: 0.25rem 0.5rem; font-size: 0.85rem; cursor: pointer;"
+            hx-post="/user/tag-rule/run"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-target="#tagging-rules-table"
+            hx-swap="outerHTML"
+            title="Re-run rule">
+            &#8635;
+          </button>
+        </div>
+      </div>
+      {{- end }}
+    {{- else }}
+    <div style="padding: 1.2rem 0.75rem;">
+      <p style="color: rgba(255,255,255,0.35); font-size: 0.85rem; margin: 0;">No tagging rules yet. Create one above.</p>
+    </div>
+    {{- end }}
+  
+  </div>

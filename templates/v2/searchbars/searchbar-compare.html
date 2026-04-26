@@ -1,0 +1,24 @@
+<div id="searchbar-compare">
+    <div style="display: flex; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid #CFF9C3;">
+      <input
+        type="text"
+        name="query"
+        placeholder="Search for a product to compare..."
+        autocomplete="off"
+        style="flex: 1; border: none; background: white; padding: 0.65rem 1rem; font-size: 0.95rem; color: #1a2e1e; outline: none; font-family: 'Segoe UI', system-ui, sans-serif;"
+        hx-get="/htmx/compare-search_results"
+        hx-trigger="keyup changed delay:400ms"
+        hx-target="#compare-search-results"
+        hx-swap="innerHTML"
+      >
+      <button
+        style="flex-shrink: 0; background: #CFF9C3; border: none; padding: 0.65rem 1.6rem; font-size: 0.95rem; font-weight: 600; color: #1a2e1e; cursor: pointer; font-family: 'Segoe UI', system-ui, sans-serif;"
+        hx-get="/htmx/compare-search_results"
+        hx-trigger="click"
+        hx-target="#compare-search-results"
+        hx-swap="innerHTML"
+        hx-include="[name='query']"
+      >Search</button>
+    </div>
+    <div id="compare-search-results" class="mt-2"></div>
+  </div>

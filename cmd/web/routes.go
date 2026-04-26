@@ -21,11 +21,7 @@ func SearchBars(v *verb.Verb) {
 func Index(v *verb.Verb) {
 	// Primary Dashboard
 	v.Page("", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
-
-	// New Navigation Targets (mapped to index for stability until pages are built)
-	v.Page("/search", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
-	v.Page("/compare", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
-	v.Page("/products", "v2/pages/products.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("/", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
 }
 
 // Ingredients handles ingredient-specific pages and search results
@@ -51,13 +47,29 @@ func Products(v *verb.Verb) {
 		Bridge(bridges.ProductSearchBridge).
 		Bridge(bridges.UserFavoriteProductsBridge)
 
-	v.Page("/products", "v2/pages/products.html").
-        Bridge(bridges.UserSessionRequired{}).
-        // This is the "Magic" that fills the {{ range .Products }} in your HTML
-        Bridge(bridges.ProductBridge(20, map[string]string{
-            "name": " ILIKE ",
-        })).
-        Bridge(bridges.UserFavoriteProductsBridge)
+	// Tab components
+	v.Component("v2/components/tab-products.html", htmx.Div())
+	v.Component("v2/components/tab-ingredients.html", htmx.Div())
+	v.Component("v2/components/tab-compare.html", htmx.Div())
+	v.Component("v2/components/tab-user_dashboard.html", htmx.Div())
+
+	// Product section components
+	v.Component("v2/components/btn-add_product.html", htmx.Div())
+
+	v.Component("v2/components/section-your_products.html", htmx.Div()).
+		Bridge(bridges.UserFavoriteProductsBridge)
+
+	v.Component("v2/components/section-recommended_products.html", htmx.Div())
+}
+
+func Compare(v *verb.Verb) {
+	v.Component("v2/components/searchbar-compare.html", htmx.Div())
+	v.Component("v2/components/table-compare.html", htmx.Div()).
+		Bridge(bridges.ProductSearchBridge).
+		Bridge(bridges.UserFavoriteProductsBridge)
+
+	v.Component("v2/components/compare-search_results.html", htmx.Div()).
+	Bridge(bridges.ProductSearchBridge)
 }
 
 // User handles authentication, registration, and questionnaire flows
@@ -71,6 +83,8 @@ func User(v *verb.Verb) {
 
 	// User Components
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
+	v.Component("v2/components/table-tagging_rules.html", htmx.Div()).
+    	Bridge(bridges.UserSessionRequired{})
 
 	// Static Pages
 	v.Page("/login", "v2/pages/login.html")
@@ -85,4 +99,7 @@ func User(v *verb.Verb) {
 	v.Page("/guest", "v2/pages/index.html")
 	v.Page("/user", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
 	v.Page("/user/login-success", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("/user/login", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("/user/dashboard", "v2/pages/userDashboard.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("/products", "v2/pages/products.html").Bridge(bridges.UserSessionRequired{})
 }

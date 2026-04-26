@@ -1,0 +1,105 @@
+<div hx-get="/htmx/searchbar-compare" hx-trigger="load" hx-swap="outerHTML"></div>
+
+<div class="mt-4">
+  <h2 style="color: white; font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1rem;">
+    Compare Products
+  </h2>
+  <div id="compare-table-wrapper">
+    {{- with .CompareProducts }}
+      <div style="border: 1px solid rgba(207,249,195,0.4); border-radius: 15px; overflow: hidden;">
+    
+        {{/* Header row */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; background: #1a2e1e;">
+          <div style="border-right: 1px solid rgba(207,249,195,0.2); padding: 1rem;"></div>
+          {{- range . }}
+          <div style="border-right: 1px solid rgba(207,249,195,0.2); padding: 1rem; text-align: center;">
+            <p style="color: #CFF9C3; font-weight: 500; font-size: 0.9rem; margin: 0;">{{ .Name }}</p>
+          </div>
+          {{- end }}
+        </div>
+    
+        {{/* Metrics header */}}
+        <div style="background: rgba(207,249,195,0.12); border-top: 1px solid rgba(207,249,195,0.2); padding: 0.4rem 0.75rem;">
+          <span style="font-size: 0.7rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.06em;">Metrics</span>
+        </div>
+    
+        {{/* Hazards */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; border-top: 1px solid rgba(207,249,195,0.15);">
+          <div style="padding: 0.65rem 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.55); border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center;">Hazards</div>
+          {{- range . }}
+          <div style="padding: 0.65rem 0.75rem; border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center; justify-content: center;">
+            <span style="background: {{ if gt .Metadata.NumHazard 5 }}rgba(252,235,235,0.12){{ else }}rgba(234,243,222,0.15){{ end }}; color: {{ if gt .Metadata.NumHazard 5 }}#f09595{{ else }}#CFF9C3{{ end }}; border-radius: 20px; padding: 2px 14px; font-size: 0.82rem; font-weight: 500; border: 1px solid {{ if gt .Metadata.NumHazard 5 }}rgba(240,149,149,0.3){{ else }}rgba(207,249,195,0.3){{ end }};">{{ .Metadata.NumHazard }}</span>
+          </div>
+          {{- end }}
+        </div>
+    
+        {{/* Effects */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; border-top: 1px solid rgba(207,249,195,0.15);">
+          <div style="padding: 0.65rem 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.55); border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center;">Effects</div>
+          {{- range . }}
+          <div style="padding: 0.65rem 0.75rem; border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center; justify-content: center;">
+            <span style="background: rgba(250,238,218,0.12); color: #FAC775; border-radius: 20px; padding: 2px 14px; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(250,199,117,0.3);">{{ .Metadata.NumEffect }}</span>
+          </div>
+          {{- end }}
+        </div>
+    
+        {{/* Symptoms */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; border-top: 1px solid rgba(207,249,195,0.15);">
+          <div style="padding: 0.65rem 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.55); border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center;">Symptoms</div>
+          {{- range . }}
+          <div style="padding: 0.65rem 0.75rem; border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center; justify-content: center;">
+            <span style="background: {{ if gt .Metadata.NumSymptom 4 }}rgba(252,235,235,0.12){{ else }}rgba(234,243,222,0.15){{ end }}; color: {{ if gt .Metadata.NumSymptom 4 }}#f09595{{ else }}#CFF9C3{{ end }}; border-radius: 20px; padding: 2px 14px; font-size: 0.82rem; font-weight: 500; border: 1px solid {{ if gt .Metadata.NumSymptom 4 }}rgba(240,149,149,0.3){{ else }}rgba(207,249,195,0.3){{ end }};">{{ .Metadata.NumSymptom }}</span>
+          </div>
+          {{- end }}
+        </div>
+    
+        {{/* Regulations */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; border-top: 1px solid rgba(207,249,195,0.15);">
+          <div style="padding: 0.65rem 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.55); border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center;">Regulations</div>
+          {{- range . }}
+          <div style="padding: 0.65rem 0.75rem; border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center; justify-content: center;">
+            <span style="background: rgba(250,238,218,0.12); color: #FAC775; border-radius: 20px; padding: 2px 14px; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(250,199,117,0.3);">{{ .Metadata.NumReglations }}</span>
+          </div>
+          {{- end }}
+        </div>
+    
+        {{/* Ingredients header */}}
+        <div style="background: rgba(207,249,195,0.12); border-top: 1px solid rgba(207,249,195,0.2); padding: 0.4rem 0.75rem;">
+          <span style="font-size: 0.7rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.06em;">Ingredients</span>
+        </div>
+    
+        {{/* Total count */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; border-top: 1px solid rgba(207,249,195,0.15);">
+          <div style="padding: 0.65rem 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.55); border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center;">Total count</div>
+          {{- range . }}
+          <div style="padding: 0.65rem 0.75rem; border-right: 1px solid rgba(207,249,195,0.15); text-align: center; font-size: 0.82rem; color: white; display: flex; align-items: center; justify-content: center;">{{ len .Ingredients }}</div>
+          {{- end }}
+        </div>
+    
+        {{/* Safety header */}}
+        <div style="background: rgba(207,249,195,0.12); border-top: 1px solid rgba(207,249,195,0.2); padding: 0.4rem 0.75rem;">
+          <span style="font-size: 0.7rem; font-weight: 600; color: #CFF9C3; text-transform: uppercase; letter-spacing: 0.06em;">Safety profile</span>
+        </div>
+    
+        {{/* Fragrance-free */}}
+        <div style="display: grid; grid-template-columns: 140px {{ range . }}1fr {{ end }}; border-top: 1px solid rgba(207,249,195,0.15);">
+          <div style="padding: 0.65rem 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.55); border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center;">Fragrance-free</div>
+          {{- range . }}
+          <div style="padding: 0.65rem 0.75rem; border-right: 1px solid rgba(207,249,195,0.15); display: flex; align-items: center; justify-content: center;">
+            {{- if .Metadata.FragranceFree }}
+            <span style="background: rgba(234,243,222,0.15); color: #CFF9C3; border-radius: 20px; padding: 2px 14px; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(207,249,195,0.3);">Yes</span>
+            {{- else }}
+            <span style="background: rgba(252,235,235,0.12); color: #f09595; border-radius: 20px; padding: 2px 14px; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(240,149,149,0.3);">No</span>
+            {{- end }}
+          </div>
+          {{- end }}
+        </div>
+    
+      </div>
+    {{- else }}
+    <div id="compare-table-wrapper" style="border: 1px solid rgba(207,249,195,0.35); border-radius: 12px; padding: 1.2rem 0.75rem;">
+      <p style="color: rgba(255,255,255,0.35); font-size: 0.85rem; margin: 0;">Search for products above and add them to compare.</p>
+    </div>
+    {{- end }}
+    </div>
+</div>

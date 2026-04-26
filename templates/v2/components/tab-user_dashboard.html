@@ -1,0 +1,41 @@
+<div hx-get="/htmx/searchbar-manual_search" hx-trigger="load" hx-swap="outerHTML"></div>
+
+<div class="mt-4">
+  <h2 style="color: white; font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.3rem;">
+    Automated Tagging
+  </h2>
+  <p style="color: rgba(255,255,255,0.55); font-size: 0.85rem; margin-bottom: 1.2rem;">
+    Create automatic rules for ingredients and use them to filter products automatically!
+  </p>
+
+  <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; font-size: 0.88rem; color: rgba(255,255,255,0.7);">
+    <span>If the ingredient label</span>
+    <select name="tag_check_type" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(207,249,195,0.35); border-radius: 8px; padding: 0.3rem 0.6rem; font-size: 0.85rem; color: white; outline: none;">
+      <option value="contains">contains</option>
+      <option value="excludes">does not contain</option>
+    </select>
+    <input type="text" name="tag_pattern" placeholder="e.g. 'sugar'"
+      style="background: white; border: 1px solid rgba(207,249,195,0.35); border-radius: 8px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: #1a2e1e; outline: none; width: 140px;">
+    <span>set the tag to</span>
+    <input type="text" name="tag_value" placeholder="e.g. 'sweetener'"
+      style="background: white; border: 1px solid rgba(207,249,195,0.35); border-radius: 8px; padding: 0.3rem 0.7rem; font-size: 0.85rem; color: #1a2e1e; outline: none; width: 140px;">
+    <span>.</span>
+  </div>
+
+  <button
+    style="background: transparent; border: 1px solid rgba(207,249,195,0.5); color: #CFF9C3; border-radius: 8px; padding: 0.4rem 1.1rem; font-size: 0.85rem; cursor: pointer; margin-bottom: 2rem;"
+    hx-post="/user/tag-rule"
+    hx-include="[name='tag_check_type'], [name='tag_pattern'], [name='tag_value']"
+    hx-target="#tagging-rules-table"
+    hx-swap="outerHTML"
+  >Create Rule</button>
+
+  <h2 style="color: white; font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.3rem;">
+    Tagging Rules
+  </h2>
+  <p style="color: rgba(255,255,255,0.55); font-size: 0.85rem; margin-bottom: 1rem;">
+    The following table lists the current tagging rules you've created.
+  </p>
+
+  <div hx-get="/htmx/table-tagging_rules" hx-trigger="load" hx-swap="outerHTML"></div>
+</div>

@@ -1,0 +1,117 @@
+diff --git a/cmd/web/routes.go b/cmd/web/routes.go
+index 249b3e5..330f87e 100644
+--- a/cmd/web/routes.go
++++ b/cmd/web/routes.go
+@@ -11,78 +11,78 @@ import (
+ 	"github.com/DAlba-sudo/verb/htmx"
+ )
+ 
++// SearchBars handles the HTMX component for the manual search bar
+ func SearchBars(v *verb.Verb) {
+ 	v.Component("v2/searchbars/searchbar-manual_search.html", htmx.Div().Classes("p-2")).
+ 		Bridge(bridges.ManualSearchMultiplexer)
+ }
+ 
++// Index handles the main dashboard and core navigation pages
+ func Index(v *verb.Verb) {
++	// Primary Dashboard
+ 	v.Page("", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+-}
+-
+-func Compare(v *verb.Verb) {
+-	v.Page("/compare", "v2/pages/compare.html")
+-	v.Component("v2/components/compare-product_search.html", htmx.Div()).
+-		Bridge(bridges.ProductSearchBridge)
+-	v.Component("v2/components/investigation.html", htmx.Div()).
+-		Bridge(bridges.InvestigationBridge{})
+ 
+-	v.Component("v2/components/compare-product_card.html", htmx.Div()).
+-		Bridge(bridges.ProductDetailBridge)
++	// New Navigation Targets (mapped to index for stability until pages are built)
++	v.Page("/search", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
++	v.Page("/compare", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+ }
+ 
++// Ingredients handles ingredient-specific pages and search results
+ func Ingredients(v *verb.Verb) {
+ 	v.Page("/ingredients", "v2/pages/ingredients.html").
+-		Bridge(bridges.CategorizedIngredients{}).
++		Bridge(bridges.UserSessionRequired{}).
+ 		Bridge(bridges.UserFavoriteIngredientsBridge)
+ 
+ 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
+-		Bridge(bridges.CategorizedIngredients{}).
+ 		Bridge(bridges.IngredientSearchBridge).
+ 		Bridge(bridges.UserFavoriteIngredientsBridge)
+ 
+-	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
+-		Bridge(bridges.IngredientDetailBridge)
+-
+ 	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
+-	v.Action(http.MethodPost, "/ingredient/categorize", ingredient.Categorize)
+ }
+ 
++// Products handles product-specific pages, creation, and search results
+ func Products(v *verb.Verb) {
+-	// this will instantiate the create product route
+ 	v.Action(http.MethodPut, "/product", product.CreateProduct)
+-	v.Action(http.MethodPost, "/product/categorize", product.Categorize)
+ 
+-	// this is the components that are rendered as part of the
+-	// product page.
+ 	v.Component("v2/forms/form-product_create.html", htmx.Div())
+ 
+-	// search results component used by the shared searchbar
+ 	v.Component("v2/components/product-search_results.html", htmx.Div()).
+-		Bridge(bridges.CategorizedProducts{}).
+ 		Bridge(bridges.ProductSearchBridge).
+ 		Bridge(bridges.UserFavoriteProductsBridge)
+ 
+-	v.Component("v2/components/product-detail.html", htmx.Div()).
+-		Bridge(bridges.ProductDetailBridge)
+-
+-	// this will be the primary products page.
+ 	v.Page("/products", "v2/pages/products.html").
+-		Bridge(bridges.CategorizedProducts{}).
+-		Bridge(bridges.ProductBridge(20, map[string]string{
+-			"name": " ILIKE ",
+-		})).
+-		Bridge(bridges.UserFavoriteProductsBridge)
++        Bridge(bridges.UserSessionRequired{}).
++        // This is the "Magic" that fills the {{ range .Products }} in your HTML
++        Bridge(bridges.ProductBridge(20, map[string]string{
++            "name": " ILIKE ",
++        })).
++        Bridge(bridges.UserFavoriteProductsBridge)
+ }
+ 
++// User handles authentication, registration, and questionnaire flows
+ func User(v *verb.Verb) {
+-	// handles the user registration part of the user flow.
++	// User Actions
+ 	v.Action(http.MethodPut, "/user", user.HandleUserPUT)
+ 	v.Action(http.MethodPost, "/user/login", user.HandleUserPOST)
+ 	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
+ 	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
++	v.Action(http.MethodGet, "/guest", user.HandleGuestLogin)
+ 
++	// User Components
+ 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
+ 
++	// Static Pages
+ 	v.Page("/login", "v2/pages/login.html")
+-}
++	v.Page("/create-login", "v2/pages/createLogin.html")
++
++	// Questionnaire Flow
++	v.Page("/questionnaire", "v2/pages/questionnaire1.html")
++	v.Page("/questionnaire/step-2", "v2/pages/questionnaire2.html")
++	v.Page("/questionnaire/step-3", "v2/pages/questionnaire3.html")
++
++	// Redirect/Landing Helpers
++	v.Page("/guest", "v2/pages/index.html")
++	v.Page("/user", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
++	v.Page("/user/login-success", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
++	v.Page("/user/login", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
++}
+\ No newline at end of file

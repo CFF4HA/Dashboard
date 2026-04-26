@@ -1,0 +1,64 @@
+<div class="mt-4 mb-4">
+    <h2 style="color: white; font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 1.2rem;">
+      Your Products
+    </h2>
+    {{- if .FavoriteProducts }}
+      {{- range .FavoriteProducts }}
+      <div class="product-card mb-3">
+        <div class="product-card-header">
+          <div class="product-card-header-meta">
+            <p class="product-card-name">{{ .Name }}</p>
+            {{- if .Origin }}
+            <div class="product-card-origin">
+              <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
+              <a href="{{ deref .Origin }}" target="_blank" rel="noopener">{{ deref .Origin }}</a>
+            </div>
+            {{- end }}
+          </div>
+          <button class="btn-star starred"
+                  hx-post="/user/product"
+                  hx-vals='{"id": "{{ .Id }}"}'
+                  hx-swap="outerHTML"
+                  title="Remove">
+            <i class="bi bi-dash-circle" style="color: #adb5bd;"></i>
+          </button>
+        </div>
+        <hr class="product-card-divider">
+        <div class="product-card-label">Metrics</div>
+        <div class="product-stats">
+          <div class="product-stat">
+            <i class="bi bi-exclamation-triangle product-stat-icon"></i>
+            <span class="product-stat-value">{{ .Metadata.NumHazard }}</span>
+            <span class="product-stat-name">Hazards</span>
+          </div>
+          <div class="product-stat">
+            <i class="bi bi-activity product-stat-icon"></i>
+            <span class="product-stat-value">{{ .Metadata.NumEffect }}</span>
+            <span class="product-stat-name">Effects</span>
+          </div>
+          <div class="product-stat">
+            <i class="bi bi-heart-pulse product-stat-icon"></i>
+            <span class="product-stat-value">{{ .Metadata.NumSymptom }}</span>
+            <span class="product-stat-name">Symptoms</span>
+          </div>
+          <div class="product-stat">
+            <i class="bi bi-shield-check product-stat-icon"></i>
+            <span class="product-stat-value">{{ .Metadata.NumReglations }}</span>
+            <span class="product-stat-name">Regulations</span>
+          </div>
+        </div>
+        <hr class="product-card-divider">
+        <div>
+          <div class="product-card-label">Ingredients ({{ len .Ingredients }})</div>
+          <div class="ingredient-pills-scroll">
+            {{- range .Ingredients }}
+            <span class="ingredient-pill">{{ .PrimaryName }}</span>
+            {{- end }}
+          </div>
+        </div>
+      </div>
+      {{- end }}
+    {{- else }}
+    <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">No saved products yet. Search for products and save them here.</p>
+    {{- end }}
+  </div>

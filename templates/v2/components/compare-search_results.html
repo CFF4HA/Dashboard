@@ -1,0 +1,22 @@
+{{- with .Search }}
+{{- if and (eq (len .Products) 0) (ne .Query "") }}
+<p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 0.5rem;">
+  No products found for "{{ .Query }}".
+</p>
+{{- else if gt (len .Products) 0 }}
+<div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.25rem;">
+  {{- range .Products }}
+  <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(207,249,195,0.2); border-radius: 8px; padding: 0.5rem 0.75rem;">
+    <span style="color: white; font-size: 0.88rem;">{{ .Name }}</span>
+    <button
+      style="background: rgba(207,249,195,0.15); border: 1px solid rgba(207,249,195,0.35); color: #CFF9C3; border-radius: 6px; padding: 0.25rem 0.75rem; font-size: 0.8rem; cursor: pointer; white-space: nowrap;"
+      hx-get="/htmx/table-compare"
+      hx-vals='{"product_id": "{{ .Id }}"}'
+      hx-target="#compare-table-wrapper"
+      hx-swap="outerHTML"
+    >+ Add</button>
+  </div>
+  {{- end }}
+</div>
+{{- end }}
+{{- end }}

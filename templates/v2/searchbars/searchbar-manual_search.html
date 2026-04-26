@@ -1,117 +1,86 @@
 <style>
-  span:hover {
-    cursor: pointer;
-  }
   :root {
-    --searchbar-bg: #f8f9fa;
-    --searchbar-border: #dee2e6;
-    --searchbar-hover: #e9ecef;
-    --searchbar-focus: #0d6efd;
-    --searchbar-text: #495057;
-    --dropdown-bg: #ffffff;
-    --dropdown-hover: #f8f9fa;
+    --searchbar-focus: #CFF9C3;
+    --searchbar-text: #1a2e1e;
   }
 
-  .searchbar-wrapper {
+  #searchbar-manual_search {
     display: flex;
-    align-items: center;
-    width: 100%;
-    background: var(--searchbar-bg);
-    border: 1px solid var(--searchbar-border);
-    border-radius: 12px;
-    padding: 0.35rem 0.75rem;
+    flex-direction: column;
     gap: 0.5rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    position: sticky;
-    top: 1rem;
-    z-index: 100;
+    margin-bottom: 1.5rem;
   }
 
-  .searchbar-wrapper:focus-within {
-    border-color: var(--searchbar-focus);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  }
-
-  .searchbar-icon {
-    flex-shrink: 0;
-    color: #adb5bd;
-    font-size: 0.85rem;
-    line-height: 1;
+  .searchbar-row {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #CFF9C3;
   }
 
   .searchbar-input {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1;
     border: none;
-    background: transparent;
-    padding: 0.25rem 0;
+    background: white;
+    padding: 0.65rem 1rem;
+    font-size: 0.95rem;
     color: var(--searchbar-text);
-    font-size: 0.9rem;
     outline: none;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
   .searchbar-input::placeholder {
     color: #adb5bd;
   }
 
-  .searchbar-type-btn {
+  .searchbar-submit-btn {
     flex-shrink: 0;
-    background: transparent;
+    background: #CFF9C3;
     border: none;
-    padding: 0.1rem 0.25rem;
-    font-size: 0.8rem;
-    color: #adb5bd;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a2e1e;
     cursor: pointer;
-    transition: color 0.2s ease;
-    white-space: nowrap;
+    transition: background 0.2s ease;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   }
 
-  .searchbar-type-btn:hover {
-    color: var(--searchbar-text);
-  }
-
-  .searchbar-dropdown-menu {
-    border-radius: 10px;
-    border: 1px solid var(--searchbar-border);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-  }
-
-  .searchbar-dropdown-menu .dropdown-item {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.85rem;
-    color: var(--searchbar-text);
-  }
-
-  .searchbar-dropdown-menu .dropdown-item:hover {
-    background: var(--dropdown-hover);
+  .searchbar-submit-btn:hover {
+    background: #b8f0a8;
   }
 
   .sb-filter-row {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    margin-top: 0.5rem;
     flex-wrap: wrap;
   }
 
   .sb-filter-op,
   .sb-filter-input {
-    background: #ffffff;
-    border: 1px solid var(--searchbar-border);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(207, 249, 195, 0.4);
     border-radius: 8px;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.8rem;
-    color: var(--searchbar-text);
+    padding: 0.3rem 0.7rem;
+    font-size: 0.82rem;
+    color: white;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
   }
 
   .sb-filter-op {
     flex-shrink: 0;
     cursor: pointer;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .sb-filter-op option {
+    color: #1a2e1e;
+    background: white;
   }
 
   .sb-filter-input {
@@ -119,25 +88,25 @@
     min-width: 0;
   }
 
-  .sb-filter-input::placeholder { color: #adb5bd; }
+  .sb-filter-input::placeholder {
+    color: rgba(255,255,255,0.35);
+  }
 
   .sb-filter-op:focus,
   .sb-filter-input:focus {
-    border-color: var(--searchbar-focus);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-color: #CFF9C3;
   }
 </style>
 
 {{- with .Search }}
-<div id="searchbar-manual_search" class="d-flex flex-column">
-  <div  class="searchbar-wrapper">
-    <span class="searchbar-icon">&#128269;</span>
+<div id="searchbar-manual_search">
+
+  <div class="searchbar-row">
     <input type="text"
       class="searchbar-input"
-      placeholder="Select a search type on the right!"
+      placeholder="Search for a product..."
       aria-label="Search"
       name="query"
-
       hx-get="{{ .Active.Target }}"
       hx-trigger="keyup changed delay:500ms"
       hx-target="#search-results"
@@ -145,25 +114,14 @@
       hx-include="[name='label_filter_op'], [name='label_filter_text']"
       hx-vals='{"results_target": "#search-results"}'
     >
-    <div class="dropdown">
-      <button class="searchbar-type-btn dropdown-toggle dropdown-toggle-split"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-              aria-label="Select search type">
-        {{- .Active.ActiveSearchMode -}}
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end searchbar-dropdown-menu">
-        {{- range .Others }}
-        <li><a class="dropdown-item" 
-          hx-get="/htmx/searchbar-manual_search?search_mode={{ .ActiveSearchMode | urlquery }}"
-          hx-trigger="click"
-          hx-target="#searchbar-manual_search"
-          hx-swap="outerHTML"
-        >{{ .ActiveSearchMode }}</a></li>
-        {{- end }}
-      </ul>
-    </div>
+    <button class="searchbar-submit-btn"
+      hx-get="{{ .Active.Target }}"
+      hx-trigger="click"
+      hx-target="#search-results"
+      hx-swap="innerHTML"
+      hx-include="[name='query'], [name='label_filter_op'], [name='label_filter_text']"
+      hx-vals='{"results_target": "#search-results"}'
+    >Search</button>
   </div>
 
   {{- if or (eq .Active.ActiveSearchMode "Product") (eq .Active.ActiveSearchMode "Ingredient") }}
@@ -192,17 +150,7 @@
   </div>
   {{- end }}
 
-  <p class="text-muted mt-2 mb-0" style="font-size: 0.85rem;">{{ .Active.Description }}</p>
   <div id="search-results" class="mt-3"></div>
-  <div class="d-flex flex-row">
-  <span class="badge badge-sm border-none bg-dark rounded-pill"
-    hx-get="/htmx/form-product_create"
-    hx-trigger="click"
-    hx-target="#modal-content"
-    data-bs-toggle="modal"
-    data-bs-target="#modal"
-  >Create Product</span>
-  </div>
 
 </div>
 
