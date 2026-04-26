@@ -8,6 +8,8 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ai"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
+	"github.com/CFF4HA/Dashboard/internal/handlers/tagging"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/google/uuid"
 )
@@ -86,6 +88,12 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 	if tx.Error != nil {
 		tx.Rollback()
 		return tx.Error
+	}
+
+	// Run the requesting user's tagging rules against the product's ingredients
+	// and bubble any matching tags up to the product itself.
+	if u, userErr := user.GetUserFromRequest(w, r); userErr == nil {
+		tagging.TagNewProduct(product, u.Model.Id)
 	}
 
 	return ai.ProductBlurb(r.Context(), product)

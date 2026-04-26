@@ -8,6 +8,73 @@ import (
 	"github.com/google/uuid"
 )
 
+// TagNewIngredient runs every enabled tagging rule owned by userID against a
+// single ingredient that was just created, applying matching tags immediately.
+func TagNewIngredient(ing types.Ingredient, userID uuid.UUID) {
+	var rules []types.TaggingRule
+	core.DB.Where("user_id = ? AND enabled = true", userID).Preload("Tag").Find(&rules)
+
+	for _, rule := range rules {
+		var matchCount int64
+		core.DB.Model(&types.Label{}).
+			Joins("JOIN ingredient_labels ON ingredient_labels.label_id = labels.id").
+			Where("ingredient_labels.ingredient_id = ? AND payload ~* ?", ing.Id, rule.Regex).
+			Count(&matchCount)
+
+		hasMatch := matchCount > 0
+		if (rule.Contains && hasMatch) || (!rule.Contains && !hasMatch) {
+			if err := core.DB.Model(&rule.Tag).Association("Ingredients").Append(&ing); err != nil {
+				core.Logger.Error("failed to tag new ingredient", "ingredient_id", ing.Id, "tag_id", rule.Tag.Id, "error", err)
+			}
+		}
+	}
+}
+
+// TagNewProduct runs every enabled tagging rule owned by userID against the
+// ingredients of a newly created product, tagging matching ingredients and
+// bubbling each applied tag up to the product itself.
+func TagNewProduct(product types.Product, userID uuid.UUID) {
+	if len(product.Ingredients) == 0 {
+		return
+	}
+
+	var rules []types.TaggingRule
+	core.DB.Where("user_id = ? AND enabled = true", userID).Preload("Tag").Find(&rules)
+
+	var ingIDs []uuid.UUID
+	for _, ing := range product.Ingredients {
+		ingIDs = append(ingIDs, ing.Id)
+	}
+
+	for _, rule := range rules {
+		matchingSub := core.DB.Model(&types.Label{}).
+			Select("ingredient_labels.ingredient_id").
+			Joins("JOIN ingredient_labels ON ingredient_labels.label_id = labels.id").
+			Where("ingredient_labels.ingredient_id IN ? AND payload ~* ?", ingIDs, rule.Regex)
+
+		var matchingIngredients []types.Ingredient
+		if rule.Contains {
+			core.DB.Where("id IN (?)", matchingSub).Find(&matchingIngredients)
+		} else {
+			core.DB.Where("id IN ? AND id NOT IN (?)", ingIDs, matchingSub).Find(&matchingIngredients)
+		}
+
+		if len(matchingIngredients) == 0 {
+			continue
+		}
+
+		for _, ing := range matchingIngredients {
+			if err := core.DB.Model(&rule.Tag).Association("Ingredients").Append(&ing); err != nil {
+				core.Logger.Error("failed to tag product ingredient", "ingredient_id", ing.Id, "tag_id", rule.Tag.Id, "error", err)
+			}
+		}
+
+		if err := core.DB.Model(&rule.Tag).Association("Products").Append(&product); err != nil {
+			core.Logger.Error("failed to bubble tag to product", "product_id", product.Id, "tag_id", rule.Tag.Id, "error", err)
+		}
+	}
+}
+
 func HandleTaggingRuleRun(w http.ResponseWriter, r *http.Request) error {
 	rule_id := r.FormValue("rule_id")
 

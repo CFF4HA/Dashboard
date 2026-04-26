@@ -389,7 +389,7 @@
             <i class="bi bi-arrow-clockwise"></i>
           </button>
           <button class="btn-star btn-danger-icon"
-            hx-delete="/ingredient"
+            hx-delete="/ingredient/delete"
             hx-vals='{"id": "{{ .Id }}"}'
             hx-target="closest .ingredient-card-col"
             hx-swap="outerHTML"
