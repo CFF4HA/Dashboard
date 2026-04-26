@@ -18,6 +18,14 @@ var (
 			return GetTagsByName(r.FormValue("name"))
 		},
 	}
+
+	AllTagsBridge = verb.Map("Tags", func(r *http.Request, m map[string]any) (any, error) {
+		var tags []types.Tag
+		if err := core.DB.Order("name ASC").Find(&tags).Error; err != nil {
+			return nil, err
+		}
+		return tags, nil
+	})
 )
 
 type TaggingRules struct{}

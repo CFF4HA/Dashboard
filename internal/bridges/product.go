@@ -89,12 +89,13 @@ var ProductSearchBridge = verb.Map("Search", func(r *http.Request, m map[string]
 	q := strings.TrimSpace(r.FormValue("query"))
 	labelOp := strings.TrimSpace(r.FormValue("label_filter_op"))
 	labelText := strings.TrimSpace(r.FormValue("label_filter_text"))
+	tagFilters := r.Form["tag_filter"]
 
 	var products []types.Product
-	db := core.DB.Preload("Ingredients").Preload("Metadata")
+	db := core.DB.Preload("Ingredients").Preload("Metadata").Preload("Tags")
 
 	// Fast path — no filters at all, return most recent.
-	if q == "" && labelText == "" {
+	if q == "" && labelText == "" && len(tagFilters) == 0 {
 		if tx := db.Order("created DESC").Limit(20).Find(&products); tx.Error != nil {
 			return nil, tx.Error
 		}
@@ -125,6 +126,13 @@ var ProductSearchBridge = verb.Map("Search", func(r *http.Request, m map[string]
 		}
 	}
 
+	if len(tagFilters) > 0 {
+		tagSub := core.DB.Table("product_tags").
+			Select("DISTINCT product_tags.product_id").
+			Where("product_tags.tag_id IN ?", tagFilters)
+		idQuery = idQuery.Where("products.id IN (?)", tagSub)
+	}
+
 	var ids []string
 	if tx := idQuery.Pluck("id", &ids); tx.Error != nil {
 		return nil, tx.Error
@@ -149,6 +157,7 @@ var ProductDetailBridge = verb.Map("Product", func(r *http.Request, m map[string
 	var product types.Product
 	tx := core.DB.
 		Preload("Metadata").
+		Preload("Tags").
 		Preload("Ingredients").
 		Preload("Ingredients.Labels").
 		Preload("Ingredients.Names").

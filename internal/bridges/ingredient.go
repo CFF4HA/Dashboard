@@ -58,12 +58,13 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 	q := strings.TrimSpace(r.FormValue("query"))
 	labelOp := strings.TrimSpace(r.FormValue("label_filter_op"))
 	labelText := strings.TrimSpace(r.FormValue("label_filter_text"))
+	tagFilters := r.Form["tag_filter"]
 
 	var ingredients []types.Ingredient
 	preload := core.DB.Preload("Tags").Preload("Metadata").Preload("Names").Preload("Labels")
 
 	// Fast path — no filters at all, return most recent.
-	if q == "" && labelText == "" {
+	if q == "" && labelText == "" && len(tagFilters) == 0 {
 		if tx := preload.Order("created DESC").Limit(20).Find(&ingredients); tx.Error != nil {
 			return nil, tx.Error
 		}
@@ -97,6 +98,13 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 		default: // "contains"
 			idQuery = idQuery.Where("ingredients.id IN (?)", labelSub)
 		}
+	}
+
+	if len(tagFilters) > 0 {
+		tagSub := core.DB.Table("ingredient_tags").
+			Select("DISTINCT ingredient_tags.ingredient_id").
+			Where("ingredient_tags.tag_id IN ?", tagFilters)
+		idQuery = idQuery.Where("ingredients.id IN (?)", tagSub)
 	}
 
 	var ids []string

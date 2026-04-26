@@ -1,0 +1,40 @@
+{{- with .Tags }}
+{{- if gt (len .) 0 }}
+<style>
+  .tag-filter-label { font-size: 0.72rem; font-weight: 600; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
+  .tag-filter-wrap { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .tag-filter-pill {
+    font-size: 0.75rem; color: #6c757d; background: #f8f9fa; border: 1px solid #dee2e6;
+    border-radius: 20px; padding: 0.15rem 0.55rem; white-space: nowrap; line-height: 1.4;
+    cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .tag-filter-pill--active { color: #3b5bdb; background: #edf2ff; border-color: #bac8ff; }
+</style>
+<div class="tag-filter-label">Filter by tags</div>
+<div class="tag-filter-wrap" id="tag-filter-wrap">
+  {{- range . }}
+  <button type="button" class="tag-filter-pill" data-tag-id="{{ .Id }}"
+          onclick="toggleTagPill(this)"
+          {{- if .Description }} title="{{ .Description }}"{{- end }}>{{ .Name }}</button>
+  {{- end }}
+</div>
+<script>
+  function toggleTagPill(btn) {
+    const id = btn.dataset.tagId;
+    btn.classList.toggle('tag-filter-pill--active');
+    const wrap = document.getElementById('tag-filter-wrap');
+    const existing = wrap.querySelector(`input[name="tag_filter"][value="${id}"]`);
+    if (existing) {
+      existing.remove();
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'tag_filter';
+      inp.value = id;
+      wrap.appendChild(inp);
+    }
+    htmx.trigger(document.body, 'tagFilterChanged');
+  }
+</script>
+{{- end }}
+{{- end }}

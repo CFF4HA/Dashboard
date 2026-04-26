@@ -219,11 +219,15 @@
           placeholder="Search products by name…"
           autocomplete="off"
           hx-get="/htmx/product-search_results"
-          hx-trigger="keyup changed delay:400ms"
+          hx-trigger="keyup changed delay:400ms, tagFilterChanged from:body"
           hx-target="#product-results"
           hx-swap="innerHTML"
-          hx-include="this">
+          hx-include="this, [name='tag_filter']">
       </div>
+      <div id="tag-filter" class="mt-2"
+           hx-get="/htmx/tag-filter"
+           hx-trigger="load"
+           hx-swap="innerHTML"></div>
     </div>
   </div>
 

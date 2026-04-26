@@ -139,6 +139,29 @@
   }
 
   .sr-card-footer { margin-top: auto; font-size: 0.72rem; color: #adb5bd; }
+
+  .sr-tag-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .sr-tag-scroll::-webkit-scrollbar { width: 3px; }
+  .sr-tag-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sr-tag-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+
+  .sr-tag-pill {
+    font-size: 0.75rem;
+    color: #3b5bdb;
+    background: #edf2ff;
+    border: 1px solid #bac8ff;
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
 </style>
 
 <div class="row">
@@ -189,6 +212,21 @@
           <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "safe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Safe for Me</span></li>
           <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Unsafe for Me</span></li>
         </ul>
+      </div>
+
+      <hr class="sr-divider">
+
+      <div>
+        <div class="sr-card-label">Tags</div>
+        {{- if and (.Tags) (gt (len .Tags) 0) }}
+        <div class="sr-tag-scroll">
+          {{- range .Tags }}
+          <span class="sr-tag-pill"{{if .Description}} title="{{ .Description }}"{{end}}>{{ .Name }}</span>
+          {{- end }}
+        </div>
+        {{- else }}
+        <span style="font-size:0.78rem;color:#adb5bd;">No tags applied.</span>
+        {{- end }}
       </div>
 
       <hr class="sr-divider">
