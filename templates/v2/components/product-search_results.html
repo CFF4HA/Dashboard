@@ -434,7 +434,7 @@
         <div class="d-flex gap-2 justify-content-end" style="margin-top:0.25rem;">
           <button type="button" class="pe-btn-cancel" onclick="toggleProductEdit('{{ .Id }}')">Cancel</button>
           <button type="button" class="pe-btn-save"
-                  hx-post="/product"
+                  hx-post="/product/update"
                   hx-include="#pe-{{ .Id }}"
                   hx-swap="none"
                   hx-on::before-request="autoCommitEditIngredient('{{ .Id }}')"

@@ -58,7 +58,7 @@ func Ingredients(v *verb.Verb) {
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
 	v.Action(http.MethodPut, "/product", product.CreateProduct)
-	v.Action(http.MethodPost, "/product", product.UpdateProductHandler)
+	v.Action(http.MethodPost, "/product/update", product.UpdateProductHandler)
 	v.Action(http.MethodDelete, "/product/delete", product.DeleteProductHandler)
 	v.Action(http.MethodPost, "/product/categorize", product.Categorize)
 
