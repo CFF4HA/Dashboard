@@ -2,6 +2,7 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -96,5 +97,6 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 		tagging.TagNewProduct(product, u.Model.Id)
 	}
 
+	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"productCreated":{"productId":%q}}`, product.Id.String()))
 	return ai.ProductBlurb(r.Context(), product)
 }

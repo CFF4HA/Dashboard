@@ -3,6 +3,7 @@ package bridges
 import (
 	"errors"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
@@ -63,9 +64,9 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 	var ingredients []types.Ingredient
 	preload := core.DB.Preload("Tags").Preload("Metadata").Preload("Names").Preload("Labels")
 
-	// Fast path — no filters at all, return most recent.
+	// Fast path — no filters at all, return alphabetically by primary name.
 	if q == "" && labelText == "" && len(tagFilters) == 0 {
-		if tx := preload.Order("failed ASC").Order("created DESC").Limit(20).Find(&ingredients); tx.Error != nil {
+		if tx := preload.Order("failed ASC").Order("primary_name ASC").Limit(20).Find(&ingredients); tx.Error != nil {
 			return nil, tx.Error
 		}
 		target := r.FormValue("results_target")
@@ -113,9 +114,27 @@ var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[stri
 	}
 
 	if len(ids) > 0 {
-		if tx := preload.Where("id IN ?", ids).Order("failed ASC").Order("created DESC").Find(&ingredients); tx.Error != nil {
+		if tx := preload.Where("id IN ?", ids).Find(&ingredients); tx.Error != nil {
 			return nil, tx.Error
 		}
+
+		// Sort: non-failed first, then primary-name matches before synonym-only
+		// matches, then alphabetical within each group.
+		qLower := strings.ToLower(q)
+		sort.SliceStable(ingredients, func(i, j int) bool {
+			a, b := ingredients[i], ingredients[j]
+			if a.Failed != b.Failed {
+				return !a.Failed
+			}
+			if q != "" {
+				aNameMatch := strings.Contains(strings.ToLower(a.PrimaryName), qLower)
+				bNameMatch := strings.Contains(strings.ToLower(b.PrimaryName), qLower)
+				if aNameMatch != bNameMatch {
+					return aNameMatch
+				}
+			}
+			return strings.ToLower(a.PrimaryName) < strings.ToLower(b.PrimaryName)
+		})
 	}
 
 	target := r.FormValue("results_target")

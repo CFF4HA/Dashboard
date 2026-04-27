@@ -110,4 +110,6 @@ func Tagging(v *verb.Verb) {
 	v.Action(http.MethodPut, "/tag/rule/create", tagging.HandleTagRuleCreate)
 	v.Action(http.MethodDelete, "/tag/rule/delete", tagging.HandleTagRuleDelete)
 	v.Action(http.MethodPost, "/tag/rule/run", tagging.HandleTaggingRuleRun)
+	v.Action(http.MethodPost, "/tag/bad", tagging.HandleTagBadIngredients)
+	v.Action(http.MethodDelete, "/ingredient/tag", tagging.RemoveIngredientTagHandler)
 }

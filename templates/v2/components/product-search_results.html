@@ -326,22 +326,6 @@
 
       <!-- ── View mode ─────────────────────────────────────── -->
       <div id="pv-{{ .Id }}">
-        <div class="dropdown">
-          <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.25rem 0.5rem;font-size:0.75rem;">
-            {{- if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }}
-            Safe for Me
-            {{- else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }}
-            Unsafe for Me
-            {{- else }}
-            Categorize
-            {{- end }}
-          </button>
-          <ul class="dropdown-menu">
-            <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "safe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Safe for Me</span></li>
-            <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Unsafe for Me</span></li>
-          </ul>
-        </div>
-
         <hr class="sr-divider">
 
         <div>
