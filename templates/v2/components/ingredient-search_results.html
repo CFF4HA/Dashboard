@@ -254,15 +254,37 @@
   .ingredient-tag-scroll::-webkit-scrollbar-track { background: transparent; }
   .ingredient-tag-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
 
-  .ingredient-tag-pill {
-    font-size: 0.75rem;
-    color: #3b5bdb;
+  .ingredient-tag-pill-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
     background: #edf2ff;
     border: 1px solid #bac8ff;
     border-radius: 20px;
-    padding: 0.15rem 0.55rem;
+    padding: 0.15rem 0.35rem 0.15rem 0.55rem;
     white-space: nowrap;
   }
+
+  .ingredient-tag-pill {
+    font-size: 0.75rem;
+    color: #3b5bdb;
+    white-space: nowrap;
+  }
+
+  .ingredient-tag-remove-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.65rem;
+    color: #bac8ff;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+    display: flex;
+    align-items: center;
+  }
+  .ingredient-tag-remove-btn:hover { color: #dc3545; }
 
   /* ── Label list (hazards, effects, symptoms, regulations) ──── */
   .ingredient-label-list {
@@ -438,10 +460,22 @@
       <div class="tab-content" id="tabs-content-{{ .Id }}">
 
         <div class="tab-pane fade show active pt-2" id="tags-pane-{{ .Id }}" role="tabpanel">
+          {{- $ingId := .Id }}
           {{- if and (.Tags) (gt (len .Tags) 0) }}
           <div class="ingredient-tag-scroll">
             {{- range .Tags }}
-            <span class="ingredient-tag-pill"{{if .Description}} title="{{ .Description }}"{{end}}>{{ .Name }}</span>
+            <span class="ingredient-tag-pill-wrap"{{if .Description}} title="{{ .Description }}"{{end}}>
+              <span class="ingredient-tag-pill">{{ .Name }}</span>
+              <button class="ingredient-tag-remove-btn"
+                      hx-delete="/ingredient/tag"
+                      hx-vals='{"ingredient_id": "{{ $ingId }}", "tag_id": "{{ .Id }}"}'
+                      hx-target="closest .ingredient-tag-pill-wrap"
+                      hx-swap="outerHTML"
+                      hx-on::after-request="if(event.detail.successful) htmx.trigger(document.body, 'productUpdated')"
+                      title="Remove tag">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
             {{- end }}
           </div>
           {{- else }}

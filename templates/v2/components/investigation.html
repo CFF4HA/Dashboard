@@ -137,6 +137,24 @@
     margin-bottom: 0.75rem;
     margin-top: 1.5rem;
   }
+
+  /* ── Tag-Bad button ─────────────────────────────────────────── */
+  .inv-tag-bad-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #dc2626;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    margin-bottom: 1rem;
+  }
+  .inv-tag-bad-btn:hover { background: #fee2e2; border-color: #f87171; }
+  .inv-tag-bad-btn:disabled { opacity: 0.6; cursor: default; }
 </style>
 
 <div class="row">
@@ -146,10 +164,23 @@
     <div id="inv-bad-section" style="display:none;">
       <p class="inv-section-label" style="color:#dc2626; margin-top:0;"><i class="bi bi-exclamation-circle me-1"></i>Bad Ingredients</p>
       <p class="inv-section-label text-muted">
-        The following ingredients may be harmful based on the products you've marked as "Good" 
+        The following ingredients may be harmful based on the products you've marked as "Good"
         and those you've marked as "Bad".
       </p>
-      <div id="inv-bad-carousel" class="inv-carousel mb-4" style="flex-wrap:wrap; overflow-x:visible;"></div>
+      <div id="inv-bad-carousel" class="inv-carousel mb-3" style="flex-wrap:wrap; overflow-x:visible;"></div>
+
+      {{/* Hidden container — populated by JS before the HTMX request fires */}}
+      <div id="inv-bad-ids" style="display:none;"></div>
+
+      <button id="inv-tag-bad-btn"
+              class="inv-tag-bad-btn"
+              hx-post="/tag/bad"
+              hx-include="[name='ingredient_ids']"
+              hx-swap="none"
+              hx-on::before-request="invPopulateBadIds()"
+              hx-on::after-request="if(event.detail.successful) invOnTagBadSuccess(this)">
+        <i class="bi bi-tag me-1"></i>Tag these as &#x201C;Bad&#x201D;
+      </button>
     </div>
 
     {{/* ── Shared ─────────────────────────────────────────────── */}}
@@ -451,5 +482,40 @@
     }).join('');
 
     htmx.process(carousel);
+
+    // Reset the tag button whenever the bad-ingredient list changes.
+    const btn = document.getElementById('inv-tag-bad-btn');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-tag me-1"></i>Tag these as &#x201C;Bad&#x201D;';
+    }
+  }
+
+  // Populate the hidden-input container with one input per bad ingredient ID
+  // right before the HTMX request fires, so hx-include picks them up.
+  function invPopulateBadIds() {
+    const container = document.getElementById('inv-bad-ids');
+    if (!container) return;
+    container.innerHTML = '';
+    Object.keys(window.__invBadIngredients)
+      .filter(function(id) { return !window.__invGoodIngredients[id]; })
+      .forEach(function(id) {
+        var input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = 'ingredient_ids';
+        input.value = id;
+        container.appendChild(input);
+      });
+  }
+
+  // Briefly indicate success on the tag button, then restore it.
+  function invOnTagBadSuccess(btn) {
+    var original = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Tagged!';
+    btn.disabled = true;
+    setTimeout(function() {
+      btn.innerHTML = original;
+      btn.disabled  = false;
+    }, 2500);
   }
 </script>
