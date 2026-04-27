@@ -1,32 +1,125 @@
-<div class="container-fluid py-5 g-5">
+<style>
+  /* Centering Logic - Adjusted for lower placement */
+  .auth-wrapper {
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Increased from 8vh to 15vh to push content lower */
+    padding-top: 15vh; 
+  }
+
+  #auth-panel {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(39, 66, 41, 0.08);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 400px; 
+  }
+
+  .form-label {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    color: var(--forest-green);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control {
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    font-family: 'Lato', sans-serif;
+    background-color: #fbfbfb;
+    transition: all 0.2s ease;
+  }
+
+  .form-control:focus {
+    background-color: #fff;
+    border-color: var(--regular-green);
+    box-shadow: 0 0 0 4px rgba(74, 115, 78, 0.1);
+    outline: none;
+  }
+
+  .btn-login {
+    background-color: var(--forest-green);
+    border: none;
+    color: white;
+    padding: 0.9rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.2s, background-color 0.2s;
+  }
+
+  .btn-login:hover {
+    background-color: var(--regular-green);
+    transform: translateY(-1px);
+    color: white;
+  }
+
+  .signup-link {
+    color: var(--regular-green);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .signup-link:hover {
+    color: var(--forest-green);
+    text-decoration: underline;
+  }
+
+  .brand-logo {
+    max-width: 425px;
+    height: auto;
+    /* Maintains the specific gap you requested */
+    margin-bottom: 2rem; 
+  }
+
+  /* Hides tabs on login only */
+  nav, .nav-tabs, #main-navbar { 
+    display: none !important; 
+  }
+</style>
+
+<div class="container">
   <div class="row justify-content-center">
-    <div class="col-12 col-sm-8 col-md-5 col-lg-4 my-3">
-      <div class="text-center mb-4">
-        <img src="/static/github-ff-banner.png" class="img-fluid"/>
+    <div class="col-12 auth-wrapper">
+      
+      {{/* Branding Header */}}
+      <div class="text-center">
+        <img src="/static/github-ff-banner.png" alt="Fragrance Free Logo" class="brand-logo img-fluid">
       </div>
 
+      {{/* Auth Card */}}
       <div id="auth-panel">
         <form method="POST" action="/user/login">
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus/>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Your username" required autofocus/>
           </div>
           <div class="mb-4">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required/>
+            <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required/>
           </div>
-          <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-primary">Login</button>
+          <div class="d-grid mb-2">
+            <button type="submit" class="btn btn-login shadow-sm">Sign In</button>
           </div>
         </form>
 
-        <div class="text-center" style="font-size: 0.82rem; color: #adb5bd;">
+        <div class="text-center mt-4" style="font-size: 0.85rem; color: #adb5bd;">
           Don't have an account?
           <a hx-get="/htmx/form-user_signup"
              hx-target="#auth-panel"
              hx-swap="outerHTML"
              href="#"
-             style="color: #0d6efd; text-decoration: none;">Sign up</a>
+             class="signup-link">Create one</a>
         </div>
       </div>
     </div>
