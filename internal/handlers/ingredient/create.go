@@ -74,6 +74,7 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 
 			core.Logger.Info("adverse effects data", "data", _adverse_effects.String())
 			core.Logger.Info("hazards data", "data", _ghs_hazards.String())
+			core.Logger.Info("symptoms data", "data", _signs_symptoms.String())
 			core.Logger.Info("california cosmetics data", "data", _california_cosmetics.String())
 
 			var names []string
@@ -93,7 +94,14 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 			var symptoms []string
 			symptom_data := "[" + strings.Trim(_signs_symptoms.String(), "[]") + "]"
 			if _signs_symptoms.Exists() {
-				if err := json.Unmarshal([]byte(symptom_data), &symptoms); err != nil {
+				if strings.Count(symptom_data, "[") > 1 {
+					// there's more than one array, so we need to split and then iterate and join
+					arrays := strings.Split(symptom_data, "],[")
+					for _, array := range arrays {
+						elements := strings.Split(strings.Trim(array, "[]"), ",")
+						symptoms = append(symptoms, elements...)
+					}
+				} else if err := json.Unmarshal([]byte(symptom_data), &symptoms); err != nil {
 					core.Logger.Error("failed to unmarshal symptoms for an ingredient", "name", name, "err", err)
 				}
 			}
