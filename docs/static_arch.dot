@@ -1,0 +1,114 @@
+digraph {
+	graph [label="Static Architecture - Layer View", splines=ortho, compound=true];
+
+	// === Database Layer ===
+	subgraph cluster_DatabaseLayer {
+		graph [label="", bgcolor="#ff5959", penwidth=0, style=rounded];
+		node [shape=rect, style=filled, fillcolor=white];
+		cDL_header [label="Layer (Database Layer)"];
+
+		node [shape=cylinder];
+		cDL_db [label="Database"];
+
+		subgraph cluster_DLTables {
+			graph [label="Logical Tables", bgcolor="gray", penwidth=1, style="rounded,dashed"];
+			node [shape=record, style="rounded,filled", fillcolor=white];
+			cDL_tables [label="labels | names | ingredients | products | users | tagging_rules"];
+		}
+	}
+
+	// === Verb Layer (Backend Monolith) ===
+	subgraph cluster_VerbLayer {
+		graph [label="", bgcolor="#96b1ff", penwidth=0, style=rounded];
+		node [shape=rect, style=filled, fillcolor=white];
+		cVL_header [label="Layer (Backend Layer — Verb)"];
+
+		subgraph cluster_VLDomains {
+			graph [style=invis];
+
+			subgraph cluster_VLIngredient {
+				graph [label="Ingredient", bgcolor="gray", penwidth=1, style="rounded,dashed"];
+				node [shape=rect, style=filled, fillcolor=white];
+				cVL_ing_page [label="Page"];
+				cVL_ing_component [label="Component"];
+				cVL_ing_bridge [label="Bridge"];
+				cVL_ing_handler [label="Handler"];
+			}
+
+			subgraph cluster_VLProduct {
+				graph [label="Product", bgcolor="gray", penwidth=1, style="rounded,dashed"];
+				node [shape=rect, style=filled, fillcolor=white];
+				cVL_prod_page [label="Page"];
+				cVL_prod_component [label="Component"];
+				cVL_prod_bridge [label="Bridge"];
+				cVL_prod_handler [label="Handler"];
+			}
+
+			subgraph cluster_VLTag {
+				graph [label="Tag", bgcolor="gray", penwidth=1, style="rounded,dashed"];
+				node [shape=rect, style=filled, fillcolor=white];
+				cVL_tag_component [label="Component"];
+				cVL_tag_bridge [label="Bridge"];
+				cVL_tag_handler [label="Handler"];
+			}
+
+			subgraph cluster_VLUser {
+				graph [label="User", bgcolor="gray", penwidth=1, style="rounded,dashed"];
+				node [shape=rect, style=filled, fillcolor=white];
+				cVL_user_page [label="Page"];
+				cVL_user_component [label="Component"];
+				cVL_user_bridge [label="Bridge"];
+				cVL_user_handler [label="Handler"];
+			}
+		}
+	}
+
+	// === Frontend Layer ===
+	subgraph cluster_FrontendLayer {
+		graph [label="", bgcolor="#fff196", penwidth=0, style=rounded];
+		node [shape=rect, style=filled, fillcolor=white];
+		cFL_header [label="Layer (Frontend Layer)"];
+		cFL_browser [label="Browser"];
+		cFL_chrome [label="Chrome Extension"];
+	}
+
+
+	// === Point Nodes (junction aggregation) ===
+	node [shape=point, width=0, height=0, style=invis];
+	p_browser_ui;   // Browser <-> domain Pages / Components (template)
+	p_browser_hdl;  // Browser -> domain Handlers (POST / PUT / DELETE)
+	p_chrome_hdl;   // Chrome -> domain Handlers
+	p_db;           // All domain clusters -> Database
+
+
+	// === Layer Interactions ===
+
+	// Browser <-> domain Pages / Components  (#4477CC)
+	// Browser -> domain Handlers
+	edge [color="#4477CC"];
+	cFL_browser -> p_browser_ui [dir=both];
+	p_browser_ui -> cVL_ing_page      [lhead=cluster_VLIngredient];
+	p_browser_ui -> cVL_prod_page     [lhead=cluster_VLProduct];
+	p_browser_ui -> cVL_tag_component [lhead=cluster_VLTag];
+	p_browser_ui -> cVL_user_page     [lhead=cluster_VLUser];
+
+	cFL_browser -> p_browser_hdl [arrowhead=none];
+	p_browser_hdl -> cVL_ing_handler  [lhead=cluster_VLIngredient];
+	p_browser_hdl -> cVL_prod_handler [lhead=cluster_VLProduct];
+	p_browser_hdl -> cVL_tag_handler  [lhead=cluster_VLTag];
+	p_browser_hdl -> cVL_user_handler [lhead=cluster_VLUser];
+
+	// Chrome -> domain Handlers  (#EE7722)
+	edge [color="#EE7722"];
+	cFL_chrome -> p_chrome_hdl [arrowhead=none];
+	p_chrome_hdl -> cVL_ing_handler  [lhead=cluster_VLIngredient];
+	p_chrome_hdl -> cVL_prod_handler [lhead=cluster_VLProduct];
+
+	// All domain clusters -> Database (single consolidated point)
+	edge [color=black];
+	cVL_ing_bridge  -> p_db [ltail=cluster_VLIngredient, arrowhead=none];
+	cVL_prod_bridge -> p_db [ltail=cluster_VLProduct,    arrowhead=none];
+	cVL_tag_bridge  -> p_db [ltail=cluster_VLTag,        arrowhead=none];
+	cVL_user_bridge -> p_db [ltail=cluster_VLUser,       arrowhead=none];
+	p_db -> cDL_db [dir=both];
+}
