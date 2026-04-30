@@ -8,6 +8,7 @@ RUN go mod download
 COPY . .
 
 RUN go build -o /app/dashboard ./cmd/web/
+RUN cp /app/dashboard /app/server
 
 EXPOSE 8080
 
