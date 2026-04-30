@@ -17,6 +17,15 @@ digraph {
 		}
 	}
 
+  subgraph cluster_ExternalDataLayer {
+		graph [label="", bgcolor="#ff5959", penwidth=0, style=rounded];
+		node [shape=rect, style=filled, fillcolor=white];
+		cEL_header [label="Layer (Third Party Layer)"];
+
+		node [shape=rect];
+		cEL_pubchem [label="PubChem API"];
+	}
+
 	// === Verb Layer (Backend Monolith) ===
 	subgraph cluster_VerbLayer {
 		graph [label="", bgcolor="#96b1ff", penwidth=0, style=rounded];
@@ -110,5 +119,6 @@ digraph {
 	cVL_prod_bridge -> p_db [ltail=cluster_VLProduct,    arrowhead=none];
 	cVL_tag_bridge  -> p_db [ltail=cluster_VLTag,        arrowhead=none];
 	cVL_user_bridge -> p_db [ltail=cluster_VLUser,       arrowhead=none];
+  cVL_ing_handler -> cEL_pubchem [ltail=cluster_VLIngredient, arrowhead=none];
 	p_db -> cDL_db [dir=both];
 }

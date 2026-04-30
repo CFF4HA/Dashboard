@@ -1,0 +1,41 @@
+digraph flow_product_client {
+  rankdir=TB
+  graph [
+    label="UML Sequence — product-search_results: Client-side JS (no HTTP)",
+    labelloc=t, labeljust=l,
+    fontname="Helvetica", fontsize=12,
+    nodesep=2.0, ranksep=0.6,
+    splines=polyline, pad=0.5
+  ]
+  node [fontname="Helvetica", fontsize=10, height=0.5]
+  edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
+
+  // ── Lifelines ─────────────────────────────────────────────────────────────
+  { rank=min
+    Browser  [label="Browser",                                                      shape=rect, style="filled,rounded", fillcolor="#fff196"]
+    ClientJS [label="Client JS\nsrFilterIngredients · toggleProductEdit\n_commitIngredientToBox · autoCommitEditIngredient", shape=rect, style="filled,rounded", fillcolor="#fff9c4"]
+    DOM      [label="DOM",                                                           shape=rect, style="filled,rounded", fillcolor="#ffffff"]
+  }
+
+  // ── Lifeline step nodes ───────────────────────────────────────────────────
+  node [shape=point, width=0.04, height=0.04, label=""]
+
+  // ── Lifeline chains ───────────────────────────────────────────────────────
+  edge [style=dashed, arrowhead=none, color="#cccccc", weight=20]
+  Browser  -> b0 -> b1 -> b2 -> b3
+  ClientJS -> j0 -> j1 -> j2 -> j3
+  DOM      -> m0 -> m1 -> m2 -> m3
+
+  // ── Step alignment ────────────────────────────────────────────────────────
+  { rank=same; b0; j0; m0 }
+  { rank=same; b1; j1; m1 }
+  { rank=same; b2; j2; m2 }
+  { rank=same; b3; j3; m3 }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  edge [constraint=false, fontsize=9]
+  b0 -> j0 [label="  keydown / input / click  ",        style=solid,  color="#664d03", fontcolor="#664d03"]
+  j1 -> m1 [label="  filter list / add tag / edit  ",   style=solid,  color="#664d03", fontcolor="#664d03"]
+  m2 -> j2 [label="  DOM mutation (no HTTP)  ",          style=dashed, color="#664d03", fontcolor="#664d03"]
+  j3 -> b3 [label="  visual update  ",                   style=dashed, color="#664d03", fontcolor="#664d03"]
+}
