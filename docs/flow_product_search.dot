@@ -4,8 +4,8 @@ digraph flow_product_htmx {
     label="UML Sequence — product-search_results: HTMX Actions\n(search · detail · update · delete · star)",
     labelloc=t, labeljust=l,
     fontname="Helvetica", fontsize=12,
-    nodesep=2.0, ranksep=0.6,
-    splines=polyline, pad=0.5
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
   ]
   node [fontname="Helvetica", fontsize=10, height=0.5]
   edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
@@ -34,8 +34,8 @@ digraph flow_product_htmx {
 
   // ── Messages ──────────────────────────────────────────────────────────────
   edge [constraint=false, fontsize=9]
-  b0 -> h0 [label="  HTMX GET / POST / DELETE\n(/htmx/product-search_results\n/htmx/product-detail\n/product/update · /product/delete · /user/product)  ", style=solid,  color="#198754", fontcolor="#198754"]
-  h1 -> d1 [label="  SELECT / INSERT / UPDATE / DELETE  ",                                                                                                    style=solid,  color="#198754", fontcolor="#198754"]
-  d2 -> h2 [label="  result  ",                                                                                                                                style=dashed, color="#198754", fontcolor="#198754"]
-  h3 -> b3 [label="  partial HTML (results · card · modal · star)  ",                                                                                         style=dashed, color="#198754", fontcolor="#198754"]
+  b0 -> h0 [label="  HTMX GET / POST / DELETE\n(/htmx/product-search_results\n/htmx/product-detail\n/product/update · /product/delete · /user/product)  \n", style=solid,  color="#198754", fontcolor="#198754"]
+  h1 -> d1 [label="  SELECT / INSERT / UPDATE / DELETE  \n",                                                                                                    style=solid,  color="#198754", fontcolor="#198754"]
+  d2 -> h2 [label="  result  \n",                                                                                                                                style=dashed, color="#198754", fontcolor="#198754"]
+  h3 -> b3 [label="  partial HTML (results · card · modal · star)  \n",                                                                                         style=dashed, color="#198754", fontcolor="#198754"]
 }

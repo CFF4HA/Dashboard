@@ -4,8 +4,8 @@ digraph flow_product_client {
     label="UML Sequence — product-search_results: Client-side JS (no HTTP)",
     labelloc=t, labeljust=l,
     fontname="Helvetica", fontsize=12,
-    nodesep=2.0, ranksep=0.6,
-    splines=polyline, pad=0.5
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
   ]
   node [fontname="Helvetica", fontsize=10, height=0.5]
   edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
@@ -34,8 +34,8 @@ digraph flow_product_client {
 
   // ── Messages ──────────────────────────────────────────────────────────────
   edge [constraint=false, fontsize=9]
-  b0 -> j0 [label="  keydown / input / click  ",        style=solid,  color="#664d03", fontcolor="#664d03"]
-  j1 -> m1 [label="  filter list / add tag / edit  ",   style=solid,  color="#664d03", fontcolor="#664d03"]
-  m2 -> j2 [label="  DOM mutation (no HTTP)  ",          style=dashed, color="#664d03", fontcolor="#664d03"]
-  j3 -> b3 [label="  visual update  ",                   style=dashed, color="#664d03", fontcolor="#664d03"]
+  b0 -> j0 [label="  keydown / input / click  \n",        style=solid,  color="#664d03", fontcolor="#664d03"]
+  j1 -> m1 [label="  filter list / add tag / edit  \n",   style=solid,  color="#664d03", fontcolor="#664d03"]
+  m2 -> j2 [label="  DOM mutation (no HTTP)  \n",          style=dashed, color="#664d03", fontcolor="#664d03"]
+  j3 -> b3 [label="  visual update  \n",                   style=dashed, color="#664d03", fontcolor="#664d03"]
 }

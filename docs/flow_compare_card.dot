@@ -4,8 +4,8 @@ digraph flow_compare_client {
     label="UML Sequence — compare-product_card: Client-side Interactions (no HTTP)",
     labelloc=t, labeljust=l,
     fontname="Helvetica", fontsize=12,
-    nodesep=2.0, ranksep=0.6,
-    splines=polyline, pad=0.5
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
   ]
   node [fontname="Helvetica", fontsize=10, height=0.5]
   edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
@@ -39,16 +39,16 @@ digraph flow_compare_client {
 
   // ── [A] Vote: Good / Bad click ────────────────────────────────────────────
   edge [constraint=false, fontsize=9]
-  b0 -> j0 [label="  Good / Bad click  ",                        style=solid,  color="#EE7722", fontcolor="#EE7722"]
-  j1 -> b1 [label="  toggle active class on button  ",           style=dashed, color="#EE7722", fontcolor="#EE7722"]
-  j2 -> v2 [label="  invUpdateBadIngredients(id, type, active)  ", style=solid, color="#EE7722", fontcolor="#EE7722"]
-  v3 -> b3 [label="  highlight shared / unique ingredients  ",   style=dashed, color="#EE7722", fontcolor="#EE7722"]
+  b0 -> j0 [label="  Good / Bad click  \n",                        style=solid,  color="#EE7722", fontcolor="#EE7722"]
+  j1 -> b1 [label="  toggle active class on button  \n",           style=dashed, color="#EE7722", fontcolor="#EE7722"]
+  j2 -> v2 [label="  invUpdateBadIngredients(id, type, active)  \n", style=solid, color="#EE7722", fontcolor="#EE7722"]
+  v3 -> b3 [label="  highlight shared / unique ingredients  \n",   style=dashed, color="#EE7722", fontcolor="#EE7722"]
 
   // ── [B] Remove: X click ───────────────────────────────────────────────────
-  b4 -> j4 [label="  X (remove) click  ",                        style=solid,  color="#dc3545", fontcolor="#dc3545"]
-  j5 -> b5 [label="  remove carousel item\nfire productRemoved event  ", style=dashed, color="#dc3545", fontcolor="#dc3545"]
+  b4 -> j4 [label="  X (remove) click  \n",                        style=solid,  color="#dc3545", fontcolor="#dc3545"]
+  j5 -> b5 [label="  remove carousel item\nfire productRemoved event  \n", style=dashed, color="#dc3545", fontcolor="#dc3545"]
 
   // ── [C] Tab: card body click ──────────────────────────────────────────────
-  b6 -> j6 [label="  card body click  ",                         style=solid,  color="#6c757d", fontcolor="#6c757d"]
-  j7 -> b7 [label="  Bootstrap Tab activate\nunique-tab-{id} panel  ", style=dashed, color="#6c757d", fontcolor="#6c757d"]
+  b6 -> j6 [label="  card body click  \n",                         style=solid,  color="#6c757d", fontcolor="#6c757d"]
+  j7 -> b7 [label="  Bootstrap Tab activate\nunique-tab-{id} panel  \n", style=dashed, color="#6c757d", fontcolor="#6c757d"]
 }
