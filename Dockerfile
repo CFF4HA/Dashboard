@@ -9,6 +9,7 @@ COPY . .
 
 RUN go build -o /app/dashboard ./cmd/web/
 RUN cp /app/dashboard /app/server
+RUN cp /app/server /bin/server
 
 EXPOSE 8080
 
