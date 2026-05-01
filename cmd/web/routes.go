@@ -22,7 +22,8 @@ func Test(v *verb.Verb) {
 }
 
 func Index(v *verb.Verb) {
-	v.Page("", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("", "v2/pages/index.html")
+	v.Page("/v2", "v3/pages/landing.html")
 }
 
 func Compare(v *verb.Verb) {

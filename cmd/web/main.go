@@ -22,9 +22,7 @@ func main() {
 			Static:     Cfg.StaticDir,
 			LiveReload: Cfg.Reload,
 			Bridges: []verb.Bridge{
-				bridges.UserSessionRequired{
-					Excludes: []string{"/login", "/user", "/user/login", "/htmx/form-user_signup"},
-				},
+				bridges.ProcessUserSession{},
 			},
 		},
 	)

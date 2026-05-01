@@ -1,0 +1,112 @@
+<div class="container py-3 py-md-5">
+
+  {{/* Create Product Form*/}}
+  <div class="row justify-content-center g-3 g-md-5">
+    <div class="col-12 col-md-5">
+      {{/* Informative Section */}}
+      <div class="d-flex flex-column align-items-start justify-content-center">
+        <h3>Community Created Product Database</h3>
+        <p>
+          Finding the right product takes time and effort. Submit a product
+          and help others discover products to avoid, and products to consider.
+        </p>
+      </div>
+    </div>
+    <div class="col-12 col-md-5">
+      {{- if .User.IsAnonymous }}
+        <div class="alert alert-warning" role="alert">
+          You must be logged in to submit a product. Please <a href="/login" class="alert-link">log in or sign-up</a>.
+        </div>
+      {{- end }}
+      <div class="form-group">
+        <label for="productName">Product Name</label>
+        <input id="in-product-name-form" type="text" class="form-control" placeholder="{{if not .User.IsAnonymous}}What is the product called?{{end}}" {{ if .User.IsAnonymous }} disabled {{ end }}>
+        <p class="form-text text-muted">{{ if .User.IsAnonymous}}Create an account first.{{else}}We'll never share your product with anyone else unless you choose to!{{end}}</p>
+      </div>
+      <div class="form-group growable"
+        data-growable-target="#in-product-name-form"
+        data-growable-grow-event="input"
+        data-growable-shrink-event="never"
+      >
+        <label for="productName">Product Origin</label>
+        <input id="in-product-origin-form" type="text" class="form-control" placeholder="Enter product name" {{ if .User.IsAnonymous }} disabled {{ end }}>
+        <p class="form-text text-muted">Where did you find this product?</p>
+      </div>
+      <div class="form-group growable"
+        data-growable-target="#in-product-origin-form"
+        data-growable-grow-event="input"
+        data-growable-shrink-event="never"
+      >
+        <label for="productName">Product Ingredient List</label>
+        <textarea id="in-product-ing-textarea" class="form-control" placeholder="Enter product name" {{ if .User.IsAnonymous }} disabled {{end}}></textarea>
+        <p class="form-text text-muted">Copy and paste the ingredient list from the product label. We accept comma separated lists.</p>
+      </div>
+      <div class="form-group growable"
+        data-growable-target="#in-product-ing-textarea"
+        data-growable-grow-event="input"
+        data-growable-shrink-event="never"
+      >
+        <button class="btn btn-sm btn-dark"
+          {{- if not .User.IsAnonymous }}
+          {{- else }}
+            disabled
+          {{- end }}
+        >Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row my-5">
+    <h4>Welcome to the Product Discovery and Ingredient Repository</h4>
+    {{- if not .User.IsAnonymous }}
+    <div class="alert alert-info" role="alert">
+      Your contributions will help others make informed decisions. Thank you for being a part of our community!
+    </div>
+    {{- else }}
+    <p>
+      You are in <span class="badge bg-dark ms-1">anonymous</span> mode! Feel free to explore the site.
+    </p>
+    {{- end }}
+
+    {{/* The following will be a tab-enabled view on various items like products, tags, and ingredients */}}
+    <div class="row mb-3" id="row-product-search">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5>Products</h5>
+        <i class="bi bi-caret-down-fill"></i>
+      </div>
+      <hr>
+      <div class="growable"
+        data-growable-target="#row-product-search"
+        data-growable-grow-event="mouseenter"
+        data-growable-shrink-event="mouseleave"
+      >
+        <div class="input-group mb-3">
+          <input id="product-search-input" type="text" class="form-control" placeholder="Search for a product...">
+          <button id="product-search-btn" class="btn btn-outline-secondary">Search</button>
+        </div>
+        <div id="product-display" class="d-flex flex-row"></div>
+      </div>
+    </div> 
+
+    <div class="row mb-3" id="row-ingredient-search">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5>Ingredients</h5>
+        <i class="bi bi-caret-down-fill"></i>
+      </div>
+      <hr>
+      <div class="growable"
+        data-growable-target="#row-ingredient-search"
+        data-growable-grow-event="mouseenter"
+        data-growable-shrink-event="mouseleave"
+      >
+        <div class="input-group mb-3">
+          <input id="ingredient-search-input" type="text" class="form-control" placeholder="Search for an ingredient...">
+          <button id="ingredient-search-btn" class="btn btn-outline-secondary">Search</button>
+        </div>
+        <div id="ingredient-display" class="d-flex flex-row"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+

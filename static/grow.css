@@ -1,0 +1,17 @@
+/* Growable:
+ * This class is going to make the item invisible until 
+ * mouse intercepts it.
+ * */
+.growable {
+  visibility: hidden;
+  height: 0px;
+  width: 0px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
+.growable--active {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.5s ease-in;
+}
