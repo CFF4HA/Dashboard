@@ -114,3 +114,8 @@ func Tagging(v *verb.Verb) {
 	v.Action(http.MethodPost, "/tag/bad", tagging.HandleTagBadIngredients)
 	v.Action(http.MethodDelete, "/ingredient/tag", tagging.RemoveIngredientTagHandler)
 }
+
+func FormsV2(v *verb.Verb) {
+	v.Component("v3/forms/product-create.html", htmx.Div())
+	v.Component("v3/forms/product-create_manual.html", htmx.Div())
+}

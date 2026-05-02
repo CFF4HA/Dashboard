@@ -81,6 +81,9 @@ func main() {
 	Tagging(v)
 	Test(v)
 
+	// v2
+	FormsV2(v)
+
 	if err := v.Serve(); err != nil {
 		panic(err)
 	}

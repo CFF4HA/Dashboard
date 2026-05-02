@@ -105,6 +105,10 @@
         background-color: white;
       }
 
+      #modal .modal-dialog {
+        max-width: min(680px, 95vw);
+      }
+
       @media (min-width: 992px) {
         #side-modal { width: 550px; }
       }
@@ -141,7 +145,7 @@
 
     <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
-        <div id="modal-content" class="modal-content p-4"></div>
+        <div id="modal-content" class="modal-content p-2"></div>
       </div>
     </div>
 
