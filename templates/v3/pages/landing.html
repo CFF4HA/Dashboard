@@ -1,7 +1,26 @@
-<div class="container py-1 py-md-5">
+<div class="container py-1 py-md-2">
   <div class="row">
     {{/* Create Product Form */}}
-    <div class="row justify-content-center g-3 g-md-5">
+    <style>
+      .info-section {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        padding: 1.5rem;
+      }
+      .info-section::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url("/static/leander-lenzing-VYCDTBAP8P4-unsplash.jpg") center/cover no-repeat;
+        z-index: 0;
+      }
+      .info-section > * {
+        position: relative;
+        z-index: 1;
+      }
+    </style>
+    <div class="info-section row justify-content-center g-3 g-md-5">
       <div class="col-12 col-md-5">
         {{/* Informative Section */}}
         <div class="d-flex flex-column align-items-start justify-content-center">
@@ -10,6 +29,7 @@
             Finding the right product takes time and effort. Submit a product
             and help others discover products to avoid, and products to consider.
           </p>
+          <!-- <button class="btn btn-dark btn-sm" id="growable-search-btn-sect">Search  <i class="bi bi-caret-right-fill"></i></button> -->
         </div>
       </div>
       <div class="col-12 col-md-5">
@@ -19,9 +39,19 @@
              data-growable-shrink-event="never">
           {{/* the search bar section */}}
           <div class="row">
-            <div class="col">
+            <div class="col card p-4 shadow-sm"
+              data-growable-target="#growable-search-btn-sect"
+              data-growable-grow-event="click"
+              data-growable-shrink-event="never"
+            >
               <div class="input-group mb-3">
-                <input id="product-search-input" type="text" class="form-control" placeholder="Search for a product...">
+                <input id="product-search-input" type="text" class="form-control" placeholder="search for a product..."
+                  name="product_name"
+                  hx-include="#product-filter-ing-input, #product-tag-filter-select, #product-search-input"
+                  hx-get="/htmx/product-search_results"
+                  hx-target="#product-display"
+                  hx-trigger="keyup changed delay:500ms"
+                >
                 <button id="product-search-btn" class="btn btn-outline-secondary">Search</button>
               </div>
 
@@ -33,15 +63,17 @@
                      data-growable-grow-event="mouseenter" 
                      data-growable-shrink-event="mouseleave">
                   <div class="input-group mb-3">
-                    <input id="product-filter-input" type="text" class="form-control" placeholder="Filter by ingredient...">
+                    <input id="product-filter-ing-input" name="ingredients" type="text" class="form-control" placeholder="Filter by ingredient...">
                     <button id="product-filter-btn" class="btn btn-outline-secondary">Filter</button>
                   </div>
                   <p class="form-text">The ingredient you are filtering by will appear as a "pill" below this search.</p>
 
                   {{/* the following will be a tag section */}}
                   <div class="">
-                    <select id="product-tag-filter-select" class="form-select" aria-label="Default select example">
-                      <option selected>No Tag Filter Selected</option>
+                    <select id="product-tag-filter-select" class="form-select" aria-label="Default select example"
+                      name="product-tag"
+                    >
+                      <option>No Tag Filter Selected</option>
                       {{- range .Tags }}
                         <option value="{{ . }}">{{ . }}</option>
                       {{- end }}
@@ -63,9 +95,19 @@
               </div>
             </div> {{/* Close col */}}
           </div> {{/* Close row */}}
-          <div id="product-display" class="d-flex flex-row"></div>
         </div> {{/* Close data-growable-target div */}}
       </div>
+    </div>
+  </div>
+
+  <div class="row mt-5 growable"
+    data-growable-target="#product-search-input"
+    data-growable-grow-event="input"
+    data-growable-shrink-event="never"
+  >
+    <div class="col">
+      <p class="text-muted">Search results will appear below.</p>
+      <div id="product-display" class="d-flex flex-row"></div>
     </div>
   </div>
 </div>

@@ -70,7 +70,7 @@ func Products(v *verb.Verb) {
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
 		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductSearchBridge).
+		Bridge(bridges.ProductSearchBridgeV2).
 		Bridge(bridges.UserFavoriteProductsBridge)
 
 	v.Component("v2/components/product-detail.html", htmx.Div()).
