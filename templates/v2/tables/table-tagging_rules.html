@@ -1,45 +1,150 @@
-<div class="container py-2">
-  <div class="row">
-    <h3>Tagging Rules</h3>
-    <p>
-      The following table lists the current tagging rules you've created.
-    </p>
+<style>
+  /* ── Tagging Rules Table ── */
+  .rules-table-container {
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-top: 1.5rem;
+  }
+
+  .apothecary-table {
+    margin-bottom: 0;
+  }
+
+  .apothecary-table thead th {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    border-top: none;
+    border-bottom: 2px solid var(--soft-white);
+    padding: 1rem;
+  }
+
+  .apothecary-table tbody td, 
+  .apothecary-table tbody th {
+    padding: 1rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    color: var(--forest-green);
+    border-bottom: 1px solid var(--soft-white);
+  }
+
+  /* Pattern & Badge styling */
+  .rule-pattern-code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: var(--soft-white);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    color: #475569;
+  }
+
+  .check-type-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  /* Checkbox Customization */
+  .rules-table-container .form-check-input:checked {
+    background-color: var(--forest-green);
+    border-color: var(--forest-green);
+  }
+
+  /* Action Buttons */
+  .btn-rule-action {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+</style>
+
+<div class="rules-table-container" id="hx-tagging-table" 
+     hx-get="/htmx/tagging-rules_table" 
+     hx-trigger="update-tag-table-manual from:body">
+  <div class="row mb-3">
+    <div class="col">
+      <h5 class="fw-bold mb-1" style="color: var(--forest-green);">Active Rule Set</h5>
+      <p class="text-muted small">Manage and execute your automated ingredient classification logic.</p>
+    </div>
   </div>
 
-  <div class="row">
-    <table class="table">
+  <div class="table-responsive">
+    <table class="table apothecary-table">
       <thead>
         <tr>
-          <th scope="col">Tag</th>
-          <th scope="col">Enabled</th>
-          <th scope="col">Pattern</th>
-          <th scope="col">Check Type</th>
-          <th scope="col">Quick Actions</th>
+          <th scope="col">Tag Assignment</th>
+          <th scope="col" class="text-center">Status</th>
+          <th scope="col">Pattern / Keyword</th>
+          <th scope="col">Logic</th>
+          <th scope="col" class="text-end">Actions</th>
         </tr>
       </thead>
       <tbody>
         {{- range .Rules }}
         <tr id="row-{{ .Model.Id }}">
-          <th scope="row">{{ .Tag.Name }}</th>
-          <td>
-            <input class="form-check-input" type="checkbox" name="enabled" {{ if .Enabled }}checked{{ else }}disabled{{ end }}>
+          <th scope="row">
+            <span class="fw-bold" style="color: var(--forest-green);">
+              <i class="bi bi-tag-fill me-2 opacity-50"></i>{{ .Tag.Name }}
+            </span>
+          </th>
+          <td class="text-center">
+            <input class="form-check-input" type="checkbox" name="enabled" 
+                   hx-post="/tag/rule/toggle?id={{ .Model.Id | urlquery }}"
+                   hx-swap="none"
+                   {{ if .Enabled }}checked{{ end }}>
           </td>
-          <td>{{ .Regex }}</td>
-          <td>{{- if .Contains }}Contained by Label{{else}}Not Contained by Label{{end}}</td>
           <td>
-            <button class="btn btn-sm btn-danger"
-              hx-delete="/tag/rule/delete?id={{ .Model.Id | urlquery }}"
-              hx-target="#row-{{ .Model.Id }}"
-            >Delete</button>
-            <button class="btn btn-sm btn-dark"
-              hx-post="/tag/rule/run?rule_id={{ .Model.Id | urlquery }}"
-              hx-swap="none"
-            ><i class="bi bi-arrow-clockwise"></i></button>
+            <code class="rule-pattern-code">{{ .Regex }}</code>
+          </td>
+          <td>
+            <span class="check-type-label">
+              {{- if .Contains }}
+                <i class="bi bi-check2-circle me-1"></i>Must Contain
+              {{else}}
+                <i class="bi bi-x-circle me-1"></i>Must Not Contain
+              {{end}}
+            </span>
+          </td>
+          <td class="text-end">
+            <div class="d-flex justify-content-end gap-2">
+              <button class="btn btn-outline-dark btn-rule-action"
+                hx-post="/tag/rule/run?rule_id={{ .Model.Id | urlquery }}"
+                hx-swap="none"
+                title="Run Rule Now"
+              >
+                <i class="bi bi-play-fill"></i>
+              </button>
+              <button class="btn btn-outline-danger btn-rule-action"
+                hx-delete="/tag/rule/delete?id={{ .Model.Id | urlquery }}"
+                hx-target="#row-{{ .Model.Id }}"
+                hx-confirm="Are you sure you want to delete this rule?"
+                title="Delete Rule"
+              >
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
           </td>
         </tr>
         {{- else }}
         <tr>
-          <th scope="row" colspan="4" class="text-center">No tagging rules created yet!</th>
+          <td colspan="5" class="text-center py-5">
+            <div class="text-muted">
+              <i class="bi bi-clipboard2-x h2 d-block mb-3 opacity-25"></i>
+              <p class="mb-0">No tagging rules found. Use the builder above to create your first rule.</p>
+            </div>
+          </td>
         </tr>
         {{- end }}
       </tbody>

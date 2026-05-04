@@ -1,14 +1,49 @@
-<div class="container-fluid py-5 g-5">
-  <div class="row">
-    {{/* Content */}}
-    <div class="col my-3">
-      <div class="text-center">
-        <img src="/static/github-ff-banner.png" class="img-fluid"/>
-        <p class="lead text-muted">Your comprehensive database for ingredient information and analysis.</p>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    {{/* Content Column */}}
+    <div class="col-lg-10 col-xl-8">
+      
+      <div class="text-center mb-5">
+        <img src="/static/NEWFFLogo.png" 
+             alt="Ingredient Database Banner" 
+             class="img-fluid mb-4" 
+             style="max-height: 180px; width: auto;"/>
+        
+        <p class="lead text-muted mx-auto" 
+           style="font-family: 'Lato', sans-serif; max-width: 600px; font-weight: 400; line-height: 1.6;">
+          Your comprehensive repository for detailed ingredient analysis, 
+          safety metrics, and formulation transparency.
+        </p>
       </div>
 
-      <div hx-get="/htmx/searchbar-manual_search" hx-trigger="load" hx-swap="outerHTML" class="col my-4"></div>
+      <div hx-get="/htmx/searchbar-manual_search" 
+           hx-trigger="load" 
+           hx-swap="outerHTML">
+        <div class="text-center p-5">
+          <div class="spinner-border text-success opacity-50" role="status">
+            <span class="visually-hidden">Loading search interface...</span>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
 </div>
+
+<style>
+  /* Ensure Lato is applied to the landing prose */
+  .lead {
+    font-family: 'Lato', sans-serif !important;
+    color: #6c757d !important;
+  }
+  
+  /* Subtle fade-in for the banner */
+  img.img-fluid {
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

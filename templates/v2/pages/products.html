@@ -1,348 +1,280 @@
 <style>
-  .product-card {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    padding: 1rem 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    transition: box-shadow 0.2s ease;
+  /* ── Variables ── */
+  :root {
+    --forest-green: #1a2e1c;
+    --regular-green: #2d4a2e;
+    --soft-white: #ffffff;
+    --apothecary-border: rgba(39, 66, 41, 0.12);
+    --safe-green: #4ade80;
+    --unsafe-red: #e07a7a;
   }
 
-  .product-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  /* ── Typography & Global ── */
+  .product-page-container {
+    font-family: 'Lato', sans-serif !important;
   }
 
-  .product-card--safe {
-    background: linear-gradient(135deg, #f0fdf4, #f8f9fa);
-    border-color: #86efac;
+  .product-page-container input, 
+  .product-page-container button {
+    font-family: 'Lato', sans-serif !important;
   }
 
-  .product-card--unsafe {
-    background: linear-gradient(135deg, #fef2f2, #f8f9fa);
-    border-color: #fca5a5;
+  /* ── Centered Search Header ── */
+  .product-search-section {
+    max-width: 700px;
+    margin: 0 auto 3rem auto;
+    text-align: center;
   }
 
-  .product-card-header {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .product-card-header-meta { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 0; }
-
-  .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
-  .btn-star:hover, .btn-star.starred { color: #ffc107; }
-
-  .section-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #adb5bd;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.75rem;
-  }
-
-  .product-card-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #495057;
-    margin: 0;
-    line-height: 1.3;
-    word-break: break-word;
-  }
-
-  .product-card-origin {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.75rem;
-    color: #adb5bd;
-    min-width: 0;
-  }
-
-  .product-card-origin a {
-    color: #0d6efd;
-    text-decoration: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .product-card-origin a:hover { text-decoration: underline; }
-
-  .product-card-divider { border: none; border-top: 1px solid #dee2e6; margin: 0; }
-
-  .product-card-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #adb5bd;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.3rem;
-  }
-
-  .ingredient-search-input {
-    width: 100%;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.8rem;
-    color: #495057;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    outline: none;
-    transition: border-color 0.2s ease;
-    margin-bottom: 0.4rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  }
-
-  .ingredient-search-input::placeholder { color: #adb5bd; }
-  .ingredient-search-input:focus { border-color: #0d6efd; }
-
-  .ingredient-pills-scroll {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    max-height: 6rem;
-    overflow-y: auto;
-    padding-right: 0.1rem;
-  }
-
-  .ingredient-pills-scroll::-webkit-scrollbar { width: 3px; }
-  .ingredient-pills-scroll::-webkit-scrollbar-track { background: transparent; }
-  .ingredient-pills-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
-
-  .ingredient-pill {
-    font-size: 0.75rem;
-    color: #495057;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 20px;
-    padding: 0.15rem 0.55rem;
-    white-space: nowrap;
-  }
-
-  .ingredient-pill[hidden] { display: none; }
-  .ingredient-empty-msg { font-size: 0.78rem; color: #adb5bd; display: none; }
-
-  .product-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
-  .product-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; min-width: 0; overflow: hidden; }
-  .product-stat-icon { flex-shrink: 0; font-size: 0.75rem; color: #adb5bd; width: 1rem; text-align: center; }
-  .product-stat-value { flex-shrink: 0; font-weight: 600; color: #495057; }
-  .product-stat-name { color: #adb5bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  .product-ai-blurb {
-    font-size: 0.8rem;
-    color: #6c757d;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    margin: 0;
-  }
-
-  .product-card-footer { margin-top: auto; font-size: 0.72rem; color: #adb5bd; }
-
-  /* ── Search bar ─────────────────────────────────────────────── */
   .product-searchbar-wrapper {
     display: flex;
     align-items: center;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    padding: 0.35rem 0.75rem;
-    gap: 0.5rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 15px;
+    padding: 0.6rem 1rem;
+    gap: 0.8rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
   }
 
   .product-searchbar-wrapper:focus-within {
-    border-color: #0d6efd;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: var(--regular-green);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
   }
 
-  .product-searchbar-input {
+  .product-search-input {
     flex: 1;
     border: none;
     background: transparent;
-    padding: 0.25rem 0;
-    color: #495057;
-    font-size: 0.9rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--forest-green);
+    font-size: 0.95rem;
     outline: none;
   }
 
-  .product-searchbar-input::placeholder { color: #adb5bd; }
-  .product-searchbar-icon { flex-shrink: 0; color: #adb5bd; font-size: 0.85rem; }
+  .btn-create-product {
+    background: var(--forest-green);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .btn-create-product:hover { background: #000; }
+
+  /* ── Product Card Styling ── */
+  .product-card {
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.2s ease;
+    height: 100%;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .product-card--safe { border-left: 6px solid var(--safe-green); }
+  .product-card--unsafe { border-left: 6px solid var(--unsafe-red); }
+
+  .product-card-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--forest-green);
+    margin: 0;
+  }
+
+  .product-card-origin {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    text-decoration: none;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Ingredient Pills ── */
+  .ingredient-filter-mini {
+    width: 100%;
+    background: var(--soft-white);
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    outline: none;
+  }
+
+  .pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+
+  .pill-item {
+    font-size: 0.7rem;
+    color: var(--forest-green);
+    background: #f1f3f5;
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    font-weight: 600;
+  }
+
+  /* ── Stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .stat-box {
+    padding: 0.4rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .stat-haz { background: #fce4e4; color: #e07a7a; }
+  .stat-eff { background: #fef3c7; color: #d97706; }
+  .stat-sym { background: #f0fdf4; color: #4ade80; }
+  .stat-reg { background: #ecfccb; color: #65a30d; }
+
+  .label-sm {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #adb5bd;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 </style>
 
-<div class="container">
-  <div class="row mb-3">
-    <div class="col">
-      <h4 class="mb-4">Products</h4>
-      <p class="text-muted">
-        Browse our repository of products using the search bar, or create your own products by clicking
-        the "Create Product" button.
-      </p>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col">
-      <a class="btn btn-dark"
-        data-bs-toggle="modal"
-        data-bs-target="#modal"
+<div class="container py-4 product-page-container">
+  
+  <div class="product-search-section">
+    <h2 style="font-weight: 800; color: var(--forest-green); margin-bottom: 0.5rem;">Products</h2>
+    <p class="text-muted small mb-4">Analyze formulations and track product safety metrics.</p>
+    
+    <div class="product-searchbar-wrapper">
+      <i class="bi bi-search text-success"></i>
+      <input
+        class="product-search-input"
+        type="text"
+        name="query"
+        placeholder="Search products by name..."
+        hx-get="/htmx/product-search_results"
+        hx-trigger="keyup changed delay:400ms, tagFilterChanged from:body"
+        hx-target="#product-results"
+        hx-include="this, [name='tag_filter']">
+      
+      <button class="btn-create-product"
         hx-get="/htmx/form-product_create"
-        hx-trigger="click"
         hx-target="#modal-content"
-      >
-        <i class="bi bi-plus-md"></i> Create Product
-      </a>
+        data-bs-toggle="modal"
+        data-bs-target="#modal">
+        <i class="bi bi-plus-lg"></i> Create
+      </button>
     </div>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col">
-      <div class="product-searchbar-wrapper">
-        <i class="bi bi-search product-searchbar-icon"></i>
-        <input
-          class="product-searchbar-input"
-          type="text"
-          name="query"
-          placeholder="Search products by name…"
-          autocomplete="off"
-          hx-get="/htmx/product-search_results"
-          hx-trigger="keyup changed delay:400ms, tagFilterChanged from:body"
-          hx-target="#product-results"
-          hx-swap="innerHTML"
-          hx-include="this, [name='tag_filter']">
-      </div>
-      <div id="tag-filter" class="mt-2"
-           hx-get="/htmx/tag-filter"
-           hx-trigger="load"
-           hx-swap="innerHTML"></div>
-    </div>
+    
+    <div id="tag-filter" class="mt-3" hx-get="/htmx/tag-filter" hx-trigger="load"></div>
   </div>
 
   {{- if .FavoriteProducts }}
-  <div class="row mb-1">
-    <div class="col">
-      <p class="section-label"><i class="bi bi-star-fill me-1" style="color:#ffc107;"></i>Starred</p>
-    </div>
-  </div>
-  <div class="row mb-4">
+  <p class="label-sm mb-3"><i class="bi bi-star-fill text-warning me-1"></i> Starred Products</p>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
     {{- range .FavoriteProducts }}
-    <div class="col-md-5 mb-4">
+    <div class="col">
       <div class="product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} product-card--unsafe{{ end }}">
-        <div class="product-card-header">
-          <div class="product-card-header-meta">
-            <p class="product-card-name">{{ .Name }}</p>
+        
+        <div class="d-flex justify-content-between align-items-start">
+          <div style="min-width: 0;">
+            <h5 class="product-card-name">{{ .Name }}</h5>
             {{- if .Origin }}
-            <div class="product-card-origin">
-              <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
-              <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
-            </div>
+            <a href="{{ deref .Origin }}" target="_blank" class="product-card-origin">{{ deref .Origin }}</a>
             {{- end }}
           </div>
-          <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
-            <button class="btn-star"
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-light rounded-circle"
               hx-get="/htmx/product-detail?id={{ .Id }}"
               hx-target="#side-modal_content"
-              hx-swap="innerHTML"
-              hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
-              title="View details">
-              <i class="bi bi-arrow-right-circle"></i>
+              hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
+              <i class="bi bi-eye"></i>
             </button>
-            <button class="btn-star starred"
-                    hx-post="/user/product"
-                    hx-vals='{"id": "{{ .Id }}"}'
-                    hx-swap="outerHTML"
-                    title="Starred">
+            <button class="btn btn-sm btn-light rounded-circle text-warning" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}'>
               <i class="bi bi-star-fill"></i>
             </button>
           </div>
         </div>
-        <hr class="product-card-divider">
+
+        <hr class="my-1 opacity-25">
+
         <div>
-          <div class="product-card-label">Ingredients ({{ len .Ingredients }})</div>
-          <input class="ingredient-search-input" type="text" placeholder="&#128269; Filter ingredients..." autocomplete="off" oninput="filterIngredients(this)">
-          <div class="ingredient-pills-scroll">
+          <div class="label-sm mb-2">Ingredients ({{ len .Ingredients }})</div>
+          <input class="ingredient-filter-mini" type="text" placeholder="Filter list..." oninput="filterProductIngredients(this)">
+          <div class="pill-container">
             {{- range .Ingredients }}
-            <span class="ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
+            <span class="pill-item" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
             {{- end }}
           </div>
-          <span class="ingredient-empty-msg">No ingredients match.</span>
         </div>
-        <hr class="product-card-divider">
-        <div>
-          <div class="product-card-label">Metrics</div>
-          <div class="product-stats">
-            <div class="product-stat">
-              <i class="bi bi-exclamation-triangle product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumHazard }}</span>
-              <span class="product-stat-name">Hazards</span>
-            </div>
-            <div class="product-stat">
-              <i class="bi bi-activity product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumEffect }}</span>
-              <span class="product-stat-name">Effects</span>
-            </div>
-            <div class="product-stat">
-              <i class="bi bi-heart-pulse product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumSymptom }}</span>
-              <span class="product-stat-name">Symptoms</span>
-            </div>
-            <div class="product-stat">
-              <i class="bi bi-shield-check product-stat-icon"></i>
-              <span class="product-stat-value">{{ .Metadata.NumReglations }}</span>
-              <span class="product-stat-name">Regulations</span>
-            </div>
-          </div>
+
+        <div class="stats-grid">
+          <div class="stat-box stat-haz">{{ .Metadata.NumHazard }} Haz</div>
+          <div class="stat-box stat-eff">{{ .Metadata.NumEffect }} Eff</div>
+          <div class="stat-box stat-sym">{{ .Metadata.NumSymptom }} Sym</div>
+          <div class="stat-box stat-reg">{{ .Metadata.NumReglations }} Reg</div>
         </div>
+
         {{- if .Metadata.AiBlurb }}
-        <hr class="product-card-divider">
-        <p class="product-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+        <p class="small text-muted mb-0" style="font-style: italic; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+          {{ deref .Metadata.AiBlurb }}
+        </p>
         {{- end }}
-        <div class="product-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+
+        <div class="mt-auto pt-2 border-top">
+          <span class="label-sm" style="font-size: 0.6rem;">Added {{ .Created.Format "Jan 2, 2006" }}</span>
+        </div>
       </div>
     </div>
     {{- end }}
   </div>
-  <div class="row mb-1">
-    <div class="col">
-      <p class="section-label">All Products</p>
-    </div>
-  </div>
+  <p class="label-sm mb-3">All Products</p>
   {{- end }}
 
   <div id="product-results"
        hx-get="/htmx/product-search_results"
        hx-trigger="load, productCategorized from:body, productUpdated from:body"
        hx-swap="innerHTML">
-    <p class="text-muted" style="font-size:0.88rem;">Loading…</p>
+    <div class="text-center p-5 text-muted">
+       <div class="spinner-border spinner-border-sm text-success me-2"></div> Synchronizing...
+    </div>
   </div>
-
 </div>
 
 <script>
-  function filterIngredients(input) {
+  function filterProductIngredients(input) {
     const query = input.value.toLowerCase().trim();
     const container = input.nextElementSibling;
-    const emptyMsg = container.nextElementSibling;
-    const pills = container.querySelectorAll('.ingredient-pill');
-    let visible = 0;
+    const pills = container.querySelectorAll('.pill-item');
     pills.forEach(pill => {
-      const match = pill.dataset.name.includes(query);
-      pill.hidden = !match;
-      if (match) visible++;
+      pill.style.display = pill.dataset.name.includes(query) ? 'block' : 'none';
     });
-    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
   }
 </script>
