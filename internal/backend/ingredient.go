@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -207,3 +208,42 @@ func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient
 //
 // These routes provide actual route functionality.
 // ------------------------------
+
+func RouteRetrieveIngredientByPrimaryName(w http.ResponseWriter, r *http.Request) error {
+	ingredient, err := RetrieveIngredientByPrimaryName(r.FormValue("name"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(ingredient)
+}
+
+func RouteTagIngredient(w http.ResponseWriter, r *http.Request) error {
+	return TagIngredient(r.FormValue("ingredient_id"), r.FormValue("tag_id"))
+}
+
+func RouteRemoveTagFromIngredient(w http.ResponseWriter, r *http.Request) error {
+	return RemoveTagFromIngredient(r.FormValue("ingredient_id"), r.FormValue("tag_id"))
+}
+
+func RouteRemoveIngredientById(w http.ResponseWriter, r *http.Request) error {
+	return DeleteIngredientById(r.FormValue("id"))
+}
+
+func RouteGetIngredients(w http.ResponseWriter, r *http.Request) error {
+	ingredients, err := GetIngredients(r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(ingredients)
+}
+
+func RouteGetIngredientsByPrimaryName(w http.ResponseWriter, r *http.Request) error {
+	ingredients, err := GetIngredientsByPrimaryName(r.FormValue("name"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(ingredients)
+}
