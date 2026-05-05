@@ -49,11 +49,15 @@ func Ingredients(v *verb.Verb) {
 
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
-	v.Action(http.MethodPut, "/product/create", backend.RouteProductPUT)
-	v.Action(http.MethodGet, "/product/get", backend.RouteProductGET)
-	v.Action(http.MethodGet, "/product/get/name", backend.RouteGetProductsByName)
-	v.Action(http.MethodGet, "/product/get/id", backend.RouteGetProductById)
-	v.Action(http.MethodDelete, "/product/remove", backend.RouteDeleteProductById)
+	v.ActionClassic(http.MethodPut, "/product/create", backend.RouteProductPUT)
+	v.ActionClassic(http.MethodGet, "/product/get", backend.RouteProductGET)
+	v.ActionClassic(http.MethodGet, "/product/get/name", backend.RouteGetProductsByName)
+	v.ActionClassic(http.MethodGet, "/product/get/id", backend.RouteGetProductById)
+	v.ActionClassic(http.MethodGet, "/product/get/ingredients", backend.RouteGetProductsByIngredient)
+	v.ActionClassic(http.MethodGet, "/product/get/tag", backend.RouteGetProductsByTag)
+	v.ActionClassic(http.MethodDelete, "/product/remove", backend.RouteDeleteProductById)
+	v.ActionClassic(http.MethodDelete, "/product/tag/remove", backend.RouteProductTagRemove)
+	v.ActionClassic(http.MethodPost, "/product/tag", backend.RouteProductTag)
 
 	// this is the components that are rendered as part of the
 	// product page.

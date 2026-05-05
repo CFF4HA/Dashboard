@@ -2,12 +2,15 @@ module github.com/CFF4HA/Dashboard
 
 go 1.26.1
 
+replace github.com/DAlba-sudo/verb => ../verb
+
 require (
-	github.com/DAlba-sudo/verb v0.1.3
+	github.com/DAlba-sudo/verb v0.1.4
 	github.com/DAlba-sudo/verbs v0.0.2
 	github.com/google/uuid v1.6.0
 	github.com/ollama/ollama v0.21.0
 	github.com/tidwall/gjson v1.18.0
+	golang.org/x/crypto v0.43.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )
@@ -27,7 +30,6 @@ require (
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
-	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
