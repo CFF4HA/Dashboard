@@ -55,6 +55,65 @@ func InsertProduct(name string, origin string, ingredient_list []string) (*types
 	return prod, tx.Commit().Error
 }
 
+func GetProducts(cursor string) ([]types.Product, error) {
+	var prods []types.Product
+	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+		Find(&prods)
+	return prods, tx.Error
+}
+
+func GetProductById(id string) (*types.Product, error) {
+	prod := &types.Product{}
+	tx := core.DB.Scopes(WithPreload("Ingredients")).First(prod, "id = ?", id)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return prod, nil
+}
+
+func GetProductsByName(name string, cursor string) ([]types.Product, error) {
+	var products []types.Product
+
+	// we first do a search by primary name
+	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+		Where("name ~* ?", name).Find(&products)
+	if tx.Error != nil {
+		core.Logger.Error("failed to search for products by name", "name", name, "error", tx.Error)
+		// TODO: Implement auxiliary name search.
+
+		// we then would want to do a search by labels of type 'name' that
+		// are in the system (but this is not immediately clear how to do).
+		return products, nil
+	}
+
+	return products, nil
+}
+
+func DeleteProductById(id string) error {
+	// TODO: we first want to delete the product_ingredients join table rows,
+	// and then we can delete the product itself.
+	tx := core.DB.Begin()
+	if tx.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id).Error != nil {
+		core.Logger.Error("failed to delete product ingredients associations", "product_id", id, "error", tx.Error)
+		return errors.New("failed to delete product ingredients associations, try again later.")
+	}
+
+	if tx.Exec("DELETE FROM product_tags WHERE product_id = ?", id).Error != nil {
+		core.Logger.Error("failed to delete product ingredients associations", "product_id", id, "error", tx.Error)
+		return errors.New("failed to delete product tags associations, try again later.")
+	}
+
+	if tx.Delete(&types.Product{}, "id = ?", id).Error != nil {
+		core.Logger.Error("failed to delete product", "product_id", id, "error", tx.Error)
+		return errors.New("failed to delete product, try again later.")
+	}
+
+	tx.Commit()
+	core.Logger.Debug("successfully deleted product", "product_id", id)
+	return nil
+}
+
 // ------------------------------
 // Routing Related Functions
 // ------------------------------
@@ -69,4 +128,38 @@ func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return nil
+}
+
+func RouteProductGET(w http.ResponseWriter, r *http.Request) error {
+	products, err := GetProducts(r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	core.Logger.Debug("successfully retrieved products", "count", len(products), "products", products)
+	return nil
+}
+
+func RouteGetProductsByName(w http.ResponseWriter, r *http.Request) error {
+	products, err := GetProductsByName(r.FormValue("name"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	core.Logger.Debug("successfully retrieved products by name", "name", r.FormValue("name"), "count", len(products), "products", products)
+	return nil
+}
+
+func RouteGetProductById(w http.ResponseWriter, r *http.Request) error {
+	product, err := GetProductById(r.FormValue("id"))
+	if err != nil {
+		return err
+	}
+
+	core.Logger.Debug("successfully retrieved product by id", "id", r.FormValue("id"), "product", product)
+	return nil
+}
+
+func RouteDeleteProductById(w http.ResponseWriter, r *http.Request) error {
+	return DeleteProductById(r.FormValue("id"))
 }

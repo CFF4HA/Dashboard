@@ -50,6 +50,10 @@ func Ingredients(v *verb.Verb) {
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
 	v.Action(http.MethodPut, "/product/create", backend.RouteProductPUT)
+	v.Action(http.MethodGet, "/product/get", backend.RouteProductGET)
+	v.Action(http.MethodGet, "/product/get/name", backend.RouteGetProductsByName)
+	v.Action(http.MethodGet, "/product/get/id", backend.RouteGetProductById)
+	v.Action(http.MethodDelete, "/product/remove", backend.RouteDeleteProductById)
 
 	// this is the components that are rendered as part of the
 	// product page.
