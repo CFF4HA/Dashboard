@@ -58,14 +58,16 @@ func InsertProduct(name string, origin string, ingredient_list []string) (*types
 
 func GetProducts(cursor string) ([]types.Product, error) {
 	var prods []types.Product
-	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id"),
+		WithPreload("Tags"),
+	).
 		Find(&prods)
 	return prods, tx.Error
 }
 
 func GetProductById(id string) (*types.Product, error) {
 	prod := &types.Product{}
-	tx := core.DB.Scopes(WithPreload("Ingredients")).First(prod, "id = ?", id)
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags")).First(prod, "id = ?", id)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -77,7 +79,7 @@ func GetProductsByName(name string, cursor string) ([]types.Product, error) {
 	var products []types.Product
 
 	// we first do a search by primary name
-	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
 		Where("name ~* ?", name).Find(&products)
 	if tx.Error != nil {
 		core.Logger.Error("failed to search for products by name", "name", name, "error", tx.Error)
@@ -139,7 +141,7 @@ func RemoveTagFromProduct(product_id string, tag_id string) error {
 
 func GetProductsByTag(tag_id string, cursor string) ([]types.Product, error) {
 	var products []types.Product
-	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
 		Where("id IN (SELECT product_id FROM product_tags WHERE tag_id = ?)", tag_id).Find(&products)
 
 	if tx.Error != nil {
