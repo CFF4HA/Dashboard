@@ -182,7 +182,7 @@ func DeleteIngredientById(id string) error {
 func GetIngredients(cursor string) ([]types.Ingredient, error) {
 	var ingredients []types.Ingredient
 
-	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithOrder("id")).Find(&ingredients)
+	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithOrder("id"), WithPreload("Labels", "Tags")).Find(&ingredients)
 	if tx.Error != nil {
 		core.Logger.Error("failed to retrieve ingredients from database", "error", tx.Error)
 		return nil, errors.New("failed to retrieve ingredients from database, try again later.")
@@ -194,7 +194,10 @@ func GetIngredients(cursor string) ([]types.Ingredient, error) {
 func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient, error) {
 	var ingredients []types.Ingredient
 
-	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithSearch("primary_name", name), WithOrder("id")).Find(&ingredients)
+	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithSearch("primary_name", name), WithOrder("id"),
+		WithPreload("Labels", "Tags"),
+	).
+		Find(&ingredients)
 	if tx.Error != nil {
 		core.Logger.Error("failed to retrieve ingredients from database", "name", name, "error", tx.Error)
 		return nil, errors.New("failed to retrieve ingredients from database, try again later.")
