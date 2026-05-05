@@ -34,6 +34,13 @@ func Compare(v *verb.Verb) {
 }
 
 func Ingredients(v *verb.Verb) {
+	v.ActionClassic(http.MethodGet, "/ingredient/get", backend.RouteGetIngredients)
+	v.ActionClassic(http.MethodGet, "/ingredient/get/name", backend.RouteGetIngredientsByPrimaryName)
+	v.ActionClassic(http.MethodPost, "/ingredient/tag", backend.RouteTagIngredient)
+	v.ActionClassic(http.MethodDelete, "/ingredient/tag/remove", backend.RouteRemoveTagFromIngredient)
+	v.ActionClassic(http.MethodGet, "/ingredient/retrieve", backend.RouteRetrieveIngredientByPrimaryName)
+	v.ActionClassic(http.MethodDelete, "/ingredient/remove", backend.RouteRemoveIngredientById)
+
 	v.Page("/ingredients", "v2/pages/ingredients.html").
 		Bridge(bridges.CategorizedIngredients{}).
 		Bridge(bridges.UserFavoriteIngredientsBridge)
