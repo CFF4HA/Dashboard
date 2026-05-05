@@ -14,7 +14,7 @@ type Tag struct {
 
 	// the string representation of a tag, typically
 	// one word, and it must be unique to the user.
-	Name string `gorm:"type:text;not null;unique;"`
+	Name string `gorm:"type:text;not null;"`
 
 	// This is an optional description of what the Tag
 	// represents.

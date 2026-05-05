@@ -147,3 +147,63 @@ func RetrieveIngredientByPrimaryName(name string) (*types.Ingredient, error) {
 
 	return ing, nil
 }
+
+func TagIngredient(ingredient_id string, tag_id string) error {
+	tx := core.DB.Exec("INSERT INTO ingredient_tags (ingredient_id, tag_id) VALUES (?, ?)", ingredient_id, tag_id)
+	if tx.Error != nil {
+		core.Logger.Error("failed to tag ingredient", "ingredient_id", ingredient_id, "tag_id", tag_id, "error", tx.Error)
+		return errors.New("failed to tag ingredient, try again later.")
+	}
+
+	return nil
+}
+
+func RemoveTagFromIngredient(ingredient_id string, tag_id string) error {
+	tx := core.DB.Exec("DELETE FROM ingredient_tags WHERE ingredient_id = ? AND tag_id = ?", ingredient_id, tag_id)
+	if tx.Error != nil {
+		core.Logger.Error("failed to remove tag from ingredient", "ingredient_id", ingredient_id, "tag_id", tag_id, "error", tx.Error)
+		return errors.New("failed to remove tag from ingredient, try again later.")
+	}
+
+	return nil
+}
+
+func DeleteIngredientById(id string) error {
+	tx := core.DB.Delete(&types.Ingredient{}, "id = ?", id)
+	if tx.Error != nil {
+		core.Logger.Error("failed to delete ingredient from database", "id", id, "error", tx.Error)
+		return errors.New("failed to delete ingredient from database, try again later.")
+	}
+
+	return nil
+}
+
+func GetIngredients(cursor string) ([]types.Ingredient, error) {
+	var ingredients []types.Ingredient
+
+	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithOrder("id")).Find(&ingredients)
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve ingredients from database", "error", tx.Error)
+		return nil, errors.New("failed to retrieve ingredients from database, try again later.")
+	}
+
+	return ingredients, nil
+}
+
+func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient, error) {
+	var ingredients []types.Ingredient
+
+	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithSearch("primary_name", name), WithOrder("id")).Find(&ingredients)
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve ingredients from database", "name", name, "error", tx.Error)
+		return nil, errors.New("failed to retrieve ingredients from database, try again later.")
+	}
+
+	return ingredients, nil
+}
+
+// ------------------------------
+// Route Related Functions
+//
+// These routes provide actual route functionality.
+// ------------------------------

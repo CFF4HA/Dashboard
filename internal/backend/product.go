@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
@@ -114,6 +115,57 @@ func DeleteProductById(id string) error {
 	return nil
 }
 
+func TagProduct(product_id string, tag_id string) error {
+	tx := core.DB.Exec("INSERT INTO product_tags (product_id, tag_id) VALUES (?, ?)", product_id, tag_id)
+	if tx.Error != nil {
+		core.Logger.Error("failed to tag product", "product_id", product_id, "tag_id", tag_id, "error", tx.Error)
+		return errors.New("failed to tag product, try again later.")
+	}
+
+	return nil
+}
+
+func RemoveTagFromProduct(product_id string, tag_id string) error {
+	tx := core.DB.Exec("DELETE FROM product_tags WHERE product_id = ? AND tag_id = ?", product_id, tag_id)
+	if tx.Error != nil {
+		core.Logger.Error("failed to remove tag from product", "product_id", product_id, "tag_id", tag_id, "error", tx.Error)
+		return errors.New("failed to remove tag from product, try again later.")
+	}
+
+	// TODO: Add to a blacklist to prevent automated tagging from overriding.
+
+	return nil
+}
+
+func GetProductsByTag(tag_id string, cursor string) ([]types.Product, error) {
+	var products []types.Product
+	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+		Where("id IN (SELECT product_id FROM product_tags WHERE tag_id = ?)", tag_id).Find(&products)
+
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve products by tag", "tag_id", tag_id, "error", tx.Error)
+		return nil, errors.New("failed to retrieve products by tag, try again later.")
+	}
+
+	core.Logger.Debug("successfully retrieved products by tag", "tag_id", tag_id, "count", len(products), "products", products)
+	return products, nil
+}
+
+func GetProductsByIngredient(ingredient_ids string, cursor string) ([]types.Product, error) {
+	var products []types.Product
+
+	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+		Where("id IN (SELECT product_id FROM product_ingredients WHERE ingredient_id IN (?))", ingredient_ids).Find(&products)
+
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve products by ingredient", "ingredient_ids", ingredient_ids, "error", tx.Error)
+		return nil, errors.New("failed to retrieve products by ingredient, try again later.")
+	}
+
+	core.Logger.Debug("successfully retrieved products by ingredient", "ingredient_ids", ingredient_ids, "count", len(products), "products", products)
+	return products, nil
+}
+
 // ------------------------------
 // Routing Related Functions
 // ------------------------------
@@ -137,7 +189,7 @@ func RouteProductGET(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	core.Logger.Debug("successfully retrieved products", "count", len(products), "products", products)
-	return nil
+	return json.NewEncoder(w).Encode(products)
 }
 
 func RouteGetProductsByName(w http.ResponseWriter, r *http.Request) error {
@@ -147,7 +199,7 @@ func RouteGetProductsByName(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	core.Logger.Debug("successfully retrieved products by name", "name", r.FormValue("name"), "count", len(products), "products", products)
-	return nil
+	return json.NewEncoder(w).Encode(products)
 }
 
 func RouteGetProductById(w http.ResponseWriter, r *http.Request) error {
@@ -157,9 +209,35 @@ func RouteGetProductById(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	core.Logger.Debug("successfully retrieved product by id", "id", r.FormValue("id"), "product", product)
-	return nil
+	return json.NewEncoder(w).Encode(product)
 }
 
 func RouteDeleteProductById(w http.ResponseWriter, r *http.Request) error {
 	return DeleteProductById(r.FormValue("id"))
+}
+
+func RouteGetProductsByIngredient(w http.ResponseWriter, r *http.Request) error {
+	products, err := GetProductsByIngredient(r.FormValue("ingredient_ids"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(products)
+}
+
+func RouteGetProductsByTag(w http.ResponseWriter, r *http.Request) error {
+	products, err := GetProductsByTag(r.FormValue("tag_id"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(products)
+}
+
+func RouteProductTag(w http.ResponseWriter, r *http.Request) error {
+	return TagProduct(r.FormValue("product_id"), r.FormValue("tag_id"))
+}
+
+func RouteProductTagRemove(w http.ResponseWriter, r *http.Request) error {
+	return RemoveTagFromProduct(r.FormValue("product_id"), r.FormValue("tag_id"))
 }
