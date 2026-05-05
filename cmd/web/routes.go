@@ -3,11 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/CFF4HA/Dashboard/internal/backend"
 	"github.com/CFF4HA/Dashboard/internal/bridges"
-	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
-	"github.com/CFF4HA/Dashboard/internal/handlers/product"
-	"github.com/CFF4HA/Dashboard/internal/handlers/tagging"
-	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
 )
@@ -48,19 +45,11 @@ func Ingredients(v *verb.Verb) {
 
 	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
 		Bridge(bridges.IngredientDetailBridge)
-
-	v.Action(http.MethodPut, "/ingredient", ingredient.RetrieveIngredientHandler)
-	v.Action(http.MethodDelete, "/ingredient/delete", ingredient.DeleteIngredientHandler)
-	v.Action(http.MethodPost, "/ingredient/sync", ingredient.SyncIngredientHandler)
-	v.Action(http.MethodPost, "/ingredient/categorize", ingredient.Categorize)
 }
 
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
-	v.Action(http.MethodPut, "/product", product.CreateProduct)
-	v.Action(http.MethodPost, "/product/update", product.UpdateProductHandler)
-	v.Action(http.MethodDelete, "/product/delete", product.DeleteProductHandler)
-	v.Action(http.MethodPost, "/product/categorize", product.Categorize)
+	v.Action(http.MethodPut, "/product/create", backend.RouteProductPUT)
 
 	// this is the components that are rendered as part of the
 	// product page.
@@ -86,10 +75,6 @@ func Products(v *verb.Verb) {
 
 func User(v *verb.Verb) {
 	// handles the user registration part of the user flow.
-	v.Action(http.MethodPut, "/user", user.HandleUserPUT)
-	v.Action(http.MethodPost, "/user/login", user.HandleUserPOST)
-	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
-	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
 
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
 
@@ -106,10 +91,4 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
 		Bridge(bridges.AllTagsBridge)
-
-	v.Action(http.MethodPut, "/tag/rule/create", tagging.HandleTagRuleCreate)
-	v.Action(http.MethodDelete, "/tag/rule/delete", tagging.HandleTagRuleDelete)
-	v.Action(http.MethodPost, "/tag/rule/run", tagging.HandleTaggingRuleRun)
-	v.Action(http.MethodPost, "/tag/bad", tagging.HandleTagBadIngredients)
-	v.Action(http.MethodDelete, "/ingredient/tag", tagging.RemoveIngredientTagHandler)
 }

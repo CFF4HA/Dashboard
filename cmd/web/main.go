@@ -5,7 +5,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/verb"
 	"github.com/google/uuid"
@@ -21,11 +20,7 @@ func main() {
 			Templates:  Cfg.TemplateDir,
 			Static:     Cfg.StaticDir,
 			LiveReload: Cfg.Reload,
-			Bridges: []verb.Bridge{
-				bridges.UserSessionRequired{
-					Excludes: []string{"/login", "/user", "/user/login", "/htmx/form-user_signup"},
-				},
-			},
+			Bridges:    []verb.Bridge{},
 		},
 	)
 
