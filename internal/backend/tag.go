@@ -1,7 +1,9 @@
 package backend
 
 import (
+	"encoding/json"
 	"errors"
+	"net/http"
 	"strings"
 	"time"
 
@@ -87,4 +89,51 @@ func GetTagById(id string) (*types.Tag, error) {
 
 	core.Logger.Debug("successfully retrieved tag from database", "id", id, "tag", tag)
 	return tag, nil
+}
+
+// ------------------------------
+// Routing Related Functions
+//
+// These are the actual route handlers that the
+// router will use.
+// ------------------------------
+func RouteTagCreate(w http.ResponseWriter, r *http.Request) error {
+	tag, err := InsertTag(r.FormValue("name"), r.FormValue("description"))
+	if err != nil {
+		return err
+	}
+
+	core.Logger.Debug("successfully created tag", "id", tag.Id, "name", tag.Name)
+	return nil
+}
+
+func RouteTagDelete(w http.ResponseWriter, r *http.Request) error {
+	return DeleteTagById(r.FormValue("id"))
+}
+
+func RouteTagGet(w http.ResponseWriter, r *http.Request) error {
+	tags, err := GetTags(r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(tags)
+}
+
+func RouteTagGetByName(w http.ResponseWriter, r *http.Request) error {
+	tags, err := GetTagsByName(r.FormValue("name"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(tags)
+}
+
+func RouteTagGetById(w http.ResponseWriter, r *http.Request) error {
+	tag, err := GetTagById(r.FormValue("id"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(tag)
 }
