@@ -2,6 +2,7 @@ package backend
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
@@ -27,6 +28,7 @@ func InsertProduct(name string, origin string, ingredient_list []string) (*types
 			return nil, errors.New("failed to insert product due to failed ingredient retrieval, pubchem or some other data source may be down, try again later.")
 		}
 
+		core.Logger.Debug("successfully retrieved ingredient information", "name", i, "ingredient_id", ingredient.Id)
 		ingredients = append(ingredients, *ingredient)
 	}
 
@@ -39,14 +41,10 @@ func InsertProduct(name string, origin string, ingredient_list []string) (*types
 		Name:        name,
 		Origin:      &origin,
 		Ingredients: ingredients,
-		Metadata:    types.ProductMetadata{},
 	}
-	prod.Metadata.Model.Id = prod.Id
 
 	// TODO: Add auto-tagging based on the user's rules
 	// and the system rules.
-
-	// TODO: Add metadata information for the number of hazards, etc.
 
 	tx := core.DB.Begin()
 	if tx.Create(prod); tx.Error != nil {
@@ -55,4 +53,20 @@ func InsertProduct(name string, origin string, ingredient_list []string) (*types
 	}
 
 	return prod, tx.Commit().Error
+}
+
+// ------------------------------
+// Routing Related Functions
+// ------------------------------
+func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
+	name := r.FormValue("name")
+	origin := r.FormValue("origin")
+	ingredientList := r.Form["ingredient"]
+
+	_, err := InsertProduct(name, origin, ingredientList)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

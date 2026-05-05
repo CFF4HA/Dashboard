@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
-	"github.com/CFF4HA/Dashboard/internal/handlers/ai"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ingredient"
 	"github.com/CFF4HA/Dashboard/internal/handlers/tagging"
 	"github.com/CFF4HA/Dashboard/internal/handlers/user"
@@ -40,15 +39,7 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 			Id: uuid.New(),
 		},
 		Name: name,
-		Metadata: types.ProductMetadata{
-			Model: types.Model{
-				Id: uuid.New(),
-			},
-		},
 	}
-
-	// sets the foreign key relationship between the product and its metadata.
-	product.Metadata.ProductId = product.Id
 
 	// sets the origin if it exists.
 	if origin != "" {
@@ -78,10 +69,6 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		product.Ingredients = append(product.Ingredients, ing)
-		product.Metadata.NumHazard += ing.Metadata.NumHazards
-		product.Metadata.NumEffect += ing.Metadata.NumEffects
-		product.Metadata.NumSymptom += ing.Metadata.NumSymptoms
-		product.Metadata.NumReglations += ing.Metadata.NumRegulations
 	}
 
 	// saves the product to the database, which will also save the metadata and the
@@ -98,5 +85,5 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.Header().Set("HX-Trigger", fmt.Sprintf(`{"productCreated":{"productId":%q}}`, product.Id.String()))
-	return ai.ProductBlurb(r.Context(), product)
+	return nil
 }

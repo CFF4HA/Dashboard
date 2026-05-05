@@ -1,9 +1,5 @@
 package types
 
-import (
-	"github.com/google/uuid"
-)
-
 // A product can be thought of as a list of ingredients with relevant metrics that
 // accompany it, all stemming from the list of ingredients.
 type Product struct {
@@ -17,21 +13,4 @@ type Product struct {
 	Origin      *string      `json:"origin" gorm:"type:varchar(255);default:null"`
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:product_ingredients;"`
 	Tags        []Tag        `json:"tags" gorm:"many2many:product_tags;"`
-
-	// The product metadata is another object that contains everything from
-	// metrics like number of renders, to AI information blurbs, count of
-	// hazards, etc.
-	Metadata ProductMetadata `json:"metadata" gorm:"foreignKey:ProductId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-}
-
-type ProductMetadata struct {
-	Model
-	ProductId uuid.UUID `json:"product_id" gorm:"type:uuid;not null;uniqueIndex;"`
-
-	NumHazard     int `json:"hazard_count" gorm:"type:int;default:0"`
-	NumEffect     int `json:"effect_count" gorm:"type:int;default:0"`
-	NumSymptom    int `json:"symptom_count" gorm:"type:int;default:0"`
-	NumReglations int `json:"regulation_count" gorm:"type:int;default:0"`
-
-	AiBlurb *string `json:"ai_blurb" gorm:"type:text;default:null"`
 }
