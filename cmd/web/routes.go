@@ -104,6 +104,12 @@ func Tagging(v *verb.Verb) {
 	v.ActionClassic(http.MethodDelete, "/tag/remove", backend.RouteTagDelete)
 	v.ActionClassic(http.MethodPut, "/tag/create", backend.RouteTagCreate)
 
+	v.ActionClassic(http.MethodPut, "/tag/rule/create", backend.RouteInsertTaggingRule)
+	v.ActionClassic(http.MethodDelete, "/tag/rule/remove", backend.RouteDeleteTaggingRule)
+	v.ActionClassic(http.MethodGet, "/tag/rule/get/id", backend.RouteGetTaggingRuleById)
+	v.ActionClassic(http.MethodGet, "/tag/rule/get/user", backend.RouteGetTaggingRulesForUser)
+	v.ActionClassic(http.MethodGet, "/tag/rule/get", backend.RouteGetTaggingRules)
+
 	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
 	v.Component("v2/tables/table-tagging_rules.html", htmx.Div()).
 		Bridge(bridges.TaggingRules{})
