@@ -37,8 +37,7 @@ type TaggingRule struct {
 	// should be checked for a "conatins" relationship. If
 	// marked as false, we are checking to see if it does
 	// not exists, and applying the tag if that's the case.
-	Contains bool   `gorm:"type:boolean;default:false"`
-	Regex    string `gorm:"type:text;not null;"`
+	Pattern string `gorm:"type:text;not null;"`
 
 	// This is a foreign key relationship. The TaggingRule
 	// requires a "Tag" to apply to the matching ingredients.
