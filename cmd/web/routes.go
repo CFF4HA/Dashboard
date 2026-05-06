@@ -81,6 +81,7 @@ func Products(v *verb.Verb) {
 	v.ActionClassic(http.MethodDelete, "/product/remove", backend.RouteDeleteProductById)
 	v.ActionClassic(http.MethodDelete, "/product/tag/remove", backend.RouteProductTagRemove)
 	v.ActionClassic(http.MethodPost, "/product/tag", backend.RouteProductTag)
+	v.ActionClassic(http.MethodGet, "/product/get/operation", backend.RouteGetProductByOperation)
 
 	// this is the components that are rendered as part of the
 	// product page.

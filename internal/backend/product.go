@@ -9,6 +9,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/CFF4HA/Dashboard/internal/types"
+	"github.com/CFF4HA/Dashboard/pkg/boolee"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -175,6 +176,18 @@ func GetProductsByIngredient(ingredient_ids string, cursor string) ([]types.Prod
 	return products, nil
 }
 
+func GetProductByOperation(operation string, cursor string) ([]types.Product, error) {
+	var products []types.Product
+
+	tx := core.DB.Scopes(boolee.WithBoolee("name", operation, "~*")).Find(&products)
+	if tx.Error != nil {
+		return nil, errors.New("failed to retrieve products by operation, try again later.")
+	}
+
+	core.Logger.Debug("successfully retrieved products by operation", "operation", operation, "count", len(products), "products", products)
+	return products, nil
+}
+
 func GetProductsByUser(user_id *uuid.UUID, cursor string) ([]types.Product, error) {
 	var products []types.Product
 
@@ -293,4 +306,13 @@ func RouteProductTag(w http.ResponseWriter, r *http.Request) error {
 
 func RouteProductTagRemove(w http.ResponseWriter, r *http.Request) error {
 	return RemoveTagFromProduct(r.FormValue("product_id"), r.FormValue("tag_id"))
+}
+
+func RouteGetProductByOperation(w http.ResponseWriter, r *http.Request) error {
+	products, err := GetProductByOperation(r.FormValue("operation"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(products)
 }
