@@ -18,3 +18,8 @@ type Product struct {
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:product_ingredients;"`
 	Tags        []Tag        `json:"tags" gorm:"many2many:product_tags;"`
 }
+
+type ProductDraftAutomated struct {
+	Name        string   `json:"name"`
+	Ingredients []string `json:"ingredients"`
+}
