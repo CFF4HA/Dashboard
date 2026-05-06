@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/CFF4HA/Dashboard/pkg/pubchem"
 	"github.com/google/uuid"
@@ -129,6 +130,36 @@ func pullIngredientByName(name string) (*types.Ingredient, error) {
 	return ing, nil
 }
 
+func InsertIngredientNote(user_id uuid.UUID, id string, note string) error {
+	// we first will retrieve the ingredient, then update the note field,
+	// then save it back to the database with the note.
+
+	ing, err := GetIngredientById(id)
+	if err != nil {
+		core.Logger.Error("failed to retrieve ingredient from database for note insertion", "id", id, "error", err)
+		return errors.New("failed to retrieve ingredient from database, try again later.")
+	}
+
+	n := &types.IngredientNote{
+		Model: types.Model{
+			Id:      uuid.New(),
+			Created: time.Now(),
+			Updated: time.Now(),
+		},
+		Content:      note,
+		UserId:       user_id,
+		IngredientId: ing.Model.Id,
+	}
+
+	tx := core.DB.Create(n)
+	if tx.Error != nil {
+		core.Logger.Error("failed to insert ingredient note into database", "id", id, "error", tx.Error)
+		return errors.New("failed to insert ingredient note into database, try again later.")
+	}
+
+	return nil
+}
+
 func RetrieveIngredientByPrimaryName(name string) (*types.Ingredient, error) {
 	name = strings.ToLower(strings.TrimSpace(name))
 
@@ -206,6 +237,40 @@ func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient
 	return ingredients, nil
 }
 
+func GetIngredientById(id string) (*types.Ingredient, error) {
+	var ingredient *types.Ingredient
+
+	tx := core.DB.Scopes(WithPreload("Labels", "Tags")).First(&ingredient, "id = ?", id)
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve ingredient from database", "id", id, "error", tx.Error)
+		return nil, errors.New("failed to retrieve ingredient from database, try again later.")
+	}
+
+	return ingredient, nil
+}
+
+func GetIngredientNotes(ingredient_id string, u uuid.UUID, cursor string) ([]types.IngredientNote, error) {
+	var notes []types.IngredientNote
+
+	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithOrder("id")).Where("user_id = ?", u).Where("ingredient_id = ?", ingredient_id).Find(&notes)
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve ingredient notes from database", "ingredient_id", ingredient_id, "user_id", u, "error", tx.Error)
+		return nil, errors.New("failed to retrieve ingredient notes from database, try again later.")
+	}
+
+	return notes, nil
+}
+
+func DeleteIngredientNote(note_id string, u uuid.UUID) error {
+	tx := core.DB.Delete(&types.IngredientNote{}, "id = ?", note_id, "user_id = ?", u)
+	if tx.Error != nil {
+		core.Logger.Error("failed to delete ingredient note from database", "note_id", note_id, "user_id", u, "error", tx.Error)
+		return errors.New("failed to delete ingredient note from database, try again later.")
+	}
+
+	return nil
+}
+
 // ------------------------------
 // Route Related Functions
 //
@@ -249,4 +314,50 @@ func RouteGetIngredientsByPrimaryName(w http.ResponseWriter, r *http.Request) er
 	}
 
 	return json.NewEncoder(w).Encode(ingredients)
+}
+
+func RouteGetIngredientById(w http.ResponseWriter, r *http.Request) error {
+	ing, err := GetIngredientById(r.FormValue("id"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(ing)
+}
+
+func RouteIngredientAddNote(w http.ResponseWriter, r *http.Request) error {
+	u, err := user.GetUserFromRequest(w, r)
+	if err != nil {
+		return errors.New("a valid user is required to perform this operation, please try again after signing in")
+	}
+
+	err = InsertIngredientNote(u.Id, r.FormValue("id"), r.FormValue("note"))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RouteDeleteIngredientNote(w http.ResponseWriter, r *http.Request) error {
+	u, err := user.GetUserFromRequest(w, r)
+	if err != nil {
+		return err
+	}
+
+	return DeleteIngredientNote(r.FormValue("id"), u.Id)
+}
+
+func RouteGetIngredientNotes(w http.ResponseWriter, r *http.Request) error {
+	u, err := user.GetUserFromRequest(w, r)
+	if err != nil || u == nil {
+		return errors.New("a valid user is required to perform this operation, please try again after signing in")
+	}
+
+	notes, err := GetIngredientNotes(r.FormValue("id"), u.Id, r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(notes)
 }

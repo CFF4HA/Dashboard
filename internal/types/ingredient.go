@@ -15,6 +15,14 @@ type Ingredient struct {
 	Tags   []Tag   `json:"tags" gorm:"many2many:ingredient_tags;"`
 }
 
+type IngredientNote struct {
+	Model
+	UserId       uuid.UUID `json:"user_id" gorm:"type:uuid;not null;"`
+	IngredientId uuid.UUID `json:"ingredient_id" gorm:"type:uuid;not null;"`
+
+	Content string `json:"content" gorm:"type:text;not null;"`
+}
+
 // This is the Name table, which is how we will access ingredients.
 type Name struct {
 	Model
