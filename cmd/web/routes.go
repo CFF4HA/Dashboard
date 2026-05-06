@@ -74,6 +74,7 @@ func Products(v *verb.Verb) {
 	v.ActionClassic(http.MethodPut, "/product/create", backend.RouteProductPUT)
 	v.ActionClassic(http.MethodGet, "/product/get", backend.RouteProductGET)
 	v.ActionClassic(http.MethodGet, "/product/get/name", backend.RouteGetProductsByName)
+	v.ActionClassic(http.MethodGet, "/product/get/user", backend.RouteGetProductsByUser)
 	v.ActionClassic(http.MethodGet, "/product/get/id", backend.RouteGetProductById)
 	v.ActionClassic(http.MethodGet, "/product/get/ingredients", backend.RouteGetProductsByIngredient)
 	v.ActionClassic(http.MethodGet, "/product/get/tag", backend.RouteGetProductsByTag)

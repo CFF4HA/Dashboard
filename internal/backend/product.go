@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // ------------------------------
@@ -17,7 +19,7 @@ import (
 // These functions provide the functionality the routes need to perform
 // actions.
 // ------------------------------
-func InsertProduct(name string, origin string, ingredient_list []string) (*types.Product, error) {
+func InsertProduct(name string, origin string, ingredient_list []string, isPublic bool, owner *uuid.UUID) (*types.Product, error) {
 	// Ingredient list is a list of ingredient names, must be
 	// retrieved from the data sources on demand or via database (or cache).
 	ingredients := []types.Ingredient{}
@@ -40,8 +42,13 @@ func InsertProduct(name string, origin string, ingredient_list []string) (*types
 			Updated: time.Now(),
 		},
 		Name:        name,
+		IsPublic:    isPublic,
 		Origin:      &origin,
 		Ingredients: ingredients,
+	}
+
+	if owner != nil {
+		prod.UserId = owner
 	}
 
 	// TODO: Add auto-tagging based on the user's rules
@@ -168,6 +175,27 @@ func GetProductsByIngredient(ingredient_ids string, cursor string) ([]types.Prod
 	return products, nil
 }
 
+func GetProductsByUser(user_id *uuid.UUID, cursor string) ([]types.Product, error) {
+	var products []types.Product
+
+	var tx *gorm.DB
+	if user_id == nil {
+		tx = core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+			Where("user_id IS NULL").Find(&products)
+	} else {
+		tx = core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+			Where("user_id = ?", user_id).Find(&products)
+	}
+
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve products by user", "user_id", user_id, "error", tx.Error)
+		return nil, errors.New("failed to retrieve products by user, try again later.")
+	}
+
+	core.Logger.Debug("successfully retrieved products by user", "user_id", user_id, "count", len(products), "products", products)
+	return products, nil
+}
+
 // ------------------------------
 // Routing Related Functions
 // ------------------------------
@@ -175,13 +203,20 @@ func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
 	name := r.FormValue("name")
 	origin := r.FormValue("origin")
 	ingredientList := r.Form["ingredient"]
+	isPublic := r.FormValue("is_public") == "true"
+	var owner_id *uuid.UUID
 
-	_, err := InsertProduct(name, origin, ingredientList)
+	owner, err := user.GetUserFromRequestNoRedirect(w, r)
+	if err == nil && owner != nil {
+		owner_id = &owner.Id
+	}
+
+	prod, err := InsertProduct(name, origin, ingredientList, isPublic, owner_id)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return json.NewEncoder(w).Encode(prod)
 }
 
 func RouteProductGET(w http.ResponseWriter, r *http.Request) error {
@@ -229,6 +264,22 @@ func RouteGetProductsByIngredient(w http.ResponseWriter, r *http.Request) error 
 
 func RouteGetProductsByTag(w http.ResponseWriter, r *http.Request) error {
 	products, err := GetProductsByTag(r.FormValue("tag_id"), r.FormValue("cursor"))
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(products)
+}
+
+func RouteGetProductsByUser(w http.ResponseWriter, r *http.Request) error {
+	var userId *uuid.UUID
+
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	if err == nil && u != nil {
+		userId = &u.Id
+	}
+
+	products, err := GetProductsByUser(userId, r.FormValue("cursor"))
 	if err != nil {
 		return err
 	}
