@@ -1,0 +1,29 @@
+<div class="modal-header">
+    <h5 class="modal-title">Add Note for Ingredient</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <form hx-post="/ingredient/note" 
+          hx-target="#ingredient-results" 
+          hx-swap="innerHTML"
+          hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).hide()">
+      
+      <input type="hidden" name="ingredient_id" value="{{ .IngredientId }}">
+      
+      <div class="mb-3">
+        <label for="noteContent" class="form-label small fw-bold text-muted">YOUR OBSERVATIONS</label>
+        <textarea class="form-control" 
+                  id="noteContent" 
+                  name="content" 
+                  rows="4" 
+                  placeholder="e.g., Causes slight discoloration when heated above 60°C..." 
+                  required></textarea>
+      </div>
+  
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success rounded-pill">
+          <i class="bi bi-check2-circle me-2"></i>Save Note
+        </button>
+      </div>
+    </form>
+  </div>

@@ -16,7 +16,7 @@
       if (match) visible++;
     });
     
-    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+    if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
   }
 
   /**
@@ -35,9 +35,6 @@
     });
   }
 
-  /**
-   * Triggers a back-end PUT request to fetch data from PubChem for a missing ingredient.
-   */
   async function retrieveFromPubChem(name, resultsSelector) {
     const resultsEl = document.querySelector(resultsSelector);
     resultsEl.innerHTML = `
@@ -87,7 +84,6 @@
     transform: translateY(-2px);
   }
 
-  /* Interaction Colors */
   .ingredient-card--safe { border-top: 5px solid #4ade80; }
   .ingredient-card--unsafe { border-top: 5px solid #f87171; }
   .ingredient-card--failed { opacity: 0.6; background: #f8fafc; }
@@ -156,6 +152,17 @@
   }
 
   .btn-remove-tag:hover { color: #f87171; }
+
+  /* ── Notes Styles ── */
+  .note-item {
+    background: #fffbeb;
+    border-left: 3px solid #fbbf24;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+    position: relative;
+  }
 </style>
 
 {{- if and (eq (len .Ingredients) 0) (ne .Query "") }}
@@ -188,6 +195,12 @@
                   hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
             <i class="bi bi-eye"></i>
           </button>
+          <button class="btn-icon text-primary" 
+                  hx-get="/htmx/ingredient-note-form?id={{ .Id }}" 
+                  hx-target="#side-modal_content" 
+                  hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
+            <i class="bi bi-journal-plus"></i>
+          </button>
           <button class="btn-icon" hx-post="/ingredient/sync" hx-vals='{"id": "{{ .Id }}"}' hx-on::after-request="ingredientSyncDone(event)">
             <i class="bi bi-arrow-clockwise"></i>
           </button>
@@ -202,6 +215,7 @@
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-tags-{{ .Id }}">Tags</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-syn-{{ .Id }}">Names</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-haz-{{ .Id }}">Safety</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-notes-{{ .Id }}">Notes</button></li>
       </ul>
 
       <div class="tab-content flex-grow-1 overflow-hidden">
@@ -241,6 +255,25 @@
             <li class="text-muted small">No hazard warnings found.</li>
             {{- end }}
           </ul>
+        </div>
+
+        <div class="tab-pane fade" id="t-notes-{{ .Id }}">
+          <div class="py-2 overflow-auto" style="max-height: 120px;">
+            {{- range .Notes }}
+            <div class="note-item d-flex justify-content-between align-items-start">
+              <span>{{ .Content }}</span>
+              <button class="btn btn-sm text-danger p-0 ms-2" 
+                      hx-delete="/ingredient/note" 
+                      hx-vals='{"id": "{{ .Id }}", "ingredient_id": "{{ $ingId }}"}' 
+                      hx-confirm="Delete this note?"
+                      hx-target="closest .note-item">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            {{- else }}
+            <p class="text-muted small italic">No notes found for this ingredient.</p>
+            {{- end }}
+          </div>
         </div>
       </div>
 
