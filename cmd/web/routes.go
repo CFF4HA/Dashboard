@@ -69,6 +69,10 @@ func Ingredients(v *verb.Verb) {
 		Bridge(bridges.IngredientDetailBridge)
 }
 
+func Usage(v *verb.Verb) {
+	v.ActionClassic(http.MethodGet, "/usage/metrics/latest", backend.RouteGetLatestUsageMetric)
+}
+
 func Products(v *verb.Verb) {
 	// this will instantiate the create product route
 	v.ActionClassic(http.MethodPut, "/product/create", backend.RouteProductPUT)

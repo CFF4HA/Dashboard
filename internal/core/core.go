@@ -32,6 +32,7 @@ func InitializeDatabase(url string) error {
 		&types.User{},
 		&types.Role{},
 		&types.Notification{},
+		&types.UsageMetric{},
 
 		&types.Tag{},
 		&types.TaggingRule{},

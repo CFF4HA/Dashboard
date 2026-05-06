@@ -70,6 +70,10 @@ func InsertProductAutomatedLLM(ingredient_link string, ctx context.Context) (*ty
 		return nil, errors.New("failed to parse LLM response: " + err.Error())
 	}
 
+	automatedScrapeCountLock.Lock()
+	currentAutomatedScrapesCount++
+	automatedScrapeCountLock.Unlock()
+
 	return productDraftData, nil
 }
 
