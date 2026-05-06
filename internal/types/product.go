@@ -21,5 +21,6 @@ type Product struct {
 
 type ProductDraftAutomated struct {
 	Name        string   `json:"name"`
+	Origin      string   `json:"origin,omitempty"`
 	Ingredients []string `json:"ingredients"`
 }

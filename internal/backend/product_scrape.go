@@ -69,6 +69,7 @@ func InsertProductAutomatedLLM(ingredient_link string, ctx context.Context) (*ty
 	if err := json.Unmarshal([]byte(responseData), productDraftData); err != nil {
 		return nil, errors.New("failed to parse LLM response: " + err.Error())
 	}
+	productDraftData.Origin = ingredient_link
 
 	automatedScrapeCountLock.Lock()
 	currentAutomatedScrapesCount++

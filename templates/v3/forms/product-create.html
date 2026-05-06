@@ -6,7 +6,7 @@
 
       <div class="mb-3">
         <label for="product-link" class="form-label fw-semibold">Product Link</label>
-        <input type="url" class="form-control" id="product-link" placeholder="https://www.amazon.com/dp/B08N5WRWNW/">
+        <input type="url" class="form-control" id="product-link" placeholder="https://www.amazon.com/dp/B08N5WRWNW/" name="url">
         <div class="form-text">Paste a link to the product you want to submit. We'll scrape the product information automatically.</div>
       </div>
 
@@ -19,7 +19,10 @@
         >Manually import a product.</a>
 
         <div class="btn-group me-2">
-          <button type="submit" class="btn btn-dark px-4"><strong>Create My Product</strong></button>
+          <button type="submit" class="btn btn-dark px-4"
+            hx-get="/product/scrape"
+            hx-include="#product-link"
+          ><strong>Create My Product</strong></button>
         </div>
       </div>
     </div>

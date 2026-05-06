@@ -37,7 +37,7 @@
 
       <div class="mb-3">
         <label for="in-product-name-form" class="form-label fw-semibold">Product Name</label>
-        <input id="in-product-name-form" type="text" class="form-control" placeholder="{{if not .User.IsAnonymous}}What is the product called?{{end}}" {{ if .User.IsAnonymous }}disabled{{ end }}>
+        <input id="in-product-name-form" name="name" type="text" class="form-control" placeholder="{{if not .User.IsAnonymous}}What is the product called?{{end}}" {{ if .User.IsAnonymous }}disabled{{ end }}>
         <div class="form-text">{{ if .User.IsAnonymous }}Create an account first.{{else}}We'll never share your product with anyone else unless you choose to!{{end}}</div>
       </div>
 
@@ -47,7 +47,7 @@
         data-growable-shrink-event="never"
       >
         <label for="in-product-ing-textarea" class="form-label fw-semibold">Ingredient List</label>
-        <textarea id="in-product-ing-textarea" class="form-control" rows="4" placeholder="e.g. Water, Sugar, Salt, ..." {{ if .User.IsAnonymous }}disabled{{end}}></textarea>
+        <textarea id="in-product-ing-textarea" name="ingredients" class="form-control" rows="4" placeholder="e.g. Water, Sugar, Salt, ..." {{ if .User.IsAnonymous }}disabled{{end}}></textarea>
         <div class="form-text">Copy and paste the ingredient list from the product label. We accept comma-separated lists.</div>
       </div>
 
@@ -58,6 +58,8 @@
       >
         <button class="btn btn-dark px-4"
           {{- if .User.IsAnonymous }}disabled{{- end }}
+          hx-put="/product/create"
+          hx-include="#in-product-name-form, #in-product-ing-textarea"
         >Create My Product</button>
       </div>
     </div>
