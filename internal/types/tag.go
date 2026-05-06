@@ -73,6 +73,8 @@ type TaggingSet struct {
 	// should be available to copy by all users.
 	Public bool `gorm:"type:boolean;default:false"`
 
+	Rules []TaggingRule `gorm:"foreignKey:TaggingSetID;references:Id;constraint:OnDelete:CASCADE;"`
+
 	// The list of users that have access to the
 	// relevant tagging set.
 	Users []User `gorm:"many2many:user_tagging_sets;"`
