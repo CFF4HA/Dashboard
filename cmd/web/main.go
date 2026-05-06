@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CFF4HA/Dashboard/internal/bridges"
+	"github.com/CFF4HA/Dashboard/internal/backend"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/verb"
 	"github.com/google/uuid"
@@ -22,9 +22,7 @@ func main() {
 			Static:     Cfg.StaticDir,
 			LiveReload: Cfg.Reload,
 			Bridges: []verb.Bridge{
-				bridges.UserSessionRequired{
-					Excludes: []string{"/login", "/user", "/user/login", "/htmx/form-user_signup"},
-				},
+				CORSBridge{},
 			},
 		},
 	)
@@ -76,12 +74,16 @@ func main() {
 	Ingredients(v)
 	Products(v)
 	User(v)
+	Usage(v)
+	Notifications(v)
 
 	// The following are the general use page creation routes
 	Index(v)
 	Compare(v)
 	Tagging(v)
 	Test(v)
+
+	go backend.UsageMetricDaemon()
 
 	if err := v.Serve(); err != nil {
 		panic(err)

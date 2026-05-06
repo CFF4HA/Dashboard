@@ -20,5 +20,8 @@ func Initialize(uri string) error {
 
 	client = api.NewClient(endpoint, http.DefaultClient)
 	return client.Heartbeat(context.Background())
+}
 
+func Client() *api.Client {
+	return client
 }

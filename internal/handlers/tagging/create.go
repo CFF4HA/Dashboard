@@ -69,11 +69,9 @@ func HandleTagRuleCreate(w http.ResponseWriter, r *http.Request) error {
 
 	// pre-fills the tagging rule with the known variables
 	tagging_rule := &types.TaggingRule{
-		Contains: operation == "contains",
-		Regex:    regex,
-		Enabled:  true,
-		UserId:   user.Model.Id,
-		TagID:    tagv.Model.Id,
+		Enabled: true,
+		UserId:  user.Model.Id,
+		TagID:   tagv.Model.Id,
 	}
 
 	if err := core.DB.Create(tagging_rule).Error; err != nil {
