@@ -1,0 +1,43 @@
+digraph flow_tagging_rule_create {
+  rankdir=TB
+  graph [
+    label="UML Sequence — Tagging: Create Rule",
+    labelloc=t, labeljust=l,
+    fontname="Helvetica", fontsize=12,
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
+  ]
+  node [fontname="Helvetica", fontsize=10, height=0.5]
+  edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
+
+  // ── Lifelines ─────────────────────────────────────────────────────────────
+  { rank=min
+    Browser [label="Browser",                                          shape=rect,     style="filled,rounded", fillcolor="#fff196"]
+    Handler [label="Tag Rule Handler\ninternal/handlers/tagging/create.go", shape=rect, style="filled,rounded", fillcolor="#96b1ff"]
+    DB      [label="PostgreSQL",                                        shape=cylinder, style=filled,           fillcolor="#ffcccc"]
+  }
+
+  // ── Lifeline step nodes ───────────────────────────────────────────────────
+  node [shape=point, width=0.04, height=0.04, label=""]
+
+  // ── Lifeline chains ───────────────────────────────────────────────────────
+  edge [style=dashed, arrowhead=none, color="#cccccc", weight=20]
+  Browser -> b0 -> b1 -> b2 -> b3 -> b4
+  Handler -> h0 -> h1 -> h2 -> h3 -> h4
+  DB      -> d0 -> d1 -> d2 -> d3 -> d4
+
+  // ── Step alignment ────────────────────────────────────────────────────────
+  { rank=same; b0; h0; d0 }
+  { rank=same; b1; h1; d1 }
+  { rank=same; b2; h2; d2 }
+  { rank=same; b3; h3; d3 }
+  { rank=same; b4; h4; d4 }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  edge [constraint=false, fontsize=9]
+  b0 -> h0 [label="  POST /tag (regex, operation, tag name)  \n",  style=solid,  color="#198754", fontcolor="#198754"]
+  h1 -> d1 [label="  SELECT tag WHERE name = ?  \n",               style=solid,  color="#198754", fontcolor="#198754"]
+  d2 -> h2 [label="  tag record (or null)  \n",                     style=dashed, color="#198754", fontcolor="#198754"]
+  h3 -> d3 [label="  INSERT tag (if new)\n+ INSERT tagging_rule (regex, operation, tag_id)  \n", style=solid, color="#198754", fontcolor="#198754"]
+  h4 -> b4 [label="  200 OK  \n",                                   style=dashed, color="#198754", fontcolor="#198754"]
+}

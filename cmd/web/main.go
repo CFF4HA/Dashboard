@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/backend"
+	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/verb"
 	"github.com/google/uuid"
@@ -23,6 +24,7 @@ func main() {
 			LiveReload: Cfg.Reload,
 			Bridges: []verb.Bridge{
 				CORSBridge{},
+				bridges.ProcessUserSession{},
 			},
 		},
 	)
@@ -84,6 +86,7 @@ func main() {
 	Test(v)
 
 	go backend.UsageMetricDaemon()
+	FormsV2(v)
 
 	if err := v.Serve(); err != nil {
 		panic(err)

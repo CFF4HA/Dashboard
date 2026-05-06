@@ -20,7 +20,8 @@ func Test(v *verb.Verb) {
 }
 
 func Index(v *verb.Verb) {
-	v.Page("", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("", "v2/pages/index.html")
+	v.Page("/v2", "v3/pages/landing.html")
 }
 
 func Compare(v *verb.Verb) {
@@ -95,7 +96,7 @@ func Products(v *verb.Verb) {
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
 		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductSearchBridge).
+		Bridge(bridges.ProductSearchBridgeV2).
 		Bridge(bridges.UserFavoriteProductsBridge)
 
 	v.Component("v2/components/product-detail.html", htmx.Div()).
@@ -159,4 +160,9 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
 		Bridge(bridges.AllTagsBridge)
+}
+
+func FormsV2(v *verb.Verb) {
+	v.Component("v3/forms/product-create.html", htmx.Div())
+	v.Component("v3/forms/product-create_manual.html", htmx.Div())
 }

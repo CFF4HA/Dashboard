@@ -11,6 +11,31 @@ import (
 	"github.com/google/uuid"
 )
 
+type ProcessUserSession struct{}
+
+func (p ProcessUserSession) Data(w http.ResponseWriter, r *http.Request, model map[string]any) (any, error) {
+	var payload struct {
+		Username    string `json:"username"`
+		Id          string `json:"id"`
+		IsAnonymous bool   `json:"is_anonymous"`
+	}
+
+	user, err := user.GetUserFromRequest(w, r)
+	if err != nil {
+		payload.IsAnonymous = true
+		return payload, nil
+	} else {
+		payload.Username = user.Username
+		payload.Id = user.Model.Id.String()
+		payload.IsAnonymous = false
+		return payload, nil
+	}
+}
+
+func (p ProcessUserSession) Name() string {
+	return "User"
+}
+
 type UserSessionRequired struct {
 	Excludes []string
 }
