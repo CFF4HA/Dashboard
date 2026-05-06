@@ -111,11 +111,20 @@ func Products(v *verb.Verb) {
 }
 
 func User(v *verb.Verb) {
+	// Add the classic actions here
+
 	// handles the user registration part of the user flow.
 	v.Action(http.MethodPut, "/user", user.HandleUserPUT)
 	v.Action(http.MethodPost, "/user/login", user.HandleUserPOST)
 	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
 	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
+
+	v.ActionClassic(http.MethodPut, "/v2/user", backend.RouteInsertUser)
+	v.ActionClassic(http.MethodPost, "/v2/user/login", backend.RouteUserLogin)
+	v.ActionClassic(http.MethodDelete, "/v2/user", backend.RouteDeleteUser)
+	v.ActionClassic(http.MethodGet, "/v2/user/get", backend.RouteGetUsers)
+	v.ActionClassic(http.MethodPut, "/v2/user/role", backend.RouteUserRoleAdd)
+	v.ActionClassic(http.MethodDelete, "/v2/user/role", backend.RouteUserRoleRemove)
 
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
 
