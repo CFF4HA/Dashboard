@@ -1,0 +1,58 @@
+body {
+  width: 320px;
+  margin: 0;
+  padding: 10px;
+  background: #f8f9fa;
+  font-family: 'Segoe UI', system-ui;
+}
+
+.form-shell {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.form-control {
+  width: 100%;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.4rem;
+  margin-top: 4px;
+}
+
+.ingredient-tag-box {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ingredient-tag {
+  background: #eee;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.ingredient-tag-remove {
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.ingredient-tag-input {
+  border: none;
+  outline: none;
+  flex: 1;
+}
+
+.btn-form-submit {
+  width: 100%;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}

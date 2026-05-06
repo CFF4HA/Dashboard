@@ -8,7 +8,7 @@
         "storage"
     ],
     "action": {
-        "default_popup": "popup.html",
+        "default_popup": "form.html",
         "default_icon": {
             "16": "github-ff-banner.png",
             "32": "github-ff-banner.png",
@@ -16,14 +16,18 @@
             "128": "github-ff-banner.png"
         }
     },
-    "background": {
-        "service_worker": "background.js"
+    "icons": {
+        "16": "github-ff-banner.png",
+        "32": "github-ff-banner.png",
+        "48": "github-ff-banner.png",
+        "128": "github-ff-banner.png"
+    
     },
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["content.js"],
-            "css": ["content.css"]
+            "js": ["popup.js"],
+            "css": ["style.css"]
         }
     ]   
 
