@@ -126,6 +126,10 @@ func pullIngredientByName(name string) (*types.Ingredient, error) {
 
 	// TODO: Do the tagging based on the rules in the system.
 
+	currentPubChemLookupsCountLock.Lock()
+	currentPubChemLookupsCount++
+	currentPubChemLookupsCountLock.Unlock()
+
 	core.Logger.Info("successfully pulled ingredient information from pubchem", "name", name, "cid", cid, "labels", labels)
 	return ing, nil
 }
