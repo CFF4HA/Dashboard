@@ -100,6 +100,22 @@
     </div>
   </div>
 
+  <!-- This is the TESTING section -->
+  <div class="row mt-5">
+    <div class="col">
+      <div class="d-flex flex-row flex-wrap">
+
+        {{/* Form: Tagging Set Creation */}}
+        <div hx-get="/htmx/tag-set-form" hx-trigger="load"></div> 
+
+        {{/* View: This is a basic tagging set view */}}
+        <div hx-get="/htmx/tag-set-mini-view" hx-trigger="load"></div> 
+        
+
+      </div>
+    </div>
+  </div>
+
   <div class="row mt-5 growable"
     data-growable-target="#product-search-input"
     data-growable-grow-event="input"

@@ -152,6 +152,27 @@ func Tagging(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/tag/set/get/id", backend.RouteGetTaggingSetById)
 	v.ActionClassic(http.MethodGet, "/tag/set/get/name", backend.RouteGetTaggingSetByName)
 
+	v.Component("v3/components/tag/tag-set-form.html", htmx.Div())
+	v.Component("v3/components/tag/tag-set-mini-view.html", htmx.Div()).
+		Bridge(verb.Map("TagSets", func(r *http.Request, m map[string]any) (any, error) {
+			sets, err := backend.GetTaggingSets(r.FormValue("cursor"))
+			if err != nil {
+				return nil, err
+			}
+
+			return sets, nil
+		})).
+		Bridge(verb.Map("Tags", func(r *http.Request, m map[string]any) (any, error) {
+			tags, err := backend.GetTags(r.FormValue("cursor"))
+			if err != nil {
+				return nil, err
+			}
+
+			return tags, nil
+		}))
+
+	v.Component("v3/components/tag/tag-set-detail-view.html", htmx.Div())
+
 	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
 	v.Component("v2/tables/table-tagging_rules.html", htmx.Div()).
 		Bridge(bridges.TaggingRules{})

@@ -1,0 +1,21 @@
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h4>Tagging Set Creation</h4>
+      <p>A tagging set can be shared, and holds collections of tagging rules.</p>
+      <form class="form" hx-put="/tag/set/create">
+        <div class="mb-3">
+          <label for="tagging-set-name" class="form-label">Tagging Set Name</label>
+          <input type="text" class="form-control" id="tagging-set-name" name="name" placeholder="Enter tagging set name">
+        </div>
+
+        <div class="mb-3">
+          <label for="tagging-set-name" class="form-label">Tagging Set Description</label>
+          <input type="text" class="form-control" id="tagging-set-desc" name="description" placeholder="Enter tagging set description">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Tagging Set</button>
+      </form>
+    </div>
+  </div>
+</div>
