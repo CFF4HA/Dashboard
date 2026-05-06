@@ -52,6 +52,9 @@ func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodPost, "/ingredient/note", backend.RouteIngredientAddNote)
 	v.ActionClassic(http.MethodGet, "/ingredient/note/get", backend.RouteGetIngredientNotes)
 	v.ActionClassic(http.MethodDelete, "/ingredient/note/remove", backend.RouteDeleteIngredientNote)
+	v.ActionClassic(http.MethodPut, "/ingredient/scrape/config/create", backend.RouteInsertPubChemLabelConfig)
+	v.ActionClassic(http.MethodDelete, "/ingredient/scrape/config/remove", backend.RouteDeletePubChemLabelConfig)
+	v.ActionClassic(http.MethodGet, "/ingredient/scrape/config/get", backend.RouteGetPubChemLabelConfigs)
 
 	v.Page("/ingredients", "v2/pages/ingredients.html").
 		Bridge(bridges.CategorizedIngredients{}).
