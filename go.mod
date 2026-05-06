@@ -3,7 +3,7 @@ module github.com/CFF4HA/Dashboard
 go 1.26.1
 
 require (
-	github.com/DAlba-sudo/verb v0.1.4
+	github.com/DAlba-sudo/verb v0.1.5
 	github.com/DAlba-sudo/verbs v0.0.2
 	github.com/chromedp/chromedp v0.15.1
 	github.com/google/uuid v1.6.0
