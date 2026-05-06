@@ -14,6 +14,55 @@ import (
 	"gorm.io/gorm"
 )
 
+func WithUserBasedFiltering(u *uuid.UUID) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		// determine if user is an administrator, and if so, do not limit
+		// the query.
+		if u != nil {
+			var count int64
+			if core.DB.Select("count(*) FROM roles").Joins("JOIN user_roles ON user_roles.role_id=roles.id").
+				Where("role.name = ? AND user_id = ?", "admin", u).
+				Count(&count).Error == nil {
+				if count > 0 {
+					core.Logger.Debug("user is admin, bypassing user-based filtering", "user_id", u)
+					return db
+				}
+			}
+		}
+
+		db.Where("products.is_public = ? OR products.user_id IS NULL", true)
+		if u != nil {
+			db.Or("user_id = ?", u)
+		}
+
+		return db
+	}
+}
+
+func ValidateUserAccessToProduct(u *uuid.UUID, bypass_role *string, product_id string) (bool, error) {
+	if bypass_role != nil {
+		var count int64
+		if core.DB.Model(&types.Role{}).Joins("JOIN user_roles ON user_roles.role_id=roles.id").
+			Where("role.name = ? AND user_id = ?", "admin", u).
+			Count(&count).Error == nil {
+			if count > 0 {
+				core.Logger.Debug("user is admin, bypassing user-based filtering", "user_id", u)
+				return true, nil
+			}
+		}
+	}
+
+	var count int64
+	if tx := core.DB.Where("id = ? AND user_id = ?", product_id, u).Model(&types.Product{}).Count(&count); tx.Error != nil {
+		return false, errors.New("failed to verify product ownership, try again later.")
+	}
+	if count == 0 {
+		return false, errors.New("user does not have permission to tag this product")
+	}
+
+	return true, nil
+}
+
 // ------------------------------
 // Generic Utility Functions, not Route Related
 //
@@ -64,18 +113,17 @@ func InsertProduct(name string, origin string, ingredient_list []string, isPubli
 	return prod, tx.Commit().Error
 }
 
-func GetProducts(cursor string) ([]types.Product, error) {
+func GetProducts(u *uuid.UUID, cursor string) ([]types.Product, error) {
 	var prods []types.Product
 	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id"),
-		WithPreload("Tags"),
-	).
-		Find(&prods)
+		WithPreload("Tags"), WithUserBasedFiltering(u)).Find(&prods)
+
 	return prods, tx.Error
 }
 
-func GetProductById(id string) (*types.Product, error) {
+func GetProductById(id string, u *uuid.UUID) (*types.Product, error) {
 	prod := &types.Product{}
-	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags")).First(prod, "id = ?", id)
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithUserBasedFiltering(u)).First(prod, "id = ?", id)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -83,11 +131,11 @@ func GetProductById(id string) (*types.Product, error) {
 	return prod, nil
 }
 
-func GetProductsByName(name string, cursor string) ([]types.Product, error) {
+func GetProductsByName(name string, cursor string, u *uuid.UUID) ([]types.Product, error) {
 	var products []types.Product
 
 	// we first do a search by primary name
-	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id"), WithUserBasedFiltering(u)).
 		Where("name ~* ?", name).Find(&products)
 	if tx.Error != nil {
 		core.Logger.Error("failed to search for products by name", "name", name, "error", tx.Error)
@@ -101,9 +149,17 @@ func GetProductsByName(name string, cursor string) ([]types.Product, error) {
 	return products, nil
 }
 
-func DeleteProductById(id string) error {
+func DeleteProductById(id string, u *uuid.UUID) error {
 	// TODO: we first want to delete the product_ingredients join table rows,
 	// and then we can delete the product itself.
+
+	bypass_role := "admin"
+	hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, id)
+	if err != nil || !hasAccess {
+		core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", id, "error", err, "access", hasAccess)
+		return errors.New("user does not have permission to delete this product")
+	}
+
 	tx := core.DB.Begin()
 	if tx.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id).Error != nil {
 		core.Logger.Error("failed to delete product ingredients associations", "product_id", id, "error", tx.Error)
@@ -125,7 +181,22 @@ func DeleteProductById(id string) error {
 	return nil
 }
 
-func TagProduct(product_id string, tag_id string) error {
+func TagProduct(u *uuid.UUID, product_id string, tag_id string) error {
+	bypass_role := "admin"
+	hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, product_id)
+	if err != nil || !hasAccess {
+		core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", product_id, "error", err, "access", hasAccess)
+		return errors.New("user does not have permission to delete this product")
+	}
+
+	var count int64
+	if tx := core.DB.Where("id = ? AND owner_id = ?", product_id, u).Model(&types.Product{}).Count(&count); tx.Error != nil {
+		return errors.New("failed to verify product ownership, try again later.")
+	}
+	if count == 0 {
+		return errors.New("user does not have permission to tag this product")
+	}
+
 	tx := core.DB.Exec("INSERT INTO product_tags (product_id, tag_id) VALUES (?, ?)", product_id, tag_id)
 	if tx.Error != nil {
 		core.Logger.Error("failed to tag product", "product_id", product_id, "tag_id", tag_id, "error", tx.Error)
@@ -135,7 +206,14 @@ func TagProduct(product_id string, tag_id string) error {
 	return nil
 }
 
-func RemoveTagFromProduct(product_id string, tag_id string) error {
+func RemoveTagFromProduct(product_id string, tag_id string, u *uuid.UUID) error {
+	bypass_role := "admin"
+	hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, product_id)
+	if err != nil || !hasAccess {
+		core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", product_id, "error", err, "access", hasAccess)
+		return errors.New("user does not have permission to delete this product")
+	}
+
 	tx := core.DB.Exec("DELETE FROM product_tags WHERE product_id = ? AND tag_id = ?", product_id, tag_id)
 	if tx.Error != nil {
 		core.Logger.Error("failed to remove tag from product", "product_id", product_id, "tag_id", tag_id, "error", tx.Error)
@@ -147,9 +225,9 @@ func RemoveTagFromProduct(product_id string, tag_id string) error {
 	return nil
 }
 
-func GetProductsByTag(tag_id string, cursor string) ([]types.Product, error) {
+func GetProductsByTag(tag_id string, cursor string, u *uuid.UUID) ([]types.Product, error) {
 	var products []types.Product
-	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id"), WithUserBasedFiltering(u)).
 		Where("id IN (SELECT product_id FROM product_tags WHERE tag_id = ?)", tag_id).Find(&products)
 
 	if tx.Error != nil {
@@ -161,10 +239,10 @@ func GetProductsByTag(tag_id string, cursor string) ([]types.Product, error) {
 	return products, nil
 }
 
-func GetProductsByIngredient(ingredient_ids string, cursor string) ([]types.Product, error) {
+func GetProductsByIngredient(ingredient_ids string, cursor string, u *uuid.UUID) ([]types.Product, error) {
 	var products []types.Product
 
-	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id")).
+	tx := core.DB.Scopes(WithPreload("Ingredients"), WithCursor(cursor), WithLimit(20), WithOrder("id"), WithUserBasedFiltering(u)).
 		Where("id IN (SELECT product_id FROM product_ingredients WHERE ingredient_id IN (?))", ingredient_ids).Find(&products)
 
 	if tx.Error != nil {
@@ -176,10 +254,10 @@ func GetProductsByIngredient(ingredient_ids string, cursor string) ([]types.Prod
 	return products, nil
 }
 
-func GetProductByOperation(operation string, cursor string) ([]types.Product, error) {
+func GetProductByOperation(operation string, cursor string, u *uuid.UUID) ([]types.Product, error) {
 	var products []types.Product
 
-	tx := core.DB.Scopes(boolee.WithBoolee("name", operation, "~*")).Find(&products)
+	tx := core.DB.Scopes(WithUserBasedFiltering(u), boolee.WithBoolee("name", operation, "~*")).Find(&products)
 	if tx.Error != nil {
 		return nil, errors.New("failed to retrieve products by operation, try again later.")
 	}
@@ -233,7 +311,13 @@ func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RouteProductGET(w http.ResponseWriter, r *http.Request) error {
-	products, err := GetProducts(r.FormValue("cursor"))
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	products, err := GetProducts(user_id, r.FormValue("cursor"))
 	if err != nil {
 		return err
 	}
@@ -243,7 +327,13 @@ func RouteProductGET(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RouteGetProductsByName(w http.ResponseWriter, r *http.Request) error {
-	products, err := GetProductsByName(r.FormValue("name"), r.FormValue("cursor"))
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	products, err := GetProductsByName(r.FormValue("name"), r.FormValue("cursor"), user_id)
 	if err != nil {
 		return err
 	}
@@ -253,7 +343,13 @@ func RouteGetProductsByName(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RouteGetProductById(w http.ResponseWriter, r *http.Request) error {
-	product, err := GetProductById(r.FormValue("id"))
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	product, err := GetProductById(r.FormValue("id"), user_id)
 	if err != nil {
 		return err
 	}
@@ -263,11 +359,23 @@ func RouteGetProductById(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RouteDeleteProductById(w http.ResponseWriter, r *http.Request) error {
-	return DeleteProductById(r.FormValue("id"))
+	u, _ := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	return DeleteProductById(r.FormValue("id"), user_id)
 }
 
 func RouteGetProductsByIngredient(w http.ResponseWriter, r *http.Request) error {
-	products, err := GetProductsByIngredient(r.FormValue("ingredient_ids"), r.FormValue("cursor"))
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	products, err := GetProductsByIngredient(r.FormValue("ingredient_ids"), r.FormValue("cursor"), user_id)
 	if err != nil {
 		return err
 	}
@@ -276,7 +384,13 @@ func RouteGetProductsByIngredient(w http.ResponseWriter, r *http.Request) error 
 }
 
 func RouteGetProductsByTag(w http.ResponseWriter, r *http.Request) error {
-	products, err := GetProductsByTag(r.FormValue("tag_id"), r.FormValue("cursor"))
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	products, err := GetProductsByTag(r.FormValue("tag_id"), r.FormValue("cursor"), user_id)
 	if err != nil {
 		return err
 	}
@@ -301,15 +415,33 @@ func RouteGetProductsByUser(w http.ResponseWriter, r *http.Request) error {
 }
 
 func RouteProductTag(w http.ResponseWriter, r *http.Request) error {
-	return TagProduct(r.FormValue("product_id"), r.FormValue("tag_id"))
+	u, _ := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	return TagProduct(user_id, r.FormValue("product_id"), r.FormValue("tag_id"))
 }
 
 func RouteProductTagRemove(w http.ResponseWriter, r *http.Request) error {
-	return RemoveTagFromProduct(r.FormValue("product_id"), r.FormValue("tag_id"))
+	u, _ := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	return RemoveTagFromProduct(r.FormValue("product_id"), r.FormValue("tag_id"), user_id)
 }
 
 func RouteGetProductByOperation(w http.ResponseWriter, r *http.Request) error {
-	products, err := GetProductByOperation(r.FormValue("operation"), r.FormValue("cursor"))
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if u != nil {
+		user_id = &u.Id
+	}
+
+	products, err := GetProductByOperation(r.FormValue("operation"), r.FormValue("cursor"), user_id)
 	if err != nil {
 		return err
 	}
