@@ -5,6 +5,7 @@ import (
 
 	"github.com/CFF4HA/Dashboard/internal/backend"
 	"github.com/CFF4HA/Dashboard/internal/bridges"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/DAlba-sudo/verb"
 	"github.com/DAlba-sudo/verb/htmx"
 )
@@ -33,13 +34,24 @@ func Compare(v *verb.Verb) {
 		Bridge(bridges.ProductDetailBridge)
 }
 
+func Notifications(v *verb.Verb) {
+	v.ActionClassic(http.MethodPut, "/notification/create", backend.RouteInsertNotification)
+	v.ActionClassic(http.MethodDelete, "/notification/remove", backend.RouteDeleteNotification)
+	v.ActionClassic(http.MethodGet, "/notification/get", backend.RouteGetNotifications)
+	v.ActionClassic(http.MethodGet, "/notification/get/enabled", backend.RouteGetNotificationsByEnabled)
+}
+
 func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/ingredient/get", backend.RouteGetIngredients)
 	v.ActionClassic(http.MethodGet, "/ingredient/get/name", backend.RouteGetIngredientsByPrimaryName)
+	v.ActionClassic(http.MethodGet, "/ingredient/get/id", backend.RouteGetIngredientById)
 	v.ActionClassic(http.MethodPost, "/ingredient/tag", backend.RouteTagIngredient)
 	v.ActionClassic(http.MethodDelete, "/ingredient/tag/remove", backend.RouteRemoveTagFromIngredient)
 	v.ActionClassic(http.MethodGet, "/ingredient/retrieve", backend.RouteRetrieveIngredientByPrimaryName)
 	v.ActionClassic(http.MethodDelete, "/ingredient/remove", backend.RouteRemoveIngredientById)
+	v.ActionClassic(http.MethodPost, "/ingredient/note", backend.RouteIngredientAddNote)
+	v.ActionClassic(http.MethodGet, "/ingredient/note/get", backend.RouteGetIngredientNotes)
+	v.ActionClassic(http.MethodDelete, "/ingredient/note/remove", backend.RouteDeleteIngredientNote)
 
 	v.Page("/ingredients", "v2/pages/ingredients.html").
 		Bridge(bridges.CategorizedIngredients{}).
@@ -90,6 +102,10 @@ func Products(v *verb.Verb) {
 
 func User(v *verb.Verb) {
 	// handles the user registration part of the user flow.
+	v.Action(http.MethodPut, "/user", user.HandleUserPUT)
+	v.Action(http.MethodPost, "/user/login", user.HandleUserPOST)
+	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
+	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
 
 	v.Component("v2/forms/form-user_signup.html", htmx.Div())
 

@@ -71,6 +71,7 @@ func main() {
 	Ingredients(v)
 	Products(v)
 	User(v)
+	Notifications(v)
 
 	// The following are the general use page creation routes
 	Index(v)
