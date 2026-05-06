@@ -1,26 +1,35 @@
 <link rel="stylesheet" href="style.css">
 
-<div class="modal-header">
-  <h6 class="modal-title">Create Product</h6>
+<div class="modal-header" style="border-bottom: 1px solid #dee2e6; padding: 0.85rem 1.5rem;">
+  <h6 class="modal-title" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.95rem; font-weight: 600; color: #495057;">
+    <i class="bi bi-box-seam me-2" style="color: #adb5bd;"></i>Create Product
+</h6>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 0.75rem;"></button>
 </div>
 
 <div class="modal-body p-0">
   <form id="form-product_create" class="form-shell">
 
     <div class="mb-3">
-      <label class="form-label">Name *</label>
-      <input type="text" id="product-name" name="name" class="form-control" required>
+      <label class="form-label">Name <span style="color: #dc3545;">*</span></label>
+      <input type="text"
+            id="product-name"
+            name="name"
+            class="form-control" 
+            placeholder="e.g. Sunscreen SPF 50"
+            autocomplete="off"
+            required>
     </div>
 
     <div class="mb-3">
       <label class="form-label">Origin</label>
-      <input type="text" id="product-origin" name="origin" class="form-control">
+      <input type="text" id="product-origin" name="origin" class="form-control" placeholder="e.g. United States" autocomplete="off">
     </div>
 
     <hr class="form-divider">
 
     <div class="mb-1">
-      <label class="form-label">Ingredients *</label>
+      <label class="form-label">Ingredients <span style="color: #dc3545;">*</span></label>
 
       <div class="ingredient-tag-box" id="ingredient-tag-box">
         <input id="ingredient-tag-input"
@@ -31,12 +40,16 @@
       </div>
 
       <div id="ingredient-hidden-inputs"></div>
+      <div class="form-text mt-1">Separate multiple ingredients with a comma. At least one is required.</div>
     </div>
 
     <hr class="form-divider">
 
     <div class="d-flex justify-content-end gap-2">
-      <button type="submit" class="btn-form-submit">Create</button>
+        <button type="button" class="btn-form-cancel" data-bs-dismiss="modal">Cancel</button>
+      <button type="submit" class="btn-form-submit">
+        <i class="bi bi-check2 me-1"></i>Create
+    </button>
     </div>
 
   </form>

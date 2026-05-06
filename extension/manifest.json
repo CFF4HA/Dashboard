@@ -5,10 +5,11 @@
     "manifest_version": 3,
     "permissions": [
         "activeTab",
-        "storage"
+        "storage",
+        "sidePanel"
     ],
+
     "action": {
-        "default_popup": "form.html",
         "default_icon": {
             "16": "github-ff-banner.png",
             "32": "github-ff-banner.png",
@@ -16,6 +17,15 @@
             "128": "github-ff-banner.png"
         }
     },
+
+    "side_panel": {
+        "default_path": "form.html"
+    },
+
+    "background": {
+        "service_worker": "background.js"
+    },
+
     "icons": {
         "16": "github-ff-banner.png",
         "32": "github-ff-banner.png",
