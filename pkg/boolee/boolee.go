@@ -46,25 +46,33 @@ func WithBoolee(items ...string) func(*gorm.DB) *gorm.DB {
 				case '\'':
 					isInString = true
 				case '&':
-					query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+					if element_buffer.Len() != 0 {
+						query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+						element_buffer.Reset()
+					}
+
 					query.WriteString(" AND ")
-					element_buffer.Reset()
 				case '|':
-					query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+					if element_buffer.Len() != 0 {
+						query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+						element_buffer.Reset()
+					}
 					query.WriteString(" OR ")
-					element_buffer.Reset()
 				case '!':
-					query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+					if element_buffer.Len() != 0 {
+						query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+						element_buffer.Reset()
+					}
 					query.WriteString(" NOT ")
-					element_buffer.Reset()
 				case '(':
-					query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
-					query.WriteString(" ( ")
+					query.WriteString("( ")
 					element_buffer.Reset()
 				case ')':
-					query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
-					query.WriteString(" ) ")
-					element_buffer.Reset()
+					if element_buffer.Len() != 0 {
+						query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
+						element_buffer.Reset()
+					}
+					query.WriteString(") ")
 				}
 			}
 
