@@ -1,7 +1,7 @@
 github.com/DAlba-sudo/pbf v1.0.0 h1:va7cp4UaxAAZgs13/qOSZrLiosnGnFZT0Iic90uVu6U=
 github.com/DAlba-sudo/pbf v1.0.0/go.mod h1:OxhYgF2RMcRz22zuk+XgMoODY3HL419UdVc7tvDCoLM=
-github.com/DAlba-sudo/verb v0.1.4 h1:Aoc/75r8pzVTlOgz9lIenRWTilSSaCZXV6rRbKUvkPA=
-github.com/DAlba-sudo/verb v0.1.4/go.mod h1:CYsJOmrp2qAwjL14sSqb3gQ5tCbcQOMYHSvCdiiRMBg=
+github.com/DAlba-sudo/verb v0.1.5 h1:ax+P0CX7E9MVLk8VOD4g5rPO07YYYB2q0TIAeh+kW3A=
+github.com/DAlba-sudo/verb v0.1.5/go.mod h1:CYsJOmrp2qAwjL14sSqb3gQ5tCbcQOMYHSvCdiiRMBg=
 github.com/DAlba-sudo/verbs v0.0.2 h1:/zxNQUDejLaVapFiR/zQYBJbBetb3yY8ehy3PtO1g5A=
 github.com/DAlba-sudo/verbs v0.0.2/go.mod h1:4W6/p3yjNU5eeLXoT9D9sGOce8H6rZy3L3iy9hk+28c=
 github.com/bahlo/generic-list-go v0.2.0 h1:5sz/EEAK+ls5wF+NeqDpk5+iNdMDXrh3z3nPnH1Wvgk=
