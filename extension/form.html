@@ -1,15 +1,27 @@
 <link rel="stylesheet" href="style.css">
+<!-- top of form-product_create.html -->
+
 
 <div class="modal-header" style="border-bottom: 1px solid #dee2e6; padding: 0.85rem 1.5rem;">
-  <h6 class="modal-title" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.95rem; font-weight: 600; color: #495057;">
+  <h6 class="modal-title"
+        style="font-family: 'Segoe UI',
+        system-ui, -apple-system, 
+        sans-serif; font-size: 0.95rem; 
+        font-weight: 600; 
+        color: #495057;">
     <i class="bi bi-box-seam me-2" style="color: #adb5bd;"></i>Create Product
 </h6>
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 0.75rem;"></button>
+  <button type="button" 
+        class="btn-close" 
+        data-bs-dismiss="modal" 
+        aria-label="Close" 
+        style="font-size: 0.75rem;"></button>
 </div>
+
 
 <div class="modal-body p-0">
   <form id="form-product_create" class="form-shell">
-
+    <!-- Product name input -->
     <div class="mb-3">
       <label class="form-label">Name <span style="color: #dc3545;">*</span></label>
       <input type="text"
@@ -23,12 +35,19 @@
 
     <div class="mb-3">
       <label class="form-label">Origin</label>
-      <input type="text" id="product-origin" name="origin" class="form-control" placeholder="e.g. United States" autocomplete="off">
+      <input type="text" 
+            id="product-origin" 
+            name="origin" 
+            class="form-control" 
+            placeholder="e.g. United States" 
+            autocomplete="off">
     </div>
 
     <hr class="form-divider">
 
+
     <div class="mb-1">
+        <!-- product ingredients input -->
       <label class="form-label">Ingredients <span style="color: #dc3545;">*</span></label>
 
       <div class="ingredient-tag-box" id="ingredient-tag-box">
