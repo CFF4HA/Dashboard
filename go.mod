@@ -2,8 +2,6 @@ module github.com/CFF4HA/Dashboard
 
 go 1.26.1
 
-replace github.com/DAlba-sudo/verb => ../verb
-
 require (
 	github.com/DAlba-sudo/verb v0.1.4
 	github.com/DAlba-sudo/verbs v0.0.2
