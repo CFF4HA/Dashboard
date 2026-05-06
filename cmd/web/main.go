@@ -21,7 +21,9 @@ func main() {
 			Templates:  Cfg.TemplateDir,
 			Static:     Cfg.StaticDir,
 			LiveReload: Cfg.Reload,
-			Bridges:    []verb.Bridge{},
+			Bridges: []verb.Bridge{
+				CORSBridge{},
+			},
 		},
 	)
 
