@@ -14,7 +14,7 @@ type Tag struct {
 
 	// the string representation of a tag, typically
 	// one word, and it must be unique to the user.
-	Name string `gorm:"type:text;not null;unique;"`
+	Name string `gorm:"type:text;not null;"`
 
 	// This is an optional description of what the Tag
 	// represents.
@@ -37,8 +37,7 @@ type TaggingRule struct {
 	// should be checked for a "conatins" relationship. If
 	// marked as false, we are checking to see if it does
 	// not exists, and applying the tag if that's the case.
-	Contains bool   `gorm:"type:boolean;default:false"`
-	Regex    string `gorm:"type:text;not null;"`
+	Pattern string `gorm:"type:text;not null;"`
 
 	// This is a foreign key relationship. The TaggingRule
 	// requires a "Tag" to apply to the matching ingredients.
@@ -73,6 +72,8 @@ type TaggingSet struct {
 	// Whether this tagging set is a public set that
 	// should be available to copy by all users.
 	Public bool `gorm:"type:boolean;default:false"`
+
+	Rules []TaggingRule `gorm:"foreignKey:TaggingSetID;references:Id;constraint:OnDelete:CASCADE;"`
 
 	// The list of users that have access to the
 	// relevant tagging set.

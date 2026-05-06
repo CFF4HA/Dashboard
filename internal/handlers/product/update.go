@@ -47,7 +47,6 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) error {
 
 	// Resolve each ingredient, fetching from PubChem if not found locally.
 	var newIngredients []types.Ingredient
-	var numHazard, numEffect, numSymptom, numReglations int
 
 	for _, ingName := range ingredientNames {
 		ingName = strings.ToLower(strings.TrimSpace(ingName))
@@ -71,10 +70,6 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		newIngredients = append(newIngredients, ing)
-		numHazard += ing.Metadata.NumHazards
-		numEffect += ing.Metadata.NumEffects
-		numSymptom += ing.Metadata.NumSymptoms
-		numReglations += ing.Metadata.NumRegulations
 	}
 
 	// Replace the product_ingredients join table rows entirely.
@@ -82,16 +77,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// Recompute and persist metadata counts.
-	product.Metadata.NumHazard = numHazard
-	product.Metadata.NumEffect = numEffect
-	product.Metadata.NumSymptom = numSymptom
-	product.Metadata.NumReglations = numReglations
-
 	if err := core.DB.Save(&product).Error; err != nil {
-		return err
-	}
-	if err := core.DB.Save(&product.Metadata).Error; err != nil {
 		return err
 	}
 

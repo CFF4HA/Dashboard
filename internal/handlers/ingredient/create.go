@@ -131,35 +131,6 @@ func RetrieveIngredient(name string) (*types.Ingredient, error) {
 
 				PrimaryName: name,
 				Failed:      false,
-				Metadata: types.IngredientMetadata{
-					Model: types.Model{
-						Id:      uuid.New(),
-						Created: time.Now(),
-						Updated: time.Now(),
-					},
-				},
-			}
-			ingredient.Metadata.IngredientId = ingredient.Id
-			ingredient.Metadata.NumHazards = len(hazards)
-			ingredient.Metadata.NumEffects = len(effects)
-			ingredient.Metadata.NumSymptoms = len(symptoms)
-			ingredient.Metadata.NumRegulations = len(regulations)
-
-			for _, n := range names {
-				var existing types.Name
-				tx := core.DB.Where("text = ?", n).First(&existing)
-				if tx.Error == nil {
-					ingredient.Names = append(ingredient.Names, existing)
-				} else {
-					ingredient.Names = append(ingredient.Names, types.Name{
-						Model: types.Model{
-							Id:      uuid.New(),
-							Created: time.Now(),
-							Updated: time.Now(),
-						},
-						Text: n,
-					})
-				}
 			}
 
 			for _, hazard := range hazards {

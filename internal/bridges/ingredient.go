@@ -34,13 +34,6 @@ func (c CategorizedIngredients) Data(w http.ResponseWriter, r *http.Request, m m
 	if core.DB.Preload("GoodIngredient").Preload("BadIngreidients").First(&user_object, "id = ?", user_object.Model.Id).Error != nil {
 		return nil, errors.New("failed to load user with ingredients")
 	}
-	for _, user_good := range user_object.GoodIngredient {
-		Payload.Safe = append(Payload.Safe, user_good.Model.Id)
-	}
-
-	for _, user_bad := range user_object.BadIngreidients {
-		Payload.Unsafe = append(Payload.Unsafe, user_bad.Model.Id)
-	}
 
 	return Payload, nil
 }
