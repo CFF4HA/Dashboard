@@ -363,8 +363,11 @@
   .ingredient-tag-input::placeholder { color: var(--muted); }
 </style>
 
-<div class="row">
-  {{- range .Products }}
+{{- $count := len .Products }}
+{{- $hasMore := gt $count 20 }}
+{{- $products := .Products }}
+{{- if $hasMore }}{{- $products = slice .Products 0 20 }}{{- end }}
+{{- range $products }}
   <div class="col-md mb-4 sr-product-card-col">
     <div class="sr-product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} sr-product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} sr-product-card--unsafe{{ end }}">
 
@@ -505,8 +508,20 @@
 
     </div>
   </div>
-  {{- end }}
+{{- end }}
+{{- if $hasMore }}
+{{- $last := index $products (sub (len $products) 1) }}
+<div class="col-12 text-center py-3" id="sr-load-more-{{ $last.Id }}">
+  <button class="btn btn-outline-secondary btn-sm px-4"
+    hx-get="/htmx/product-search_results"
+    hx-include="#product-search-input"
+    hx-vals='{"cursor": "{{ $last.Id }}"}'
+    hx-target="#sr-load-more-{{ $last.Id }}"
+    hx-swap="outerHTML">
+    Load more
+  </button>
 </div>
+{{- end }}
 
 <script>
   function srFilterIngredients(input) {

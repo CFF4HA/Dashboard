@@ -465,9 +465,12 @@
 {{- else if eq (len .Ingredients) 0 }}
 <p style="font-size:0.88rem; color:var(--muted);">No ingredients yet. Search above to retrieve one from PubChem.</p>
 {{- else }}
-<div class="row">
-  {{- range .Ingredients }}
-  <div class="col-md-4 mb-4 ingredient-card-col">
+{{- $count := len .Ingredients }}
+{{- $hasMore := gt $count 20 }}
+{{- $ingredients := .Ingredients }}
+{{- if $hasMore }}{{- $ingredients = slice .Ingredients 0 20 }}{{- end }}
+{{- range $ingredients }}
+  <div class="col-md mb-4 ingredient-card-col">
     <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
 
       <!-- ── Header ────────────────────────────────────────── -->
@@ -664,8 +667,20 @@
 
     </div>
   </div>
-  {{- end }}
+{{- end }}
+{{- if $hasMore }}
+{{- $last := index $ingredients (sub (len $ingredients) 1) }}
+<div class="col-12 text-center py-3" id="ing-load-more-{{ $last.Id }}">
+  <button class="btn btn-outline-secondary btn-sm px-4"
+    hx-get="/htmx/ingredient-search_results"
+    hx-include="#ingredient-search-input"
+    hx-vals='{"cursor": "{{ $last.Id }}"}'
+    hx-target="#ing-load-more-{{ $last.Id }}"
+    hx-swap="outerHTML">
+    Load more
+  </button>
 </div>
+{{- end }}
 
 <script>
 (function () {
