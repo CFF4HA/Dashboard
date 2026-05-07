@@ -1,0 +1,217 @@
+
+<div class="card">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-robot me-2"></i>Create Tagging Rule
+  </div>
+  <div class="card-body">
+    {{- if and .UserInformation }}
+    <form id="tag-rule-create-form">
+      <input type="hidden" name="enabled" value="true">
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Tag Name</label>
+        <input type="text" name="tag" class="form-control form-control-sm" placeholder="e.g. vegan" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Tagging Set</label>
+        <select name="tagging_set_id" class="form-select form-select-sm" required>
+          {{- range .TagSets }}
+          <option value="{{ .Id }}">{{ .Name }}</option>
+          {{- else }}
+          <option disabled value="">No tagging sets — create one first</option>
+          {{- end }}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold d-flex justify-content-between">
+          <span>Pattern</span>
+          <span class="text-muted fw-normal" style="font-size: 0.75rem;">boolee syntax</span>
+        </label>
+
+        {{/* Visual builder */}}
+        <div class="border rounded p-3 mb-2 bg-light">
+          <div id="rule-terms" class="d-flex flex-column gap-2 mb-2">
+            {{/* first term injected by JS on DOMContentLoaded */}}
+          </div>
+          <div class="d-flex gap-2 mt-1">
+            <button type="button" class="btn btn-sm btn-outline-success" onclick="ruleTerm.add('|')">
+              <i class="bi bi-plus-lg me-1"></i>OR
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="ruleTerm.add('&')">
+              <i class="bi bi-plus-lg me-1"></i>AND
+            </button>
+          </div>
+        </div>
+
+        {{/* Raw pattern — synced with builder, also directly editable */}}
+        <input type="text" name="pattern" id="rule-pattern-raw"
+               class="form-control form-control-sm font-monospace"
+               placeholder="e.g. 'acid'|'base'&!'sodium'"
+               oninput="ruleParseRaw(this.value)">
+        <div class="form-text">Builder and raw field stay in sync — edit either one.</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-sm w-100"
+        hx-put="/tag/rule/create"
+        hx-include="#tag-rule-create-form"
+        hx-swap="none"
+        hx-on::after-request="if(event.detail.successful){ ruleFormReset() }"
+      >
+        <i class="bi bi-plus-lg me-1"></i>Create Rule
+      </button>
+    </form>
+    {{- else }}
+    <p>Sign-in to view! <a href="/login?to=/v2/admin">Login</a></p>
+    {{- end }}
+  </div>
+</div>
+
+<script>
+(function() {
+  // connector: '&' | '|' | null (first term)
+  // negate:    bool — prepends '!' before the quoted token
+  function termRow(value, connector, negate) {
+    negate = !!negate;
+
+    var div = document.createElement('div');
+    div.className = 'rule-term d-flex align-items-center gap-2';
+    if (connector) div.dataset.connector = connector;
+    if (negate)    div.dataset.not = 'true';
+
+    // ── connector badge ───────────────────────────────────────────────────
+    var badge = document.createElement('span');
+    badge.className = 'badge text-nowrap rule-badge';
+    badge.style.minWidth = '62px';
+    badge.style.textAlign = 'center';
+    refreshBadge(badge, connector, negate);
+
+    // ── keyword input ─────────────────────────────────────────────────────
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control form-control-sm rule-term-input';
+    input.placeholder = 'keyword…';
+    input.value = value || '';
+    input.setAttribute('oninput', 'ruleBuilderSync()');
+
+    // ── NOT toggle ────────────────────────────────────────────────────────
+    var notBtn = document.createElement('button');
+    notBtn.type = 'button';
+    notBtn.className = 'btn btn-sm lh-1 ' + (negate ? 'btn-danger' : 'btn-outline-danger');
+    notBtn.title = 'Toggle NOT';
+    notBtn.textContent = 'NOT';
+    notBtn.setAttribute('onclick', 'ruleTerm.toggleNot(this)');
+
+    // ── remove button ─────────────────────────────────────────────────────
+    var rmBtn = document.createElement('button');
+    rmBtn.type = 'button';
+    rmBtn.className = 'btn btn-sm btn-outline-secondary lh-1';
+    rmBtn.textContent = '\xd7';
+    rmBtn.setAttribute('onclick', 'ruleTerm.remove(this)');
+    rmBtn.tabIndex = -1;
+
+    div.appendChild(badge);
+    div.appendChild(input);
+    div.appendChild(notBtn);
+    div.appendChild(rmBtn);
+    return div;
+  }
+
+  function refreshBadge(badge, connector, negate) {
+    var label, cls;
+    if (!connector) {
+      if (negate) {
+        label = 'NOT'; cls = 'bg-danger';
+      } else {
+        label = '—'; cls = 'bg-secondary'; badge.style.visibility = 'hidden';
+      }
+    } else {
+      badge.style.visibility = '';
+      var base = connector === '&' ? 'AND' : 'OR';
+      label = negate ? base + ' NOT' : base;
+      cls   = connector === '&' ? (negate ? 'bg-warning text-dark' : 'bg-primary')
+                                : (negate ? 'bg-warning text-dark' : 'bg-success');
+    }
+    badge.className = 'badge text-nowrap rule-badge ' + cls;
+    badge.textContent = label;
+  }
+
+  // ── public API ────────────────────────────────────────────────────────────
+
+  window.ruleTerm = {
+    add: function(connector) {
+      document.getElementById('rule-terms').appendChild(termRow('', connector, false));
+    },
+    remove: function(btn) {
+      var container = document.getElementById('rule-terms');
+      var rows = container.querySelectorAll('.rule-term');
+      if (rows.length <= 1) {
+        var row = rows[0];
+        row.querySelector('.rule-term-input').value = '';
+        row.dataset.not = '';
+        refreshBadge(row.querySelector('.rule-badge'), row.dataset.connector || null, false);
+        var nb = row.querySelector('button.btn-danger, button.btn-outline-danger');
+        nb.className = 'btn btn-sm lh-1 btn-outline-danger';
+        nb.textContent = 'NOT';
+      } else {
+        btn.closest('.rule-term').remove();
+      }
+      ruleBuilderSync();
+    },
+    toggleNot: function(btn) {
+      var term = btn.closest('.rule-term');
+      var negate = !(term.dataset.not === 'true');
+      term.dataset.not = negate ? 'true' : '';
+      btn.className = 'btn btn-sm lh-1 ' + (negate ? 'btn-danger' : 'btn-outline-danger');
+      var connector = term.dataset.connector || null;
+      refreshBadge(term.querySelector('.rule-badge'), connector, negate);
+      ruleBuilderSync();
+    }
+  };
+
+  window.ruleBuilderSync = function() {
+    var pattern = '';
+    document.querySelectorAll('#rule-terms .rule-term').forEach(function(term) {
+      var val = term.querySelector('.rule-term-input').value.trim();
+      if (!val) return;
+      var connector = term.dataset.connector || null;
+      var negate    = term.dataset.not === 'true';
+      // connector prefix
+      if (pattern.length > 0 && connector) pattern += connector;
+      // NOT prefix
+      if (negate) pattern += '!';
+      pattern += "'" + val + "'";
+    });
+    document.getElementById('rule-pattern-raw').value = pattern;
+  };
+
+  // Parse 'a'[connector][!]'b'… back into builder rows.
+  // Connector chars: & | !  (! alone means NOT with no preceding AND/OR)
+  window.ruleParseRaw = function(raw) {
+    // Match: optional connector (&|), optional negate (!), then 'term'
+    var re = /([&|]?)(!?)\s*'([^']+)'/g;
+    var match, rows = [];
+    while ((match = re.exec(raw)) !== null) {
+      rows.push({ connector: match[1] || null, negate: match[2] === '!', value: match[3] });
+    }
+    if (rows.length === 0) return;
+    var container = document.getElementById('rule-terms');
+    container.innerHTML = '';
+    rows.forEach(function(r) {
+      container.appendChild(termRow(r.value, r.connector || null, r.negate));
+    });
+  };
+
+  window.ruleFormReset = function() {
+    document.getElementById('tag-rule-create-form').reset();
+    var container = document.getElementById('rule-terms');
+    container.innerHTML = '';
+    container.appendChild(termRow('', null, false));
+    document.getElementById('rule-pattern-raw').value = '';
+  };
+
+  // seed the first empty row on load
+  document.getElementById('rule-terms').appendChild(termRow('', null, false));
+})();
+</script>

@@ -42,8 +42,13 @@ func InsertTag(name string, description string) (*types.Tag, error) {
 }
 
 func DeleteTagById(id string) error {
-	tx := core.DB.Delete(&types.Tag{}, "id = ?", id)
+	tx := core.DB.Exec("DELETE FROM ingredient_tags WHERE tag_id = ?", id)
+	tx.Exec("DELETE FROM product_tags WHERE tag_id = ?", id)
+	tx.Exec("DELETE FROM tagging_rules WHERE tag_id = ?", id)
+
+	tx.Delete(&types.Tag{}, "id = ?", id)
 	if tx.Error != nil {
+		tx.Rollback()
 		core.Logger.Error("failed to delete tag from database", "error", tx.Error, "id", id)
 		return errors.New("failed to delete tag from database, try again later.")
 	}

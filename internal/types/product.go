@@ -24,3 +24,28 @@ type ProductDraftAutomated struct {
 	Origin      string   `json:"origin,omitempty"`
 	Ingredients []string `json:"ingredients"`
 }
+
+type ProductComparison struct {
+	SharedIngredients []Ingredient        `json:"shared_ingredients"`
+	SharedLabels      map[string][]string `json:"shared_labels"`
+
+	UniqueIngToProduct map[string][]Ingredient `json:"unique_to_product"`
+	UniqueLabToProduct map[string][]string     `json:"unique_labels_to_product"`
+}
+
+type InvestigationShared struct {
+	Ingredients []Ingredient
+	Hazards     []string
+	Effects     []string
+	Symptoms    []string
+	Regulations []string
+}
+
+type InvestigationUnique struct {
+	Ingredients []Ingredient
+	Hazards     []string
+	Effects     []string
+	Symptoms    []string
+	Regulations []string
+}
+

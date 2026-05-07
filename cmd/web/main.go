@@ -24,7 +24,7 @@ func main() {
 			LiveReload: Cfg.Reload,
 			Bridges: []verb.Bridge{
 				CORSBridge{},
-				bridges.ProcessUserSession{},
+				bridges.UserInformation,
 			},
 		},
 	)
@@ -78,6 +78,7 @@ func main() {
 	User(v)
 	Usage(v)
 	Notifications(v)
+	Admin(v)
 
 	// The following are the general use page creation routes
 	Index(v)

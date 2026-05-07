@@ -1,0 +1,262 @@
+{{- with .ScrapeConfigs }}
+<style>
+  /* ── Scrape Config List ── */
+  .scrape-config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .scrape-config-row {
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border, #e8ede9);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scrape-config-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+  }
+
+  .scrape-config-row--hazard::before    { background: #f87171; }
+  .scrape-config-row--regulation::before { background: #60a5fa; }
+  .scrape-config-row--effect::before    { background: #34d399; }
+  .scrape-config-row--symptom::before   { background: #f59e0b; }
+
+  .scrape-config-row:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  /* ── Type Badge ── */
+  .scrape-config-type {
+    flex-shrink: 0;
+    padding: 0.25rem 0.55rem;
+    border-radius: 7px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+
+  .scrape-config-type--hazard    { background: #fef2f2; color: #dc2626; }
+  .scrape-config-type--regulation { background: #eff6ff; color: #1d4ed8; }
+  .scrape-config-type--effect    { background: #f0fdf4; color: #15803d; }
+  .scrape-config-type--symptom   { background: #fffbeb; color: #b45309; }
+
+  /* ── Config Body ── */
+  .scrape-config-body {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .scrape-config-section {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--forest-green, #1a2e1c);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .scrape-config-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.75rem;
+    margin-top: 0.3rem;
+  }
+
+  .scrape-config-meta-item {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .scrape-config-meta-item strong {
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .scrape-config-notes {
+    margin-top: 0.45rem;
+    font-size: 0.72rem;
+    color: #64748b;
+    font-style: italic;
+    line-height: 1.4;
+    background: var(--soft-white, #f8faf8);
+    border-radius: 8px;
+    padding: 0.35rem 0.55rem;
+  }
+
+  /* ── Delete Button ── */
+  .btn-scrape-config-delete {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid #fee2e2;
+    color: #f87171;
+    border-radius: 8px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    align-self: flex-start;
+  }
+
+  .btn-scrape-config-delete:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #dc2626;
+  }
+
+  /* ── Empty state ── */
+  .scrape-config-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    background: var(--soft-white, #f8faf8);
+    border-radius: 14px;
+    border: 1.5px dashed #e2e8f0;
+  }
+
+  .scrape-config-empty-icon {
+    font-size: 2rem;
+    color: #cbd5e1;
+    margin-bottom: 0.6rem;
+  }
+</style>
+
+{{ define "content" }}
+<div class="container py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <h2 style="font-family:'Lato',sans-serif;font-size:1.2rem;font-weight:700;color:var(--forest-green);margin:0;">
+      <i class="bi bi-gear me-2"></i>Scrape Configuration
+      {{- if .Ingredient }} — <span style="font-weight:400;">{{ .Ingredient.PrimaryName }}</span>{{- end }}
+    </h2>
+    <a href="/ingredients" class="btn-retrieve-pubchem">
+      <i class="bi bi-arrow-left me-1"></i>Back to ingredients
+    </a>
+  </div>
+
+  <!-- Add config form -->
+  <div class="detail-section mb-4">
+    <div class="detail-section-title">Add scrape configuration</div>
+    <form hx-post="/ingredient/scrape-config"
+          hx-target="#scrape-config-list"
+          hx-swap="beforeend"
+          hx-on::after-request="if(event.detail.successful) this.reset();"
+          style="display:flex;flex-direction:column;gap:0.6rem;">
+      {{- if .Ingredient }}
+      <input type="hidden" name="ingredient_id" value="{{ .Ingredient.Id }}">
+      {{- else }}
+      <div style="display:flex;flex-direction:column;gap:0.2rem;">
+        <label class="detail-section-title" style="margin:0;">Ingredient ID</label>
+        <input class="detail-filter-input" style="margin:0;"
+               type="text" name="ingredient_id" placeholder="Ingredient ID or name" required>
+      </div>
+      {{- end }}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+        <div style="display:flex;flex-direction:column;gap:0.2rem;">
+          <label class="detail-section-title" style="margin:0;">Source URL</label>
+          <input class="detail-filter-input" style="margin:0;"
+                 type="url" name="source_url" placeholder="https://example.com/ingredient" required>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.2rem;">
+          <label class="detail-section-title" style="margin:0;">Data type</label>
+          <select class="detail-filter-input" style="margin:0;" name="data_type" required>
+            <option value="">Select type…</option>
+            <option value="hazard">Hazard</option>
+            <option value="effect">Effect</option>
+            <option value="symptom">Symptom</option>
+            <option value="regulation">Regulation</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.2rem;">
+        <label class="detail-section-title" style="margin:0;">CSS selector</label>
+        <input class="detail-filter-input" style="margin:0;"
+               type="text" name="css_selector" placeholder=".hazard-list li" required>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.2rem;">
+        <label class="detail-section-title" style="margin:0;">Notes (optional)</label>
+        <textarea class="ingredient-note-input" name="notes" rows="2" placeholder="Any notes about this config…"></textarea>
+      </div>
+      <div style="display:flex;gap:0.4rem;align-items:center;justify-content:flex-end;">
+        <div style="display:flex;align-items:center;gap:0.3rem;">
+          <input type="checkbox" name="active" id="active-check" checked style="accent-color:var(--regular-green);">
+          <label for="active-check" style="font-size:0.82rem;color:var(--forest-green);margin:0;">Active</label>
+        </div>
+        <button type="submit" class="btn-retrieve-pubchem">
+          <i class="bi bi-plus-lg me-1"></i>Save configuration
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Config list -->
+  <div class="detail-section-title mb-2">Saved configurations</div>
+  <div id="scrape-config-list" style="display:flex;flex-direction:column;gap:0.5rem;">
+    {{- if and (.ScrapeConfigs) (gt (len .ScrapeConfigs) 0) }}
+    {{- range .ScrapeConfigs }}
+    <div class="scrape-config-item" id="scrape-config-{{ .Id }}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;">
+        <div style="min-width:0;">
+          <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.2rem;">
+            <span class="ingredient-card-badge scrape-config-type-badge scrape-config-type-{{ .DataType }}">{{ .DataType }}</span>
+            {{- if .Active }}
+            <span class="ingredient-card-badge scrape-config-active-badge">Active</span>
+            {{- else }}
+            <span class="ingredient-card-badge scrape-config-inactive-badge">Inactive</span>
+            {{- end }}
+          </div>
+          <a href="{{ .SourceURL }}" target="_blank"
+             style="font-size:0.82rem;color:var(--regular-green);word-break:break-all;">{{ .SourceURL }}</a>
+          <p style="font-size:0.78rem;color:rgba(26,46,30,0.5);margin:0.15rem 0 0;">
+            Selector: <code style="font-size:0.75rem;background:rgba(26,46,30,0.06);padding:0.05rem 0.3rem;border-radius:4px;">{{ .CSSSelector }}</code>
+          </p>
+          {{- if .Notes }}
+          <p style="font-size:0.78rem;color:rgba(26,46,30,0.5);margin:0.15rem 0 0;">{{ .Notes }}</p>
+          {{- end }}
+        </div>
+        <div style="display:flex;gap:0.3rem;flex-shrink:0;">
+          <button class="btn-star"
+                  hx-post="/ingredient/scrape-config/run"
+                  hx-vals='{"id": "{{ .Id }}"}'
+                  hx-swap="none"
+                  title="Run now">
+            <i class="bi bi-play-circle"></i>
+          </button>
+          <button class="btn-star btn-danger-icon"
+                  hx-delete="/ingredient/scrape-config"
+                  hx-vals='{"id": "{{ .Id }}"}'
+                  hx-target="#scrape-config-{{ .Id }}"
+                  hx-swap="outerHTML"
+                  title="Delete configuration">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="scrape-config-meta">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+    </div>
+    {{- end }}
+    {{- else }}
+    <span class="detail-empty-note">No scrape configurations yet.</span>
+    {{- end }}
+  </div>
+
+</div>
+{{ end }}

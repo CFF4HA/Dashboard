@@ -124,7 +124,7 @@ func GetProducts(u *uuid.UUID, cursor string) ([]types.Product, error) {
 
 func GetProductById(id string, u *uuid.UUID) (*types.Product, error) {
 	prod := &types.Product{}
-	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithUserBasedFiltering(u)).First(prod, "id = ?", id)
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags", "Ingredients.Labels", "Ingredients.Tags"), WithUserBasedFiltering(u)).First(prod, "id = ?", id)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -150,18 +150,112 @@ func GetProductsByName(name string, cursor string, u *uuid.UUID) ([]types.Produc
 	return products, nil
 }
 
+func CompareProductsByIdList(ids []uuid.UUID) (*types.ProductComparison, error) {
+	if len(ids) == 0 {
+		return nil, errors.New("no product ids provided")
+	}
+
+	products := make([]types.Product, 0, len(ids))
+	for _, id := range ids {
+		prod := &types.Product{}
+		tx := core.DB.Scopes(WithPreload("Ingredients", "Ingredients.Labels")).First(prod, "id = ?", id)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
+		products = append(products, *prod)
+	}
+
+	// Build ingredient-id → ingredient map per product.
+	// An ingredient is "shared" if it appears in every product.
+	type ingKey = uuid.UUID
+	counts := make(map[ingKey]int)
+	byId := make(map[ingKey]types.Ingredient)
+	for _, p := range products {
+		seen := make(map[ingKey]bool)
+		for _, ing := range p.Ingredients {
+			if !seen[ing.Id] {
+				counts[ing.Id]++
+				byId[ing.Id] = ing
+				seen[ing.Id] = true
+			}
+		}
+	}
+
+	total := len(products)
+	sharedIngIds := make(map[ingKey]bool)
+	sharedIngs := []types.Ingredient{}
+	for id, cnt := range counts {
+		if cnt == total {
+			sharedIngIds[id] = true
+			sharedIngs = append(sharedIngs, byId[id])
+		}
+	}
+
+	// Shared labels: label payloads present in every product (via their ingredients).
+	labelCounts := make(map[string]int)
+	for _, p := range products {
+		seen := make(map[string]bool)
+		for _, ing := range p.Ingredients {
+			for _, lbl := range ing.Labels {
+				if !seen[lbl.Payload] {
+					labelCounts[lbl.Payload]++
+					seen[lbl.Payload] = true
+				}
+			}
+		}
+	}
+	sharedLabels := []string{}
+	for payload, cnt := range labelCounts {
+		if cnt == total {
+			sharedLabels = append(sharedLabels, payload)
+		}
+	}
+
+	// Unique ingredients and label payloads per product.
+	uniqueIngToProduct := make(map[string][]types.Ingredient)
+	uniqueLabToProduct := make(map[string][]string)
+	for _, p := range products {
+		key := p.Id.String()
+		for _, ing := range p.Ingredients {
+			if !sharedIngIds[ing.Id] {
+				uniqueIngToProduct[key] = append(uniqueIngToProduct[key], ing)
+			}
+		}
+		seen := make(map[string]bool)
+		for _, ing := range p.Ingredients {
+			for _, lbl := range ing.Labels {
+				if !seen[lbl.Payload] && labelCounts[lbl.Payload] < total {
+					uniqueLabToProduct[key] = append(uniqueLabToProduct[key], lbl.Payload)
+					seen[lbl.Payload] = true
+				}
+			}
+		}
+	}
+
+	return &types.ProductComparison{
+		SharedIngredients:  sharedIngs,
+		SharedLabels:       map[string][]string{"shared": sharedLabels},
+		UniqueIngToProduct: uniqueIngToProduct,
+		UniqueLabToProduct: uniqueLabToProduct,
+	}, nil
+}
+
 func DeleteProductById(id string, u *uuid.UUID) error {
 	// TODO: we first want to delete the product_ingredients join table rows,
 	// and then we can delete the product itself.
 
 	bypass_role := "admin"
-	hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, id)
-	if err != nil || !hasAccess {
-		core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", id, "error", err, "access", hasAccess)
-		return errors.New("user does not have permission to delete this product")
+	if u != nil {
+		hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, id)
+		if err != nil || !hasAccess {
+			core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", id, "error", err, "access", hasAccess)
+			return errors.New("user does not have permission to delete this product")
+		}
 	}
 
 	tx := core.DB.Begin()
+	tx = core.DB.Exec("DELETE FROM user_products WHERE product_id = ?", id)
+
 	if tx.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id).Error != nil {
 		core.Logger.Error("failed to delete product ingredients associations", "product_id", id, "error", tx.Error)
 		return errors.New("failed to delete product ingredients associations, try again later.")
@@ -292,6 +386,8 @@ func GetProductsByUser(user_id *uuid.UUID, cursor string) ([]types.Product, erro
 // Routing Related Functions
 // ------------------------------
 func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	name := r.FormValue("name")
 	origin := r.FormValue("origin")
 	ingredientList := r.Form["ingredients"]

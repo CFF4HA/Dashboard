@@ -1,0 +1,84 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+    <span><i class="bi bi-people-fill me-2"></i>Users</span>
+    <span class="badge bg-secondary">{{ len .Users }}</span>
+  </div>
+  <div class="card-body">
+    <input
+      type="text"
+      class="form-control form-control-sm mb-3"
+      placeholder="Search by username..."
+      oninput="adminFilterTable('user-table', this.value)"
+    >
+    {{ if .Users }}
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle" id="user-table">
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>ID</th>
+            <th>Roles</th>
+            <th>Add Role</th>
+            <th>Remove Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{- range .Users }}
+          <tr id="user-row-{{ .Id }}">
+            <td class="fw-semibold">{{ .Username }}</td>
+            <td><code class="small text-muted">{{ .Id }}</code></td>
+            <td>
+              {{- range .Roles }}
+              <span class="badge bg-secondary me-1">{{ .Name }}</span>
+              {{- else }}
+              <span class="text-muted small">none</span>
+              {{- end }}
+            </td>
+            <td>
+              <form class="d-flex gap-1 align-items-center">
+                <input type="hidden" name="user_id" value="{{ .Id }}">
+                <select name="role_id" class="form-select form-select-sm" style="width: auto; min-width: 120px;">
+                  {{- range $.Roles }}
+                  <option value="{{ .Id }}">{{ .Name }}</option>
+                  {{- else }}
+                  <option disabled>No roles defined</option>
+                  {{- end }}
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-success"
+                  hx-put="/admin/user/role"
+                  hx-include="closest form"
+                  hx-swap="none"
+                  hx-on::after-request="if(event.detail.successful){ htmx.trigger(document.getElementById('admin-users-table-host'),'reload-users') }"
+                  title="Add role"
+                ><i class="bi bi-plus-lg"></i></button>
+              </form>
+            </td>
+            <td>
+              <form class="d-flex gap-1 align-items-center">
+                <input type="hidden" name="user_id" value="{{ .Id }}">
+                <select name="role_id" class="form-select form-select-sm" style="width: auto; min-width: 120px;">
+                  {{- range .Roles }}
+                  <option value="{{ .Id }}">{{ .Name }}</option>
+                  {{- else }}
+                  <option disabled>No roles</option>
+                  {{- end }}
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                  hx-delete="/admin/user/role"
+                  hx-include="closest form"
+                  hx-swap="none"
+                  hx-on::after-request="if(event.detail.successful){ htmx.trigger(document.getElementById('admin-users-table-host'),'reload-users') }"
+                  title="Remove role"
+                ><i class="bi bi-dash-lg"></i></button>
+              </form>
+            </td>
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+    {{ else }}
+    <p class="text-muted small mb-0">No users found.</p>
+    {{ end }}
+  </div>
+</div>

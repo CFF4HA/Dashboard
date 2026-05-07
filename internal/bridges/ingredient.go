@@ -3,153 +3,38 @@ package bridges
 import (
 	"errors"
 	"net/http"
-	"sort"
-	"strings"
 
-	"github.com/CFF4HA/Dashboard/internal/core"
-	"github.com/CFF4HA/Dashboard/internal/types"
-	"github.com/DAlba-sudo/verb"
-	"github.com/google/uuid"
+	"github.com/CFF4HA/Dashboard/internal/backend"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 )
 
-type CategorizedIngredients struct {
-}
+var (
+	IngredientById = DataBridge{Key: "Ingredient", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
+		return backend.GetIngredientById(r.FormValue("id"))
+	}}
 
-func (c CategorizedIngredients) Data(w http.ResponseWriter, r *http.Request, m map[string]any) (any, error) {
-	var Payload struct {
-		Safe   []uuid.UUID `json:"safe"`
-		Unsafe []uuid.UUID `json:"unsafe"`
-	}
-
-	user, ok := m["User"]
-	if !ok {
-		core.Logger.Warn("No user in context")
-		return nil, nil
-	} else if _, ok := user.(*types.User); !ok {
-		core.Logger.Warn("User in context is not of type User")
-		return nil, nil
-	}
-	user_object := user.(*types.User)
-
-	if core.DB.Preload("GoodIngredient").Preload("BadIngreidients").First(&user_object, "id = ?", user_object.Model.Id).Error != nil {
-		return nil, errors.New("failed to load user with ingredients")
-	}
-
-	return Payload, nil
-}
-
-func (c CategorizedIngredients) Name() string {
-	return "Categories"
-}
-
-type IngredientSearchResult struct {
-	Ingredients   []types.Ingredient
-	Query         string
-	ResultsTarget string // CSS selector for the container that holds these results
-}
-
-var IngredientSearchBridge = verb.Map("Search", func(r *http.Request, m map[string]any) (any, error) {
-	q := strings.TrimSpace(r.FormValue("query"))
-	labelOp := strings.TrimSpace(r.FormValue("label_filter_op"))
-	labelText := strings.TrimSpace(r.FormValue("label_filter_text"))
-	tagFilters := r.Form["tag_filter"]
-
-	var ingredients []types.Ingredient
-	preload := core.DB.Preload("Tags").Preload("Metadata").Preload("Names").Preload("Labels")
-
-	// Fast path — no filters at all, return alphabetically by primary name.
-	if q == "" && labelText == "" && len(tagFilters) == 0 {
-		if tx := preload.Order("failed ASC").Order("primary_name ASC").Limit(20).Find(&ingredients); tx.Error != nil {
-			return nil, tx.Error
-		}
-		target := r.FormValue("results_target")
-		if target == "" {
-			target = "#search-results"
-		}
-		return IngredientSearchResult{Ingredients: ingredients, Query: q, ResultsTarget: target}, nil
-	}
-
-	// Two-step (see AGENTS.md): DISTINCT IDs via JOIN, then Preload with IN.
-	idQuery := core.DB.Model(&types.Ingredient{}).Select("DISTINCT ingredients.id")
-
-	if q != "" {
-		idQuery = idQuery.
-			Joins("LEFT JOIN ingredient_names ing_n ON ing_n.ingredient_id = ingredients.id").
-			Joins("LEFT JOIN names n ON n.id = ing_n.name_id").
-			Where("ingredients.primary_name ILIKE ? OR n.text ILIKE ?", "%"+q+"%", "%"+q+"%")
-	}
-
-	if labelText != "" {
-		// Sub-query: ingredient IDs carrying at least one matching label.
-		labelSub := core.DB.Table("ingredient_labels").
-			Select("DISTINCT ingredient_labels.ingredient_id").
-			Joins("JOIN labels l ON l.id = ingredient_labels.label_id").
-			Where("l.payload ILIKE ?", "%"+labelText+"%")
-
-		switch labelOp {
-		case "excludes":
-			idQuery = idQuery.Where("ingredients.id NOT IN (?)", labelSub)
-		default: // "contains"
-			idQuery = idQuery.Where("ingredients.id IN (?)", labelSub)
-		}
-	}
-
-	if len(tagFilters) > 0 {
-		tagSub := core.DB.Table("ingredient_tags").
-			Select("DISTINCT ingredient_tags.ingredient_id").
-			Where("ingredient_tags.tag_id IN ?", tagFilters)
-		idQuery = idQuery.Where("ingredients.id IN (?)", tagSub)
-	}
-
-	var ids []string
-	if tx := idQuery.Pluck("id", &ids); tx.Error != nil {
-		return nil, tx.Error
-	}
-
-	if len(ids) > 0 {
-		if tx := preload.Where("id IN ?", ids).Find(&ingredients); tx.Error != nil {
-			return nil, tx.Error
+	IngredientNotesByIngredientId = DataBridge{Key: "IngredientNotesByIngredientId", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
+		u, err := user.GetUserFromRequestNoRedirect(w, r)
+		if err != nil || u == nil {
+			return nil, errors.New("user not authenticated")
 		}
 
-		// Sort: non-failed first, then primary-name matches before synonym-only
-		// matches, then alphabetical within each group.
-		qLower := strings.ToLower(q)
-		sort.SliceStable(ingredients, func(i, j int) bool {
-			a, b := ingredients[i], ingredients[j]
-			if a.Failed != b.Failed {
-				return !a.Failed
-			}
-			if q != "" {
-				aNameMatch := strings.Contains(strings.ToLower(a.PrimaryName), qLower)
-				bNameMatch := strings.Contains(strings.ToLower(b.PrimaryName), qLower)
-				if aNameMatch != bNameMatch {
-					return aNameMatch
-				}
-			}
-			return strings.ToLower(a.PrimaryName) < strings.ToLower(b.PrimaryName)
-		})
-	}
+		return backend.GetIngredientNotes(r.FormValue("id"), u.Id, r.FormValue("cursor"))
+	}}
+)
 
-	target := r.FormValue("results_target")
-	if target == "" {
-		target = "#search-results"
-	}
+type IngredientsByName struct {
+}
 
-	return IngredientSearchResult{Ingredients: ingredients, Query: q, ResultsTarget: target}, nil
-})
-
-var IngredientDetailBridge = verb.Map("Ingredient", func(r *http.Request, m map[string]any) (any, error) {
-	idStr := strings.TrimSpace(r.FormValue("id"))
-	id, err := uuid.Parse(idStr)
+func (i IngredientsByName) Data(w http.ResponseWriter, r *http.Request, m map[string]any) (any, error) {
+	ingredients, err := backend.GetIngredientsByPrimaryName(r.FormValue("name"), r.FormValue("cursor"))
 	if err != nil {
-		return nil, errors.New("invalid ingredient id")
+		return nil, errors.New("failed to get ingredients by name: " + err.Error())
 	}
 
-	var ingredient types.Ingredient
-	tx := core.DB.Preload("Metadata").Preload("Tags").Preload("Names").Preload("Labels").First(&ingredient, "id = ?", id)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
+	return ingredients, nil
+}
 
-	return ingredient, nil
-})
+func (i IngredientsByName) Name() string {
+	return "Ingredients"
+}

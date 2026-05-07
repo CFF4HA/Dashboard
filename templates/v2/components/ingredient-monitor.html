@@ -1,0 +1,313 @@
+{{- with .Search }}
+<script>
+  /**
+   * Filters synonyms within an ingredient card in real-time.
+   */
+  function filterSynonyms(input) {
+    const q = input.value.toLowerCase().trim();
+    const scroll = input.nextElementSibling;
+    const emptyMsg = scroll.nextElementSibling;
+    const pills = scroll.querySelectorAll('.ingredient-synonym-pill');
+    let visible = 0;
+    
+    pills.forEach(pill => {
+      const match = pill.dataset.name.includes(q);
+      pill.hidden = !match;
+      if (match) visible++;
+    });
+    
+    if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  /**
+   * Refreshes search results after a PubChem sync operation.
+   */
+  function ingredientSyncDone(event) {
+    if (!event.detail.successful) return;
+    const target = document.getElementById('ingredient-results') || document.getElementById('search-results');
+    if (!target) return;
+    const selector = '#' + target.id;
+    const q = (document.querySelector('[name="query"]') || {}).value || '';
+    
+    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
+      target: selector,
+      swap: 'innerHTML',
+    });
+  }
+
+  async function retrieveFromPubChem(name, resultsSelector) {
+    const resultsEl = document.querySelector(resultsSelector);
+    resultsEl.innerHTML = `
+      <div class="text-center py-5">
+        <div class="spinner-border text-success mb-3" role="status"></div>
+        <p class="text-muted">Consulting PubChem archives for <strong>${name}</strong>...</p>
+      </div>`;
+
+    const resp = await fetch('/ingredient', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'name=' + encodeURIComponent(name),
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text();
+      document.getElementById('notification').innerHTML =
+        `<div class="alert alert-danger py-2 px-3 shadow-sm">${text || 'Extraction failed.'}</div>`;
+    }
+
+    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
+      target: resultsSelector,
+      swap: 'innerHTML',
+    });
+  }
+</script>
+
+<style>
+  /* ── Apothecary Ingredient Card ── */
+  .ingredient-card {
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 20px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    height: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+    overflow: hidden;
+    min-height: 280px;
+  }
+
+  .ingredient-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .ingredient-card--safe { border-top: 5px solid #4ade80; }
+  .ingredient-card--unsafe { border-top: 5px solid #f87171; }
+  .ingredient-card--failed { opacity: 0.6; background: #f8fafc; }
+
+  /* ── Compact Tabs ── */
+  .card-tabs .nav-link {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    padding: 0.4rem 0.6rem;
+    border: none;
+  }
+
+  .card-tabs .nav-link.active {
+    color: var(--forest-green);
+    background: var(--soft-white);
+    border-radius: 6px;
+  }
+
+  /* ── Label & Payload Lists ── */
+  .ingredient-label-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .ingredient-label-item {
+    font-size: 0.75rem;
+    background: var(--soft-white);
+    border: 1px solid #edf2f7;
+    border-radius: 8px;
+    padding: 0.5rem;
+  }
+
+  .ingredient-label-payload { color: #334155; font-weight: 500; }
+  .ingredient-label-origin { display: block; font-size: 0.6rem; color: #94a3b8; margin-top: 2px; }
+
+  /* ── Tag Removal ── */
+  .ingredient-tag-pill-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--forest-green);
+  }
+
+  .btn-remove-tag {
+    border: none;
+    background: none;
+    padding: 0;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    line-height: 1;
+  }
+
+  .btn-remove-tag:hover { color: #f87171; }
+
+  /* ── Notes Styles ── */
+  .note-item {
+    background: #fffbeb;
+    border-left: 3px solid #fbbf24;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+    position: relative;
+  }
+
+  /* ── Monitor Button on Card ── */
+  .btn-monitor-card {
+    background: none;
+    border: none;
+    padding: 0.3rem;
+    color: #94a3b8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    font-size: 1rem;
+  }
+
+  .btn-monitor-card:hover { color: #059669; background: #ecfdf5; }
+  .btn-monitor-card.is-monitored { color: #059669; }
+
+  /* ── Monitor status strip ── */
+  .monitor-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #059669;
+    background: #ecfdf5;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+  }
+</style>
+
+{{ define "content" }}
+<div class="container py-4">
+
+  {{- if and (.ChangedIngredients) (gt (len .ChangedIngredients) 0) }}
+  <!-- Changed ingredients alert banner -->
+  <div class="monitor-alert-banner mb-4">
+    <div style="display:flex;align-items:center;gap:0.6rem;">
+      <i class="bi bi-exclamation-circle-fill" style="font-size:1.1rem;color:#856404;flex-shrink:0;"></i>
+      <div>
+        <strong style="font-size:0.9rem;color:#856404;">{{ len .ChangedIngredients }} ingredient{{ if gt (len .ChangedIngredients) 1 }}s have{{ else }} has{{ end }} changed since last viewed.</strong>
+        <p style="font-size:0.8rem;color:#856404;margin:0.1rem 0 0;">Review the highlighted cards below and mark them as seen.</p>
+      </div>
+    </div>
+  </div>
+  {{- end }}
+
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h2 style="font-family:'Lato',sans-serif;font-size:1.2rem;font-weight:700;color:var(--forest-green);margin:0;">
+      <i class="bi bi-bell me-2"></i>Monitored Ingredients
+    </h2>
+    <!-- Add ingredient to monitor -->
+    <form hx-post="/user/monitor/search"
+          hx-target="#monitor-search-results"
+          hx-swap="innerHTML"
+          style="display:flex;gap:0.4rem;">
+      <input class="detail-filter-input" style="margin:0;width:220px;"
+             type="text" name="query" placeholder="&#128269; Find ingredient…" autocomplete="off" required>
+      <button type="submit" class="btn-retrieve-pubchem" style="white-space:nowrap;">
+        <i class="bi bi-plus-lg me-1"></i>Add to monitor
+      </button>
+    </form>
+  </div>
+
+  <!-- Search results for adding -->
+  <div id="monitor-search-results" class="mb-3"></div>
+
+  <!-- Monitored list -->
+  {{- if and (.MonitoredIngredients) (gt (len .MonitoredIngredients) 0) }}
+  <div class="row" id="monitor-list">
+    {{- range .MonitoredIngredients }}
+    <div class="col-md-4 mb-3" id="monitor-row-{{ .Id }}">
+      <div class="ingredient-card{{ if and ($.ChangedIngredients) (exists $.ChangedIngredients .Id) }} ingredient-card--changed{{ end }}">
+        <div class="ingredient-card-header">
+          <div>
+            <p class="ingredient-card-name">{{ .PrimaryName }}</p>
+            {{- if and ($.ChangedIngredients) (exists $.ChangedIngredients .Id) }}
+            <span class="ingredient-card-badge ingredient-card-badge--changed">Updated</span>
+            {{- end }}
+          </div>
+          <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+            <button class="btn-star"
+              hx-get="/htmx/ingredient-detail?id={{ .Id }}"
+              hx-target="#side-modal_content"
+              hx-swap="innerHTML"
+              hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+              title="View details">
+              <i class="bi bi-arrow-right-circle"></i>
+            </button>
+            {{- if and ($.ChangedIngredients) (exists $.ChangedIngredients .Id) }}
+            <button class="btn-star"
+              hx-post="/user/monitor/seen"
+              hx-vals='{"id": "{{ .Id }}"}'
+              hx-target="#monitor-row-{{ .Id }}"
+              hx-swap="outerHTML"
+              title="Mark as seen">
+              <i class="bi bi-check-circle"></i>
+            </button>
+            {{- end }}
+            <button class="btn-star btn-danger-icon"
+              hx-delete="/user/monitor"
+              hx-vals='{"id": "{{ .Id }}"}'
+              hx-target="#monitor-row-{{ .Id }}"
+              hx-swap="outerHTML"
+              title="Remove from monitor">
+              <i class="bi bi-bell-slash"></i>
+            </button>
+          </div>
+        </div>
+        <hr class="ingredient-card-divider">
+        <div class="ingredient-stats">
+          <div class="ingredient-stat">
+            <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
+            <span class="ingredient-stat-name">Hazards</span>
+          </div>
+          <div class="ingredient-stat">
+            <i class="bi bi-activity ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
+            <span class="ingredient-stat-name">Effects</span>
+          </div>
+          <div class="ingredient-stat">
+            <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
+            <span class="ingredient-stat-name">Symptoms</span>
+          </div>
+          <div class="ingredient-stat">
+            <i class="bi bi-shield-check ingredient-stat-icon"></i>
+            <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
+            <span class="ingredient-stat-name">Regulations</span>
+          </div>
+        </div>
+        <div class="ingredient-card-footer">
+          Monitored since {{ .MonitoredSince.Format "Jan 2, 2006" }}
+        </div>
+      </div>
+    </div>
+    {{- end }}
+  </div>
+  {{- else }}
+  <div class="ingredient-empty-state text-center py-5">
+    <i class="bi bi-bell-slash" style="font-size:2rem;color:rgba(26,46,30,0.2);display:block;margin-bottom:0.75rem;"></i>
+    <p style="font-size:0.9rem;color:rgba(26,46,30,0.45);">No ingredients being monitored. Search above to add one.</p>
+  </div>
+  {{- end }}
+
+</div>
+{{ end }}

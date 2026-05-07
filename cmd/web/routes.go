@@ -20,19 +20,18 @@ func Test(v *verb.Verb) {
 }
 
 func Index(v *verb.Verb) {
-	v.Page("", "v2/pages/index.html")
+	v.Page("", "v3/pages/landing.html")
 	v.Page("/v2", "v3/pages/landing.html")
+	v.Page("/v2/admin", "v3/pages/admin.html")
 }
 
 func Compare(v *verb.Verb) {
 	v.Page("/compare", "v2/pages/compare.html")
-	v.Component("v2/components/compare-product_search.html", htmx.Div()).
-		Bridge(bridges.ProductSearchBridge)
-	v.Component("v2/components/investigation.html", htmx.Div()).
-		Bridge(bridges.InvestigationBridge{})
+	v.Component("v2/components/compare-product_search.html", htmx.Div()).Bridge(bridges.ProductsByName)
+	v.Component("v2/components/investigation.html", htmx.Div()).Bridge(bridges.ProductComparison)
 
 	v.Component("v2/components/compare-product_card.html", htmx.Div()).
-		Bridge(bridges.ProductDetailBridge)
+		Bridge(bridges.ProductById)
 }
 
 func Notifications(v *verb.Verb) {
@@ -57,17 +56,13 @@ func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodDelete, "/ingredient/scrape/config/remove", backend.RouteDeletePubChemLabelConfig)
 	v.ActionClassic(http.MethodGet, "/ingredient/scrape/config/get", backend.RouteGetPubChemLabelConfigs)
 
-	v.Page("/ingredients", "v2/pages/ingredients.html").
-		Bridge(bridges.CategorizedIngredients{}).
-		Bridge(bridges.UserFavoriteIngredientsBridge)
+	v.Page("/ingredients", "v2/pages/ingredients.html")
 
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
-		Bridge(bridges.CategorizedIngredients{}).
-		Bridge(bridges.IngredientSearchBridge).
-		Bridge(bridges.UserFavoriteIngredientsBridge)
+		Bridge(bridges.IngredientsByName{})
 
 	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
-		Bridge(bridges.IngredientDetailBridge)
+		Bridge(bridges.IngredientById)
 }
 
 func Usage(v *verb.Verb) {
@@ -95,20 +90,13 @@ func Products(v *verb.Verb) {
 
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
-		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductSearchBridgeV2).
-		Bridge(bridges.UserFavoriteProductsBridge)
+		Bridge(bridges.ProductsByName)
 
 	v.Component("v2/components/product-detail.html", htmx.Div()).
-		Bridge(bridges.ProductDetailBridge)
+		Bridge(bridges.ProductById)
 
 	// this will be the primary products page.
-	v.Page("/products", "v2/pages/products.html").
-		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductBridge(20, map[string]string{
-			"name": " ILIKE ",
-		})).
-		Bridge(bridges.UserFavoriteProductsBridge)
+	v.Page("/products", "v2/pages/products.html")
 }
 
 func User(v *verb.Verb) {
@@ -120,6 +108,7 @@ func User(v *verb.Verb) {
 	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
 	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
 
+	v.ActionClassic(http.MethodGet, "/user/info", backend.RouteGetUserInformation)
 	v.ActionClassic(http.MethodPut, "/v2/user", backend.RouteInsertUser)
 	v.ActionClassic(http.MethodPost, "/v2/user/login", backend.RouteUserLogin)
 	v.ActionClassic(http.MethodDelete, "/v2/user", backend.RouteDeleteUser)
@@ -145,6 +134,7 @@ func Tagging(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/tag/rule/get/id", backend.RouteGetTaggingRuleById)
 	v.ActionClassic(http.MethodGet, "/tag/rule/get/user", backend.RouteGetTaggingRulesForUser)
 	v.ActionClassic(http.MethodGet, "/tag/rule/get", backend.RouteGetTaggingRules)
+	v.ActionClassic(http.MethodPost, "/tag/rule/run", backend.RouteRunTaggingRule)
 
 	v.ActionClassic(http.MethodPut, "/tag/set/create", backend.RouteInsertTaggingSet)
 	v.ActionClassic(http.MethodDelete, "/tag/set/remove", backend.RouteDeleteTaggingSet)
@@ -175,12 +165,32 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
 	v.Component("v2/tables/table-tagging_rules.html", htmx.Div()).
-		Bridge(bridges.TaggingRules{})
+		Bridge(bridges.TaggingRules)
 	v.Component("v2/components/tagging-search_results_sm.html", htmx.Div()).
 		Bridge(bridges.TagsByName)
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
-		Bridge(bridges.AllTagsBridge)
+		Bridge(bridges.Tags)
+}
+
+func Admin(v *verb.Verb) {
+	v.ActionClassic(http.MethodPut, "/admin/user/role", backend.RouteAdminUserRoleAdd)
+	v.ActionClassic(http.MethodDelete, "/admin/user/role", backend.RouteAdminUserRoleRemove)
+	v.ActionClassic(http.MethodGet, "/admin/roles", backend.RouteGetRoles)
+
+	v.Component("v3/components/admin/admin-metrics-banner.html", htmx.Div()).
+		Bridge(bridges.LatestUsageMetrics)
+	v.Component("v3/components/admin/admin-tag-rule-create-form.html", htmx.Div()).
+		Bridge(bridges.TagSets)
+	v.Component("v3/components/admin/admin-tag-create-form.html", htmx.Div())
+	v.Component("v3/components/admin/admin-tags-table.html", htmx.Div()).
+		Bridge(bridges.Tags)
+	v.Component("v3/components/admin/admin-users-table.html", htmx.Div()).
+		Bridge(bridges.AllUsers).
+		Bridge(bridges.AllRoles)
+	v.Component("v3/components/admin/admin-pubchem-configs.html", htmx.Div())
+	v.Component("v3/components/admin/admin-pubchem-configs-table.html", htmx.Div()).
+		Bridge(bridges.PubChemLabelConfigs)
 }
 
 func FormsV2(v *verb.Verb) {

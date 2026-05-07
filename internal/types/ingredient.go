@@ -11,8 +11,9 @@ type Ingredient struct {
 	Failed      bool   `json:"failed" gorm:"type:boolean;not null;default:false"`
 	PrimaryName string `json:"primary_name" gorm:"type:text;not null;index;"`
 
-	Labels []Label `json:"labels" gorm:"foreignKey:IngredientId;references:Id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Tags   []Tag   `json:"tags" gorm:"many2many:ingredient_tags;"`
+	Labels []Label          `json:"labels" gorm:"foreignKey:IngredientId;references:Id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Tags   []Tag            `json:"tags" gorm:"many2many:ingredient_tags;"`
+	Notes  []IngredientNote `json:"notes" gorm:"foreignKey:IngredientId;references:Id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type IngredientNote struct {
@@ -38,7 +39,7 @@ type Label struct {
 	Model
 	IngredientId uuid.UUID `json:"ingredient_id" gorm:"type:uuid;not null;"`
 
-	Type    string  `json:"type" gorm:"type:text;not null;check:type IN ('hazard', 'symptom', 'general', 'effect', 'regulation');default:'general';"`
+	Type    string  `json:"type" gorm:"type:text;not null;default:'general';"`
 	Payload string  `json:"name" gorm:"type:text;not null"`
 	Origin  *string `json:"origin" gorm:"type:text;default:null"`
 }
