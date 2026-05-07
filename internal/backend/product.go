@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/CFF4HA/Dashboard/internal/core"
@@ -293,7 +294,7 @@ func GetProductsByUser(user_id *uuid.UUID, cursor string) ([]types.Product, erro
 func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
 	name := r.FormValue("name")
 	origin := r.FormValue("origin")
-	ingredientList := r.Form["ingredient"]
+	ingredientList := r.Form["ingredients"]
 	isPublic := r.FormValue("is_public") == "true"
 	var owner_id *uuid.UUID
 
@@ -302,7 +303,14 @@ func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
 		owner_id = &owner.Id
 	}
 
-	prod, err := InsertProduct(name, origin, ingredientList, isPublic, owner_id)
+	ingredients := []string{}
+	for _, ingredient_statement := range ingredientList {
+		for _, elem := range strings.Split(ingredient_statement, ", ") {
+			ingredients = append(ingredients, elem)
+		}
+	}
+
+	prod, err := InsertProduct(name, origin, ingredients, isPublic, owner_id)
 	if err != nil {
 		return err
 	}

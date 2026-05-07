@@ -54,6 +54,74 @@ type ProductSearchResult struct {
 	Query    string
 }
 
+var ProductSearchBridgeV2 = verb.Map("SearchV2", func(r *http.Request, m map[string]any) (any, error) {
+	product_name := strings.TrimSpace(r.FormValue("product_name"))
+	product_tags := r.Form["product_tags"]
+
+	var ingredients []string
+	for _, s := range strings.Split(r.FormValue("ingredients"), ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			ingredients = append(ingredients, s)
+		}
+	}
+
+	var products []types.Product
+	db := core.DB.Preload("Ingredients").Preload("Metadata").Preload("Tags")
+
+	// Fast path — no filters, return most recent.
+	if product_name == "" && len(ingredients) == 0 && len(product_tags) == 0 {
+		if tx := db.Order("created DESC").Limit(20).Find(&products); tx.Error != nil {
+			return nil, tx.Error
+		}
+		return ProductSearchResult{Products: products, Query: product_name}, nil
+	}
+
+	// Two-step pattern: DISTINCT IDs via JOIN, then Preload with IN.
+	idQuery := core.DB.Model(&types.Product{}).Select("DISTINCT products.id")
+
+	if product_name != "" {
+		idQuery = idQuery.Where("products.name ILIKE ?", "%"+product_name+"%")
+	}
+
+	if len(ingredients) > 0 {
+		// Match ingredients by primary_name OR any synonym (names table).
+		ingSub := core.DB.Table("product_ingredients").
+			Select("DISTINCT product_ingredients.product_id").
+			Joins("JOIN ingredients ON ingredients.id = product_ingredients.ingredient_id").
+			Joins("LEFT JOIN ingredient_names ON ingredient_names.ingredient_id = ingredients.id").
+			Joins("LEFT JOIN names ON names.id = ingredient_names.name_id")
+
+		conds := make([]string, 0, len(ingredients))
+		args := make([]interface{}, 0, len(ingredients)*2)
+		for _, ing := range ingredients {
+			conds = append(conds, "(ingredients.primary_name ILIKE ? OR names.text ILIKE ?)")
+			args = append(args, "%"+ing+"%", "%"+ing+"%")
+		}
+		ingSub = ingSub.Where(strings.Join(conds, " OR "), args...)
+		idQuery = idQuery.Where("products.id IN (?)", ingSub)
+	}
+
+	if len(product_tags) > 0 {
+		tagSub := core.DB.Table("product_tags").
+			Select("DISTINCT product_tags.product_id").
+			Where("product_tags.tag_id IN ?", product_tags)
+		idQuery = idQuery.Where("products.id IN (?)", tagSub)
+	}
+
+	var ids []string
+	if tx := idQuery.Pluck("id", &ids); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	if len(ids) > 0 {
+		if tx := db.Where("id IN ?", ids).Find(&products); tx.Error != nil {
+			return nil, tx.Error
+		}
+	}
+
+	return ProductSearchResult{Products: products, Query: product_name}, nil
+})
+
 var ProductSearchBridge = verb.Map("Search", func(r *http.Request, m map[string]any) (any, error) {
 	q := strings.TrimSpace(r.FormValue("query"))
 	labelOp := strings.TrimSpace(r.FormValue("label_filter_op"))

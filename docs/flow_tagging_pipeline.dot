@@ -1,0 +1,62 @@
+digraph flow_tagging_pipeline {
+  rankdir=TB
+  graph [
+    label="UML Sequence — Tagging: Run Rule Pipeline\n(HandleTaggingRuleRun → TagIngredients → cascade to products)",
+    labelloc=t, labeljust=l,
+    fontname="Helvetica", fontsize=12,
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
+  ]
+  node [fontname="Helvetica", fontsize=10, height=0.5]
+  edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
+
+  // ── Lifelines ─────────────────────────────────────────────────────────────
+  { rank=min
+    Browser [label="Browser",                                         shape=rect,     style="filled,rounded", fillcolor="#fff196"]
+    Handler [label="Tag Pipeline Handler\ninternal/handlers/tagging/pipeline.go", shape=rect, style="filled,rounded", fillcolor="#96b1ff"]
+    DB      [label="PostgreSQL",                                       shape=cylinder, style=filled,           fillcolor="#ffcccc"]
+  }
+
+  // ── Lifeline step nodes ───────────────────────────────────────────────────
+  node [shape=point, width=0.04, height=0.04, label=""]
+
+  // ── Lifeline chains ───────────────────────────────────────────────────────
+  edge [style=dashed, arrowhead=none, color="#cccccc", weight=20]
+  Browser -> b0 -> b1 -> b2 -> b3 -> b4 -> b5 -> b6 -> b7 -> b8 -> b9
+  Handler -> h0 -> h1 -> h2 -> h3 -> h4 -> h5 -> h6 -> h7 -> h8 -> h9
+  DB      -> d0 -> d1 -> d2 -> d3 -> d4 -> d5 -> d6 -> d7 -> d8 -> d9
+
+  // ── Step alignment ────────────────────────────────────────────────────────
+  { rank=same; b0; h0; d0 }
+  { rank=same; b1; h1; d1 }
+  { rank=same; b2; h2; d2 }
+  { rank=same; b3; h3; d3 }
+  { rank=same; b4; h4; d4 }
+  { rank=same; b5; h5; d5 }
+  { rank=same; b6; h6; d6 }
+  { rank=same; b7; h7; d7 }
+  { rank=same; b8; h8; d8 }
+  { rank=same; b9; h9; d9 }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  edge [constraint=false, fontsize=9]
+
+  // Fetch the rule
+  b0 -> h0 [label="  POST /tag/run?id=X  \n",                                           style=solid,  color="#198754", fontcolor="#198754"]
+  h1 -> d1 [label="  SELECT tagging_rule WHERE id = X  \n",                             style=solid,  color="#198754", fontcolor="#198754"]
+  d2 -> h2 [label="  rule (regex, operation, tag_id)  \n",                              style=dashed, color="#198754", fontcolor="#198754"]
+
+  // Fetch all ingredients and match in memory
+  h3 -> d3 [label="  SELECT all ingredients + names for user  \n",                      style=solid,  color="#EE7722", fontcolor="#EE7722"]
+  d4 -> h4 [label="  ingredient list  \n",                                               style=dashed, color="#EE7722", fontcolor="#EE7722"]
+
+  // Apply tag to matching ingredients (regex match is in-memory)
+  h5 -> d5 [label="  INSERT ingredient_tag\n← loop: one per regex-matched ingredient  \n", style=solid, color="#EE7722", fontcolor="#EE7722"]
+
+  // Cascade tag to products containing matched ingredients
+  h6 -> d6 [label="  SELECT products containing matched ingredients  \n",               style=solid,  color="#EE7722", fontcolor="#EE7722"]
+  d7 -> h7 [label="  affected product list  \n",                                        style=dashed, color="#EE7722", fontcolor="#EE7722"]
+  h8 -> d8 [label="  INSERT product_tag\n← loop: one per affected product  \n",        style=solid,  color="#EE7722", fontcolor="#EE7722"]
+
+  h9 -> b9 [label="  200 OK  \n",                                                        style=dashed, color="#198754", fontcolor="#198754"]
+}

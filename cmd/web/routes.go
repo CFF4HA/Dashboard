@@ -20,7 +20,8 @@ func Test(v *verb.Verb) {
 }
 
 func Index(v *verb.Verb) {
-	v.Page("", "v2/pages/index.html").Bridge(bridges.UserSessionRequired{})
+	v.Page("", "v2/pages/index.html")
+	v.Page("/v2", "v3/pages/landing.html")
 }
 
 func Compare(v *verb.Verb) {
@@ -95,7 +96,7 @@ func Products(v *verb.Verb) {
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
 		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductSearchBridge).
+		Bridge(bridges.ProductSearchBridgeV2).
 		Bridge(bridges.UserFavoriteProductsBridge)
 
 	v.Component("v2/components/product-detail.html", htmx.Div()).
@@ -151,6 +152,27 @@ func Tagging(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/tag/set/get/id", backend.RouteGetTaggingSetById)
 	v.ActionClassic(http.MethodGet, "/tag/set/get/name", backend.RouteGetTaggingSetByName)
 
+	v.Component("v3/components/tag/tag-set-form.html", htmx.Div())
+	v.Component("v3/components/tag/tag-set-mini-view.html", htmx.Div()).
+		Bridge(verb.Map("TagSets", func(r *http.Request, m map[string]any) (any, error) {
+			sets, err := backend.GetTaggingSets(r.FormValue("cursor"))
+			if err != nil {
+				return nil, err
+			}
+
+			return sets, nil
+		})).
+		Bridge(verb.Map("Tags", func(r *http.Request, m map[string]any) (any, error) {
+			tags, err := backend.GetTags(r.FormValue("cursor"))
+			if err != nil {
+				return nil, err
+			}
+
+			return tags, nil
+		}))
+
+	v.Component("v3/components/tag/tag-set-detail-view.html", htmx.Div())
+
 	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
 	v.Component("v2/tables/table-tagging_rules.html", htmx.Div()).
 		Bridge(bridges.TaggingRules{})
@@ -159,4 +181,9 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
 		Bridge(bridges.AllTagsBridge)
+}
+
+func FormsV2(v *verb.Verb) {
+	v.Component("v3/forms/product-create.html", htmx.Div())
+	v.Component("v3/forms/product-create_manual.html", htmx.Div())
 }

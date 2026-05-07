@@ -1,0 +1,50 @@
+digraph flow_tagging_bad {
+  rankdir=TB
+  graph [
+    label="UML Sequence — Tagging: Tag Bad Ingredients (with product cascade)",
+    labelloc=t, labeljust=l,
+    fontname="Helvetica", fontsize=12,
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
+  ]
+  node [fontname="Helvetica", fontsize=10, height=0.5]
+  edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
+
+  // ── Lifelines ─────────────────────────────────────────────────────────────
+  { rank=min
+    Browser [label="Browser",                                          shape=rect,     style="filled,rounded", fillcolor="#fff196"]
+    Handler [label="Tag Bad Handler\ninternal/handlers/tagging/tag_bad.go", shape=rect, style="filled,rounded", fillcolor="#96b1ff"]
+    DB      [label="PostgreSQL",                                        shape=cylinder, style=filled,           fillcolor="#ffcccc"]
+  }
+
+  // ── Lifeline step nodes ───────────────────────────────────────────────────
+  node [shape=point, width=0.04, height=0.04, label=""]
+
+  // ── Lifeline chains ───────────────────────────────────────────────────────
+  edge [style=dashed, arrowhead=none, color="#cccccc", weight=20]
+  Browser -> b0 -> b1 -> b2 -> b3 -> b4 -> b5
+  Handler -> h0 -> h1 -> h2 -> h3 -> h4 -> h5
+  DB      -> d0 -> d1 -> d2 -> d3 -> d4 -> d5
+
+  // ── Step alignment ────────────────────────────────────────────────────────
+  { rank=same; b0; h0; d0 }
+  { rank=same; b1; h1; d1 }
+  { rank=same; b2; h2; d2 }
+  { rank=same; b3; h3; d3 }
+  { rank=same; b4; h4; d4 }
+  { rank=same; b5; h5; d5 }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  edge [constraint=false, fontsize=9]
+
+  // Receive ingredient IDs and resolve the "bad" tag
+  b0 -> h0 [label="  POST /tag/bad (ingredient_ids[])  \n",                          style=solid,  color="#dc3545", fontcolor="#dc3545"]
+  h1 -> d1 [label="  find or create \"bad\" tag  \n",                                style=solid,  color="#dc3545", fontcolor="#dc3545"]
+  d2 -> h2 [label="  tag_id  \n",                                                     style=dashed, color="#dc3545", fontcolor="#dc3545"]
+
+  // Apply tag to all provided ingredients, then cascade to their products
+  h3 -> d3 [label="  INSERT ingredient_tag (loop: one per ingredient_id)  \n",       style=solid,  color="#dc3545", fontcolor="#dc3545"]
+  h4 -> d4 [label="  SELECT products containing any of the ingredients\n+ INSERT product_tag (cascade)  \n", style=solid, color="#dc3545", fontcolor="#dc3545"]
+
+  h5 -> b5 [label="  200 OK  \n",                                                     style=dashed, color="#198754", fontcolor="#198754"]
+}
