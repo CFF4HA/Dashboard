@@ -581,41 +581,6 @@
     </div>
   </div>
 
-  <!-- Metrics -->
-  <div class="pd-section">
-    <div class="pd-section-title">Metrics</div>
-    <div class="pd-stats">
-      <div class="pd-stat">
-        <i class="bi bi-exclamation-triangle pd-stat-icon"></i>
-        <span class="pd-stat-value">{{ .Metadata.NumHazard }}</span>
-        <span class="pd-stat-name">Hazards</span>
-      </div>
-      <div class="pd-stat">
-        <i class="bi bi-activity pd-stat-icon"></i>
-        <span class="pd-stat-value">{{ .Metadata.NumEffect }}</span>
-        <span class="pd-stat-name">Effects</span>
-      </div>
-      <div class="pd-stat">
-        <i class="bi bi-heart-pulse pd-stat-icon"></i>
-        <span class="pd-stat-value">{{ .Metadata.NumSymptom }}</span>
-        <span class="pd-stat-name">Symptoms</span>
-      </div>
-      <div class="pd-stat">
-        <i class="bi bi-shield-check pd-stat-icon"></i>
-        <span class="pd-stat-value">{{ .Metadata.NumReglations }}</span>
-        <span class="pd-stat-name">Regulations</span>
-      </div>
-    </div>
-  </div>
-
-  {{- if .Metadata.AiBlurb }}
-  <!-- Summary -->
-  <div class="pd-section">
-    <div class="pd-section-title">Summary</div>
-    <p class="pd-ing-blurb">{{ deref .Metadata.AiBlurb }}</p>
-  </div>
-  {{- end }}
-
   <!-- Ingredients carousel -->
   <div class="pd-section">
     <div class="pd-section-title">Ingredients ({{ len .Ingredients }})</div>
@@ -656,52 +621,17 @@
         <hr class="ingredient-card-divider">
 
         <div>
-          <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
-          {{- if gt (len .Names) 0 }}
-          <input class="ingredient-synonym-search" type="text" placeholder="&#128269; Filter synonyms..." autocomplete="off" oninput="pdFilterSynonyms(this)">
+          <div class="ingredient-card-label">Tags</div>
+          {{- if and (.Tags) (gt (len .Tags) 0) }}
           <div class="ingredient-synonym-scroll">
-            {{- range .Names }}
-            <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+            {{- range .Tags }}
+            <span class="ingredient-synonym-pill"{{if .Description}} title="{{ .Description }}"{{end}}>{{ .Name }}</span>
             {{- end }}
           </div>
-          <span class="ingredient-synonym-empty" style="display:none;font-size:0.75rem;color:var(--muted);">No synonyms match.</span>
           {{- else }}
-          <span style="font-size:0.75rem;color:var(--muted);">No synonyms on record.</span>
+          <span style="font-size:0.75rem;color:var(--muted);">No tags applied.</span>
           {{- end }}
         </div>
-
-        <hr class="ingredient-card-divider">
-
-        <div>
-          <div class="ingredient-card-label">Metrics</div>
-          <div class="ingredient-stats">
-            <div class="ingredient-stat">
-              <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
-              <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
-              <span class="ingredient-stat-name">Hazards</span>
-            </div>
-            <div class="ingredient-stat">
-              <i class="bi bi-activity ingredient-stat-icon"></i>
-              <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
-              <span class="ingredient-stat-name">Effects</span>
-            </div>
-            <div class="ingredient-stat">
-              <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
-              <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
-              <span class="ingredient-stat-name">Symptoms</span>
-            </div>
-            <div class="ingredient-stat">
-              <i class="bi bi-shield-check ingredient-stat-icon"></i>
-              <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
-              <span class="ingredient-stat-name">Regulations</span>
-            </div>
-          </div>
-        </div>
-
-        {{- if .Metadata.AiBlurb }}
-        <hr class="ingredient-card-divider">
-        <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-        {{- end }}
         {{- end }}
 
         <div class="ingredient-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
@@ -716,8 +646,6 @@
 
   <!-- Hazards -->
   <div class="pd-section">
-    <div class="pd-section-title">Hazards ({{ .Metadata.NumHazard }})</div>
-    {{- if gt .Metadata.NumHazard 0 }}
     <input class="pd-filter-input" type="text" placeholder="&#128269; Filter hazards..." autocomplete="off" oninput="pdFilterPills(this)">
     <div class="pd-label-scroll">
       {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "hazard" }}
@@ -725,18 +653,14 @@
         {{ .Payload }}
         <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
       </button>
-      {{- end }}{{- end }}{{- end }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
     </div>
-    <span class="pd-empty-note" style="display:none;">No hazards match.</span>
-    {{- else }}
-    <span class="pd-empty-note">No hazards across ingredients.</span>
-    {{- end }}
   </div>
 
   <!-- Effects -->
   <div class="pd-section">
-    <div class="pd-section-title">Effects ({{ .Metadata.NumEffect }})</div>
-    {{- if gt .Metadata.NumEffect 0 }}
     <input class="pd-filter-input" type="text" placeholder="&#128269; Filter effects..." autocomplete="off" oninput="pdFilterPills(this)">
     <div class="pd-label-scroll">
       {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "effect" }}
@@ -746,16 +670,10 @@
       </button>
       {{- end }}{{- end }}{{- end }}
     </div>
-    <span class="pd-empty-note" style="display:none;">No effects match.</span>
-    {{- else }}
-    <span class="pd-empty-note">No effects across ingredients.</span>
-    {{- end }}
   </div>
 
   <!-- Symptoms -->
   <div class="pd-section">
-    <div class="pd-section-title">Symptoms ({{ .Metadata.NumSymptom }})</div>
-    {{- if gt .Metadata.NumSymptom 0 }}
     <input class="pd-filter-input" type="text" placeholder="&#128269; Filter symptoms..." autocomplete="off" oninput="pdFilterPills(this)">
     <div class="pd-label-scroll">
       {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "symptom" }}
@@ -765,16 +683,10 @@
       </button>
       {{- end }}{{- end }}{{- end }}
     </div>
-    <span class="pd-empty-note" style="display:none;">No symptoms match.</span>
-    {{- else }}
-    <span class="pd-empty-note">No symptoms across ingredients.</span>
-    {{- end }}
   </div>
 
   <!-- Regulations -->
   <div class="pd-section">
-    <div class="pd-section-title">Regulations ({{ .Metadata.NumReglations }})</div>
-    {{- if gt .Metadata.NumReglations 0 }}
     <input class="pd-filter-input" type="text" placeholder="&#128269; Filter regulations..." autocomplete="off" oninput="pdFilterPills(this)">
     <div class="pd-label-scroll">
       {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "regulation" }}
@@ -784,10 +696,6 @@
       </button>
       {{- end }}{{- end }}{{- end }}
     </div>
-    <span class="pd-empty-note" style="display:none;">No regulations match.</span>
-    {{- else }}
-    <span class="pd-empty-note">No regulations across ingredients.</span>
-    {{- end }}
   </div>
 
 </div>

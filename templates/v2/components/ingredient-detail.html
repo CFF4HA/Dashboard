@@ -1,203 +1,370 @@
 {{- with .Ingredient }}
-<h5 hx-swap-oob="true" id="side-modal-label" style="font-weight: 700; color: var(--forest-green);">
+<h5 hx-swap-oob="true" id="side-modal-label">
   <i class="bi bi-microscope me-2"></i>{{ .PrimaryName }}
 </h5>
 
 <style>
-  /* ── Detail Container ── */
-  .detail-section-title {
+  .id-wrap {
+    --forest:      #1a2e1e;
+    --forest-mid:  #274229;
+    --mint:        #CFF9C3;
+    --mint-dim:    #b6f0a8;
+    --white:       #ffffff;
+    --gray-bg:     #f4f6f4;
+    --gray-border: rgba(26, 46, 30, 0.12);
+    --muted:       #6b8070;
+    --text:        #1a2e1e;
+    --text-sm:     #4a6352;
+    --danger:      #c0392b;
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  /* ── Sections ─────────────────────────────────────────────── */
+  .id-section {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+  }
+
+  .id-section-title {
     font-size: 0.7rem;
-    font-weight: 800;
-    color: #94a3b8;
+    font-weight: 700;
+    color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     margin-bottom: 0.6rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
   }
 
-  .detail-section {
-    background: #ffffff;
-    border: 1px solid var(--apothecary-border);
-    border-radius: 16px;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  }
-
-  /* ── Filterable Pills ── */
-  .detail-label-pill {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    font-size: 0.8rem;
-    color: var(--forest-green);
-    background: var(--soft-white);
-    border: 1px solid #edf2f7;
-    border-radius: 10px;
-    padding: 0.5rem 0.75rem;
-    width: 100%; /* Stack for better readability in side modal */
-    transition: all 0.2s ease;
-  }
-
-  .detail-label-pill:hover {
-    border-color: var(--forest-green);
-    background: #ffffff;
-  }
-
-  .detail-label-origin {
-    font-size: 0.65rem;
-    color: #94a3b8;
-  }
-
-  .detail-label-origin a {
-    color: #64748b;
-    text-decoration: underline;
-    text-decoration-color: #cbd5e1;
-  }
-
-  /* ── Inputs & Lists ── */
-  .detail-filter-input {
+  /* ── Filter input ──────────────────────────────────────────── */
+  .id-filter {
     width: 100%;
-    background: var(--soft-white);
-    border: 1px solid var(--apothecary-border);
-    border-radius: 10px;
-    padding: 0.5rem 0.85rem;
-    font-size: 0.85rem;
-    color: var(--forest-green);
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
     outline: none;
-    margin-bottom: 0.75rem;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 0.5rem;
   }
+  .id-filter::placeholder { color: var(--muted); }
+  .id-filter:focus { border-color: var(--forest-mid); background: var(--white); }
 
-  .detail-filter-input:focus {
-    border-color: var(--forest-green);
-    background: #ffffff;
-  }
-
-  .detail-label-scroll {
+  /* ── Label pill ────────────────────────────────────────────── */
+  .id-label-scroll {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    max-height: 250px;
+    gap: 0.4rem;
+    max-height: 14rem;
     overflow-y: auto;
-    padding-right: 0.4rem;
+    padding-right: 0.2rem;
   }
+  .id-label-scroll::-webkit-scrollbar { width: 3px; }
+  .id-label-scroll::-webkit-scrollbar-thumb { background: var(--mint-dim); border-radius: 2px; }
 
-  .detail-label-scroll::-webkit-scrollbar { width: 4px; }
-  .detail-label-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-  .detail-empty-note {
+  .id-label-pill {
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 0.35rem 0.65rem;
     font-size: 0.8rem;
-    color: #94a3b8;
-    font-style: italic;
+    color: var(--text);
+    line-height: 1.4;
+    transition: background 0.15s, border-color 0.15s;
   }
+  .id-label-pill:hover { background: var(--mint); border-color: var(--forest-mid); }
+  .id-label-pill[hidden] { display: none; }
+
+  .id-label-origin { font-size: 0.64rem; color: var(--muted); display: block; margin-top: 0.1rem; }
+
+  /* ── Tag pills ─────────────────────────────────────────────── */
+  .id-tag-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 7rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+  .id-tag-scroll::-webkit-scrollbar { width: 3px; }
+  .id-tag-scroll::-webkit-scrollbar-thumb { background: var(--mint-dim); border-radius: 2px; }
+
+  .id-tag-pill-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    background: var(--mint);
+    border: 1px solid rgba(39,66,41,0.2);
+    border-radius: 20px;
+    padding: 0.15rem 0.35rem 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+  .id-tag-pill { font-size: 0.74rem; color: var(--forest); font-weight: 600; }
+  .id-tag-remove {
+    background: none; border: none; padding: 0; font-size: 0.65rem;
+    color: var(--muted); cursor: pointer; line-height: 1; flex-shrink: 0;
+    display: flex; align-items: center; transition: color 0.15s;
+  }
+  .id-tag-remove:hover { color: var(--danger); }
+
+  /* ── Inline add form ───────────────────────────────────────── */
+  .id-add-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .id-add-input {
+    flex: 1;
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .id-add-input::placeholder { color: var(--muted); }
+  .id-add-input:focus { border-color: var(--forest-mid); background: var(--white); }
+
+  .id-add-btn {
+    background: var(--forest);
+    border: none;
+    border-radius: 9px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.8rem;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Lato', system-ui, sans-serif;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .id-add-btn:hover { background: var(--forest-mid); }
+
+  /* ── Notes ─────────────────────────────────────────────────── */
+  .id-note-input {
+    width: 100%;
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 0.4rem;
+  }
+  .id-note-input::placeholder { color: var(--muted); }
+  .id-note-input:focus { border-color: var(--forest-mid); background: var(--white); }
+
+  .id-note-item {
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 0.45rem 0.65rem;
+    margin-bottom: 0.35rem;
+  }
+  .id-note-body { font-size: 0.82rem; color: var(--text); margin: 0 0 0.2rem 0; line-height: 1.5; }
+  .id-note-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.7rem; color: var(--muted);
+  }
+
+  /* ── Icon action buttons ───────────────────────────────────── */
+  .id-btn-icon {
+    background: none; border: none; cursor: pointer; color: var(--muted);
+    font-size: 0.95rem; padding: 0.1rem; line-height: 1; transition: color 0.15s;
+  }
+  .id-btn-icon:hover { color: var(--forest); }
+  .id-btn-icon.danger:hover { color: var(--danger); }
+
+  /* ── Empty note ─────────────────────────────────────────────── */
+  .id-empty { font-size: 0.77rem; color: var(--muted); }
 </style>
 
 <script>
-  function filterDetailPills(input) {
+  function idFilterPills(input) {
     const q = input.value.toLowerCase().trim();
     const scroll = input.nextElementSibling;
     const emptyMsg = scroll.nextElementSibling;
-    const pills = scroll.querySelectorAll('[data-name]');
+    const pills = scroll.querySelectorAll('[data-payload]');
     let visible = 0;
-    
     pills.forEach(pill => {
-      const match = q === '' || pill.dataset.name.includes(q);
+      const match = q === '' || pill.dataset.payload.includes(q);
       pill.hidden = !match;
       if (match) visible++;
     });
-    
     if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
   }
 </script>
 
-<div class="detail-section">
-  <div class="detail-section-title">Analysis Metrics</div>
-  <div class="ingredient-stats" style="grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-    <div class="ingredient-stat">
-      <i class="bi bi-exclamation-triangle-fill ingredient-stat-icon"></i>
-      <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
-      <span class="ingredient-stat-name">Hazards</span>
-    </div>
-    <div class="ingredient-stat">
-      <i class="bi bi-activity ingredient-stat-icon"></i>
-      <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
-      <span class="ingredient-stat-name">Effects</span>
-    </div>
-    <div class="ingredient-stat">
-      <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
-      <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
-      <span class="ingredient-stat-name">Symptoms</span>
-    </div>
-    <div class="ingredient-stat">
-      <i class="bi bi-shield-check ingredient-stat-icon"></i>
-      <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
-      <span class="ingredient-stat-name">Regulations</span>
+{{- $ingId := .Id }}
+
+<div class="id-wrap">
+
+  {{/* Tags */}}
+  <div class="id-section">
+    <div class="id-section-title"><i class="bi bi-tags me-1"></i>Tags</div>
+    <form hx-post="/ingredient/tag"
+          hx-target="#id-tag-list-{{ $ingId }}"
+          hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful){ this.reset(); htmx.trigger(document.body,'productUpdated'); }"
+          class="id-add-row">
+      <input type="hidden" name="ingredient_id" value="{{ $ingId }}">
+      <input class="id-add-input" type="text" name="tag" placeholder="Add tag…" autocomplete="off" required>
+      <button type="submit" class="id-add-btn"><i class="bi bi-plus-lg"></i></button>
+    </form>
+    <div id="id-tag-list-{{ $ingId }}">
+      {{- if and (.Tags) (gt (len .Tags) 0) }}
+      <div class="id-tag-scroll">
+        {{- range .Tags }}
+        <span class="id-tag-pill-wrap"{{if .Description}} title="{{ .Description }}"{{end}}>
+          <span class="id-tag-pill">{{ .Name }}</span>
+          <button class="id-tag-remove"
+                  hx-delete="/ingredient/tag/remove"
+                  hx-vals='{"ingredient_id": "{{ $ingId }}", "tag_id": "{{ .Id }}"}'
+                  hx-target="closest .id-tag-pill-wrap"
+                  hx-swap="outerHTML"
+                  hx-on::after-request="if(event.detail.successful) htmx.trigger(document.body,'productUpdated')"
+                  title="Remove tag">
+            <i class="bi bi-x"></i>
+          </button>
+        </span>
+        {{- end }}
+      </div>
+      {{- else }}
+      <span class="id-empty">No tags applied.</span>
+      {{- end }}
     </div>
   </div>
-</div>
 
-{{- if .Metadata.AiBlurb }}
-<div class="detail-section">
-  <div class="detail-section-title"><i class="bi bi-stars"></i> Intelligent Summary</div>
-  <p class="ingredient-ai-blurb" style="-webkit-line-clamp:unset; overflow:visible; font-size: 0.9rem; color: #475569;">
-    {{ deref .Metadata.AiBlurb }}
-  </p>
-</div>
-{{- end }}
-
-<div class="detail-section">
-  <div class="detail-section-title">Clinical Nomenclature ({{ len .Names }})</div>
-  {{- if gt (len .Names) 0 }}
-  <input class="detail-filter-input" type="text" placeholder="Search synonyms..." autocomplete="off" oninput="filterDetailPills(this)">
-  <div class="detail-label-scroll">
-    {{- range .Names }}
-    <div class="detail-label-pill" data-name="{{ .Text | lower }}">
-      <strong>{{ .Text }}</strong>
+  {{/* Notes */}}
+  <div class="id-section">
+    <div class="id-section-title"><i class="bi bi-pencil me-1"></i>Notes</div>
+    <form hx-post="/ingredient/note"
+          hx-target="#id-note-list-{{ $ingId }}"
+          hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful) this.reset();"
+          style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.6rem;">
+      <input type="hidden" name="id" value="{{ $ingId }}">
+      <textarea name="note" class="id-note-input" rows="2" placeholder="Write a note…" required></textarea>
+      <button type="submit" class="id-add-btn" style="align-self:flex-end;padding:0.28rem 0.8rem;">
+        <i class="bi bi-plus-lg me-1"></i>Add
+      </button>
+    </form>
+    <div id="id-note-list-{{ $ingId }}">
+      {{- if and (.Notes) (gt (len .Notes) 0) }}
+      {{- range .Notes }}
+      <div class="id-note-item" id="idnote-{{ .Id }}">
+        <p class="id-note-body">{{ .Content }}</p>
+        <div class="id-note-meta">
+          <span>{{ .Created.Format "Jan 2, 2006" }}</span>
+          <button class="id-btn-icon danger"
+                  hx-delete="/ingredient/note/remove?id={{ .Id }}"
+                  hx-target="#idnote-{{ .Id }}"
+                  hx-swap="outerHTML"
+                  title="Delete note">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      {{- end }}
+      {{- else }}
+      <span class="id-empty">No notes yet.</span>
+      {{- end }}
     </div>
+  </div>
+
+  {{/* Hazards */}}
+  {{- $hasHazards := false }}{{- range .Labels }}{{- if eq .Type "hazard" }}{{- $hasHazards = true }}{{- end }}{{- end }}
+  <div class="id-section">
+    <div class="id-section-title" style="color:#c0392b;"><i class="bi bi-exclamation-triangle me-1"></i>Hazards</div>
+    {{- if $hasHazards }}
+    <input class="id-filter" type="text" placeholder="&#128269; Filter hazards…" autocomplete="off" oninput="idFilterPills(this)">
+    <div class="id-label-scroll">
+      {{- range .Labels }}{{- if eq .Type "hazard" }}
+      <div class="id-label-pill" data-payload="{{ .Payload | lower }}">
+        {{ .Payload }}
+        {{- if .Origin }}<span class="id-label-origin">{{ deref .Origin }}</span>{{- end }}
+      </div>
+      {{- end }}{{- end }}
+    </div>
+    <span class="id-empty" style="display:none;">No hazards match.</span>
+    {{- else }}
+    <span class="id-empty">No hazards on record.</span>
     {{- end }}
   </div>
-  <p class="detail-empty-note mt-2" style="display:none;">No matching nomenclature.</p>
-  {{- else }}
-  <p class="detail-empty-note">No alternative names recorded.</p>
-  {{- end }}
-</div>
 
-<div class="detail-section">
-  <div class="detail-section-title" style="color: #c53030;"><i class="bi bi-shield-exclamation"></i> Safety Hazards ({{ .Metadata.NumHazards }})</div>
-  {{- if gt .Metadata.NumHazards 0 }}
-  <input class="detail-filter-input" type="text" placeholder="Search hazards..." autocomplete="off" oninput="filterDetailPills(this)">
-  <div class="detail-label-scroll">
-    {{- range .Labels }}{{- if eq .Type "hazard" }}
-    <div class="detail-label-pill" data-name="{{ .Payload | lower }}">
-      <span class="fw-bold">{{ .Payload }}</span>
-      {{- if .Origin }}<span class="detail-label-origin">Source: <a href="{{ .Origin }}" target="_blank">{{ deref .Origin }}</a></span>{{- end }}
+  {{/* Effects */}}
+  {{- $hasEffects := false }}{{- range .Labels }}{{- if eq .Type "effect" }}{{- $hasEffects = true }}{{- end }}{{- end }}
+  <div class="id-section">
+    <div class="id-section-title" style="color:#276749;"><i class="bi bi-activity me-1"></i>Effects</div>
+    {{- if $hasEffects }}
+    <input class="id-filter" type="text" placeholder="&#128269; Filter effects…" autocomplete="off" oninput="idFilterPills(this)">
+    <div class="id-label-scroll">
+      {{- range .Labels }}{{- if eq .Type "effect" }}
+      <div class="id-label-pill" data-payload="{{ .Payload | lower }}">
+        {{ .Payload }}
+        {{- if .Origin }}<span class="id-label-origin">{{ deref .Origin }}</span>{{- end }}
+      </div>
+      {{- end }}{{- end }}
     </div>
-    {{- end }}{{- end }}
+    <span class="id-empty" style="display:none;">No effects match.</span>
+    {{- else }}
+    <span class="id-empty">No effects on record.</span>
+    {{- end }}
   </div>
-  <p class="detail-empty-note mt-2" style="display:none;">No matching hazard data.</p>
-  {{- else }}
-  <p class="detail-empty-note">No safety hazards reported in archives.</p>
-  {{- end }}
-</div>
 
-<div class="detail-section">
-  <div class="detail-section-title"><i class="bi bi-file-earmark-check"></i> Regulatory Status ({{ .Metadata.NumRegulations }})</div>
-  {{- if gt .Metadata.NumRegulations 0 }}
-  <input class="detail-filter-input" type="text" placeholder="Filter regulations..." oninput="filterDetailPills(this)">
-  <div class="detail-label-scroll">
-    {{- range .Labels }}{{- if eq .Type "regulation" }}
-    <div class="detail-label-pill" data-name="{{ .Payload | lower }}">
-      <span>{{ .Payload }}</span>
-      {{- if .Origin }}<span class="detail-label-origin"><i class="bi bi-link-45deg"></i> <a href="{{ .Origin }}" target="_blank">Official Record</a></span>{{- end }}
+  {{/* Symptoms */}}
+  {{- $hasSymptoms := false }}{{- range .Labels }}{{- if eq .Type "symptom" }}{{- $hasSymptoms = true }}{{- end }}{{- end }}
+  <div class="id-section">
+    <div class="id-section-title" style="color:#744210;"><i class="bi bi-heart-pulse me-1"></i>Symptoms</div>
+    {{- if $hasSymptoms }}
+    <input class="id-filter" type="text" placeholder="&#128269; Filter symptoms…" autocomplete="off" oninput="idFilterPills(this)">
+    <div class="id-label-scroll">
+      {{- range .Labels }}{{- if eq .Type "symptom" }}
+      <div class="id-label-pill" data-payload="{{ .Payload | lower }}">
+        {{ .Payload }}
+        {{- if .Origin }}<span class="id-label-origin">{{ deref .Origin }}</span>{{- end }}
+      </div>
+      {{- end }}{{- end }}
     </div>
-    {{- end }}{{- end }}
+    <span class="id-empty" style="display:none;">No symptoms match.</span>
+    {{- else }}
+    <span class="id-empty">No symptoms on record.</span>
+    {{- end }}
   </div>
-  {{- else }}
-  <p class="detail-empty-note">No regulatory restrictions found.</p>
-  {{- end }}
-</div>
 
+  {{/* Regulations */}}
+  {{- $hasRegs := false }}{{- range .Labels }}{{- if eq .Type "regulation" }}{{- $hasRegs = true }}{{- end }}{{- end }}
+  <div class="id-section">
+    <div class="id-section-title" style="color:#1a3a6b;"><i class="bi bi-shield-check me-1"></i>Regulations</div>
+    {{- if $hasRegs }}
+    <input class="id-filter" type="text" placeholder="&#128269; Filter regulations…" autocomplete="off" oninput="idFilterPills(this)">
+    <div class="id-label-scroll">
+      {{- range .Labels }}{{- if eq .Type "regulation" }}
+      <div class="id-label-pill" data-payload="{{ .Payload | lower }}">
+        {{ .Payload }}
+        {{- if .Origin }}<span class="id-label-origin">{{ deref .Origin }}</span>{{- end }}
+      </div>
+      {{- end }}{{- end }}
+    </div>
+    <span class="id-empty" style="display:none;">No regulations match.</span>
+    {{- else }}
+    <span class="id-empty">No regulations on record.</span>
+    {{- end }}
+  </div>
+
+</div>
 {{- end }}

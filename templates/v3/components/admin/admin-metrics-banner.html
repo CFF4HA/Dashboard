@@ -1,0 +1,37 @@
+<div class="card border-0 mb-4 bg-light-secondary">
+  <div class="card-body py-3">
+    <div class="d-flex flex-wrap gap-3 align-items-center">
+      <span class="fw-semibold me-2" style=";">
+        <i class="bi bi-bar-chart-fill me-1"></i>System Metrics
+      </span>
+      {{ if .UsageMetric }}
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-box-seam me-1"></i>Products <strong>{{ .UsageMetric.ProductsCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-eyedropper me-1"></i>Ingredients <strong>{{ .UsageMetric.IngredientsCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-tag-fill me-1"></i>Tags <strong>{{ .UsageMetric.TagsCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-list-check me-1"></i>Rules <strong>{{ .UsageMetric.TaggingRuleCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-labels-fill me-1"></i>Labels <strong>{{ .UsageMetric.LabelsCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-robot me-1"></i>Scrapes <strong>{{ .UsageMetric.AutomatedScrapesCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-search me-1"></i>PubChem <strong>{{ .UsageMetric.PubChemLookupsCount }}</strong>
+      </span>
+      <span class="badge fs-6 px-3 py-2" style="background-color: #000;">
+        <i class="bi bi-people-fill me-1"></i>Sessions <strong>{{ .UsageMetric.SessionsCount }}</strong>
+      </span>
+      {{ else }}
+      <span class="text-muted small">No metrics available yet.</span>
+      {{ end }}
+    </div>
+  </div>
+</div>

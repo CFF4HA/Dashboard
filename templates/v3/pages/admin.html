@@ -1,0 +1,83 @@
+<div class="container-fluid mt-4 px-4">
+
+  {{/* Usage Metrics Banner */}}
+  <div hx-get="/htmx/admin-metrics-banner" hx-trigger="load"></div>
+
+  {{/* Tabs */}}
+  <ul class="nav nav-tabs mt-2" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-tagging-btn" data-bs-toggle="tab" data-bs-target="#tab-tagging" type="button" role="tab">
+        <i class="bi bi-diagram-3-fill me-1"></i>Tagging
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-tags-btn" data-bs-toggle="tab" data-bs-target="#tab-tags" type="button" role="tab">
+        <i class="bi bi-tags-fill me-1"></i>Tags
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-users-btn" data-bs-toggle="tab" data-bs-target="#tab-users" type="button" role="tab">
+        <i class="bi bi-people-fill me-1"></i>Users
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-pubchem-btn" data-bs-toggle="tab" data-bs-target="#tab-pubchem" type="button" role="tab">
+        <i class="bi bi-eyedropper me-1"></i>PubChem
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content border border-top-0 rounded-bottom p-4 bg-white">
+
+    {{/* Tagging Tab */}}
+    <div class="tab-pane fade show active" id="tab-tagging" role="tabpanel">
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div hx-get="/htmx/tag-set-form" hx-trigger="load"></div>
+        </div>
+        <div class="col-md-6">
+          <div hx-get="/htmx/admin-tag-rule-create-form" hx-trigger="load"></div>
+        </div>
+      </div>
+      <div hx-get="/htmx/tag-set-mini-view" hx-trigger="load"></div>
+    </div>
+
+    {{/* Tags Tab */}}
+    <div class="tab-pane fade" id="tab-tags" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div hx-get="/htmx/admin-tag-create-form" hx-trigger="load"></div>
+        </div>
+        <div class="col-md-8">
+          <div id="admin-tags-table-host"
+               hx-get="/htmx/admin-tags-table"
+               hx-trigger="load, tag-created from:body">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{/* Users Tab */}}
+    <div class="tab-pane fade" id="tab-users" role="tabpanel">
+      <div id="admin-users-table-host"
+           hx-get="/htmx/admin-users-table"
+           hx-trigger="load, reload-users">
+      </div>
+    </div>
+
+    {{/* PubChem Tab */}}
+    <div class="tab-pane fade" id="tab-pubchem" role="tabpanel">
+      <div hx-get="/htmx/admin-pubchem-configs" hx-trigger="load"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function adminFilterTable(tableId, query) {
+  var q = query.toLowerCase();
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(function(row) {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>

@@ -1,0 +1,59 @@
+<div class="card h-100">
+  <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+    <span><i class="bi bi-database me-2"></i>Label Configs</span>
+    <span class="badge bg-secondary">{{ len .PubChemLabelConfigs }}</span>
+  </div>
+  <div class="card-body p-0">
+    {{ if .PubChemLabelConfigs }}
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Type</th>
+            <th>GJSON Path</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{- range .PubChemLabelConfigs }}
+          <tr id="pubchem-cfg-row-{{ .Id }}">
+            <td class="ps-3">
+              <span class="badge
+                {{- if eq .LabelType "hazard" }} bg-danger
+                {{- else if eq .LabelType "effect" }} bg-success
+                {{- else if eq .LabelType "symptom" }} bg-warning text-dark
+                {{- else if eq .LabelType "regulation" }} bg-primary
+                {{- else }} bg-secondary
+                {{- end }}">
+                {{ .LabelType }}
+              </span>
+            </td>
+            <td>
+              <code class="small" style="word-break:break-all;">{{ .GsonField }}</code>
+            </td>
+            <td class="text-muted small text-nowrap">{{ .Created.Format "Jan 2, 2006" }}</td>
+            <td class="text-end pe-3">
+              <input type="hidden" id="pubchem-cfg-id-{{ .Id }}" name="id" value="{{ .Id }}">
+              <button class="btn btn-sm btn-outline-danger"
+                hx-delete="/ingredient/scrape/config/remove"
+                hx-include="#pubchem-cfg-id-{{ .Id }}"
+                hx-target="#pubchem-cfg-row-{{ .Id }}"
+                hx-swap="outerHTML"
+                hx-confirm="Delete this label config?"
+                title="Delete"
+              ><i class="bi bi-trash-fill"></i></button>
+            </td>
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+    {{ else }}
+    <div class="p-4 text-center text-muted small">
+      <i class="bi bi-database-slash d-block mb-2" style="font-size:1.5rem;"></i>
+      No label configs yet.
+    </div>
+    {{ end }}
+  </div>
+</div>

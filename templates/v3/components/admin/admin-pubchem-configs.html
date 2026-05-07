@@ -1,0 +1,57 @@
+<div class="row g-4">
+
+  {{/* Create form */}}
+  <div class="col-md-5">
+    <div class="card h-100">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-plus-circle me-2"></i>Add Label Config
+      </div>
+      <div class="card-body">
+        <form id="pubchem-cfg-form">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Label Type</label>
+            <select name="label_type" class="form-select form-select-sm" required>
+              <option value="general">general</option>
+              <option value="hazard">hazard</option>
+              <option value="effect">effect</option>
+              <option value="symptom">symptom</option>
+              <option value="regulation">regulation</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold d-flex justify-content-between">
+              <span>GJSON Path</span>
+              <a href="https://github.com/tidwall/gjson#path-syntax" target="_blank"
+                 class="text-muted fw-normal" style="font-size:0.75rem;">
+                path syntax <i class="bi bi-box-arrow-up-right ms-1"></i>
+              </a>
+            </label>
+            <textarea name="gjson" class="form-control form-control-sm font-monospace" rows="3"
+                      placeholder='e.g. Section.#(TOCHeading==\"Safety and Hazards\").Information.#.Value.StringWithMarkup.#.String'
+                      required></textarea>
+            <div class="form-text">
+              GJSON path into the PubChem compound JSON used to extract label data.
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w-100"
+            hx-put="/ingredient/scrape/config/create"
+            hx-include="#pubchem-cfg-form"
+            hx-swap="none"
+            hx-on::after-request="if(event.detail.successful){ htmx.trigger(document.body,'pubchem-cfg-created'); document.getElementById('pubchem-cfg-form').reset(); }"
+          >
+            <i class="bi bi-plus-lg me-1"></i>Add Config
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {{/* Configs table */}}
+  <div class="col-md-7">
+    <div id="pubchem-cfg-table-host"
+         hx-get="/htmx/admin-pubchem-configs-table"
+         hx-trigger="load, pubchem-cfg-created from:body">
+    </div>
+  </div>
+
+</div>

@@ -55,31 +55,31 @@
                 <button id="product-search-btn" class="btn btn-outline-secondary">Search</button>
               </div>
 
-              <div id="btn-adv-field" class="">
-                <p class="text-muted">Advanced Features <span><i class="bi bi-caret-down"></i></span></p>
-
-                <div class="col growable" 
-                     data-growable-target="#btn-adv-field" 
-                     data-growable-grow-event="mouseenter" 
-                     data-growable-shrink-event="mouseleave">
-                  <div class="input-group mb-3">
-                    <input id="product-filter-ing-input" name="ingredients" type="text" class="form-control" placeholder="Filter by ingredient...">
-                    <button id="product-filter-btn" class="btn btn-outline-secondary">Filter</button>
-                  </div>
-                  <p class="form-text">The ingredient you are filtering by will appear as a "pill" below this search.</p>
-
-                  {{/* the following will be a tag section */}}
-                  <div class="">
-                    <select id="product-tag-filter-select" class="form-select" aria-label="Default select example"
-                      name="product-tag"
-                    >
-                      <option>No Tag Filter Selected</option>
-                      {{- range .Tags }}
-                        <option value="{{ . }}">{{ . }}</option>
-                      {{- end }}
-                    </select>
-                  </div> 
-                </div> {{/* Close col growable */}}
+              <!-- <div id="btn-adv-field" class=""> -->
+              <!--   <p class="text-muted">Advanced Features <span><i class="bi bi-caret-down"></i></span></p> -->
+              <!---->
+              <!--   <div class="col growable"  -->
+              <!--        data-growable-target="#btn-adv-field"  -->
+              <!--        data-growable-grow-event="mouseenter"  -->
+              <!--        data-growable-shrink-event="mouseleave"> -->
+              <!--     <div class="input-group mb-3"> -->
+              <!--       <input id="product-filter-ing-input" name="ingredients" type="text" class="form-control" placeholder="Filter by ingredient..."> -->
+              <!--       <button id="product-filter-btn" class="btn btn-outline-secondary">Filter</button> -->
+              <!--     </div> -->
+              <!--     <p class="form-text">The ingredient you are filtering by will appear as a "pill" below this search.</p> -->
+              <!---->
+              <!--     {{/* the following will be a tag section */}} -->
+              <!--     <div class=""> -->
+              <!--       <select id="product-tag-filter-select" class="form-select" aria-label="Default select example" -->
+              <!--         name="product-tag" -->
+              <!--       > -->
+              <!--         <option>No Tag Filter Selected</option> -->
+              <!--         {{- range .Tags }} -->
+              <!--           <option value="{{ . }}">{{ . }}</option> -->
+              <!--         {{- end }} -->
+              <!--       </select> -->
+              <!--     </div>  -->
+              <!--   </div> {{/* Close col growable */}} -->
               {{/* the create a product */}} 
               </div> {{/* Close btn-adv-field */}}
               <div class="my-3">
@@ -123,7 +123,36 @@
   >
     <div class="col">
       <p class="text-muted">Search results will appear below.</p>
-      <div id="product-display" class="d-flex flex-row"></div>
+      <div id="product-display" class="row"></div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12 mb-3">
+      <h5>Our Methodology</h5>
+    </div>
+    <div class="col-md-4">
+      <h6>Authoritative Ingredient Data</h6>
+      <p class="text-muted">
+        Ingredient records are sourced from <a href="https://pubchem.ncbi.nlm.nih.gov/">PubChem</a>,
+        giving you toxicity info, hazard classifications, adverse effects, and regulatory data
+        for each compound.
+      </p>
+    </div>
+    <div class="col-md-4">
+      <h6>Community-Driven Tagging</h6>
+      <p class="text-muted">
+        You create custom tags that reflect your sensitivities, write pattern-based rules that
+        automatically tag ingredients by their hazard labels, and share rule sets so others
+        benefit from your research.
+      </p>
+    </div>
+    <div class="col-md-4">
+      <h6>Product Intelligence</h6>
+      <p class="text-muted">
+        Tags and hazard data cascade from ingredients up to products. Filter and compare
+        products by ingredient, tag, or hazard profile to find what to avoid and what's safe.
+      </p>
     </div>
   </div>
 </div>

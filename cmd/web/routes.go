@@ -20,16 +20,18 @@ func Test(v *verb.Verb) {
 }
 
 func Index(v *verb.Verb) {
-	v.Page("", "v2/pages/index.html")
+	v.Page("", "v3/pages/landing.html")
 	v.Page("/v2", "v3/pages/landing.html")
+	v.Page("/v2/admin", "v3/pages/admin.html")
 }
 
 func Compare(v *verb.Verb) {
 	v.Page("/compare", "v2/pages/compare.html")
-	v.Component("v2/components/compare-product_search.html", htmx.Div())
-	v.Component("v2/components/investigation.html", htmx.Div())
+	v.Component("v2/components/compare-product_search.html", htmx.Div()).Bridge(bridges.ProductsByName)
+	v.Component("v2/components/investigation.html", htmx.Div()).Bridge(bridges.ProductComparison)
 
-	v.Component("v2/components/compare-product_card.html", htmx.Div())
+	v.Component("v2/components/compare-product_card.html", htmx.Div()).
+		Bridge(bridges.ProductById)
 }
 
 func Notifications(v *verb.Verb) {
@@ -59,7 +61,8 @@ func Ingredients(v *verb.Verb) {
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
 		Bridge(bridges.IngredientsByName{})
 
-	v.Component("v2/components/ingredient-detail.html", htmx.Div())
+	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
+		Bridge(bridges.IngredientById)
 }
 
 func Usage(v *verb.Verb) {
@@ -89,7 +92,8 @@ func Products(v *verb.Verb) {
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
 		Bridge(bridges.ProductsByName)
 
-	v.Component("v2/components/product-detail.html", htmx.Div())
+	v.Component("v2/components/product-detail.html", htmx.Div()).
+		Bridge(bridges.ProductById)
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html")
@@ -167,6 +171,26 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
 		Bridge(bridges.Tags)
+}
+
+func Admin(v *verb.Verb) {
+	v.ActionClassic(http.MethodPut, "/admin/user/role", backend.RouteAdminUserRoleAdd)
+	v.ActionClassic(http.MethodDelete, "/admin/user/role", backend.RouteAdminUserRoleRemove)
+	v.ActionClassic(http.MethodGet, "/admin/roles", backend.RouteGetRoles)
+
+	v.Component("v3/components/admin/admin-metrics-banner.html", htmx.Div()).
+		Bridge(bridges.LatestUsageMetrics)
+	v.Component("v3/components/admin/admin-tag-rule-create-form.html", htmx.Div()).
+		Bridge(bridges.TagSets)
+	v.Component("v3/components/admin/admin-tag-create-form.html", htmx.Div())
+	v.Component("v3/components/admin/admin-tags-table.html", htmx.Div()).
+		Bridge(bridges.Tags)
+	v.Component("v3/components/admin/admin-users-table.html", htmx.Div()).
+		Bridge(bridges.AllUsers).
+		Bridge(bridges.AllRoles)
+	v.Component("v3/components/admin/admin-pubchem-configs.html", htmx.Div())
+	v.Component("v3/components/admin/admin-pubchem-configs-table.html", htmx.Div()).
+		Bridge(bridges.PubChemLabelConfigs)
 }
 
 func FormsV2(v *verb.Verb) {

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	IngredientById = DataBridge{Key: "IngredientById", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
+	IngredientById = DataBridge{Key: "Ingredient", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
 		return backend.GetIngredientById(r.FormValue("id"))
 	}}
 

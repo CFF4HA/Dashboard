@@ -465,9 +465,12 @@
 {{- else if eq (len .Ingredients) 0 }}
 <p style="font-size:0.88rem; color:var(--muted);">No ingredients yet. Search above to retrieve one from PubChem.</p>
 {{- else }}
-<div class="row">
-  {{- range .Ingredients }}
-  <div class="col-md-4 mb-4 ingredient-card-col">
+{{- $count := len .Ingredients }}
+{{- $hasMore := gt $count 20 }}
+{{- $ingredients := .Ingredients }}
+{{- if $hasMore }}{{- $ingredients = slice .Ingredients 0 20 }}{{- end }}
+{{- range $ingredients }}
+  <div class="col-md mb-4 ingredient-card-col">
     <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
 
       <!-- ── Header ────────────────────────────────────────── -->
@@ -546,9 +549,10 @@
           <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tags-pane-{{ .Id }}" type="button" role="tab">Tags</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes-pane-{{ .Id }}" type="button" role="tab">Notes</button>
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#labels-pane-{{ .Id }}" type="button" role="tab">Labels</button>
         </li>
         <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes-pane-{{ .Id }}" type="button" role="tab">Notes</button>
         </li>
       </ul>
 
@@ -564,7 +568,7 @@
                 style="display:flex;gap:0.4rem;margin-bottom:0.5rem;">
             <input type="hidden" name="ingredient_id" value="{{ $ingId }}">
             <input class="ingredient-synonym-search" style="margin-bottom:0;flex:1;"
-                   type="text" name="tag_name" placeholder="Add tag…" autocomplete="off" required>
+                   type="text" name="tag" placeholder="Add tag…" autocomplete="off" required>
             <button type="submit" class="btn-add-inline" title="Add tag"><i class="bi bi-plus-lg"></i></button>
           </form>
           <div id="tag-list-{{ $ingId }}">
@@ -574,7 +578,7 @@
               <span class="ingredient-tag-pill-wrap"{{if .Description}} title="{{ .Description }}"{{end}}>
                 <span class="ingredient-tag-pill">{{ .Name }}</span>
                 <button class="ingredient-tag-remove-btn"
-                        hx-delete="/ingredient/tag"
+                        hx-delete="/ingredient/tag/remove"
                         hx-vals='{"ingredient_id": "{{ $ingId }}", "tag_id": "{{ .Id }}"}'
                         hx-target="closest .ingredient-tag-pill-wrap"
                         hx-swap="outerHTML"
@@ -613,7 +617,7 @@
               <div class="ingredient-note-meta">
                 <span>{{ .Created.Format "Jan 2, 2006" }}</span>
                 <button class="btn-icon btn-danger"
-                        hx-delete="/ingredient/note?id={{.Id}}"
+                        hx-delete="/ingredient/note/remove?id={{.Id}}"
                         hx-target="#note-{{ .Id }}"
                         hx-swap="outerHTML"
                         title="Delete note">
@@ -628,16 +632,32 @@
           </div>
         </div>
 
-        <!-- Synonyms pane -->
-        
-        <!-- Hazards pane -->
-        
-        <!-- Effects pane -->
-        
-        <!-- Symptoms pane -->
-        
-        <!-- Regulations pane -->
-        
+        <!-- Labels pane -->
+        <div class="tab-pane fade pt-2" id="labels-pane-{{ .Id }}" role="tabpanel">
+          {{- $hasLabels := false }}
+          {{- range .Labels }}{{- $hasLabels = true }}{{- end }}
+          {{- if $hasLabels }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">
+                <span class="badge badge-sm me-1
+                  {{- if eq .Type "hazard" }} bg-danger
+                  {{- else if eq .Type "effect" }} bg-success
+                  {{- else if eq .Type "symptom" }} bg-warning text-dark
+                  {{- else if eq .Type "regulation" }} bg-primary
+                  {{- else }} bg-secondary
+                  {{- end }}" style="font-size:0.62rem;">{{ .Type }}</span>{{ .Payload }}
+              </span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No labels on record.</span>
+          {{- end }}
+        </div>
+
       </div><!-- /tab-content -->
 
       
@@ -647,8 +667,20 @@
 
     </div>
   </div>
-  {{- end }}
+{{- end }}
+{{- if $hasMore }}
+{{- $last := index $ingredients (sub (len $ingredients) 1) }}
+<div class="col-12 text-center py-3" id="ing-load-more-{{ $last.Id }}">
+  <button class="btn btn-outline-secondary btn-sm px-4"
+    hx-get="/htmx/ingredient-search_results"
+    hx-include="#ingredient-search-input"
+    hx-vals='{"cursor": "{{ $last.Id }}"}'
+    hx-target="#ing-load-more-{{ $last.Id }}"
+    hx-swap="outerHTML">
+    Load more
+  </button>
 </div>
+{{- end }}
 
 <script>
 (function () {

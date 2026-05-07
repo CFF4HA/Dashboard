@@ -127,7 +127,7 @@ func TagAllIngredientsForTaggingRule(rule *types.TaggingRule) error {
 // The following are utility functions that do not assume the
 // method the data was retrieved with.
 // ------------------------------
-func InsertTaggingRule(userId string, tagId string, taggingSetId string, enabled bool, pattern string) (*types.TaggingRule, error) {
+func InsertTaggingRule(userId string, tag string, taggingSetId string, enabled bool, pattern string) (*types.TaggingRule, error) {
 	rule := &types.TaggingRule{
 		Model: types.Model{
 			Id:      uuid.New(),
@@ -137,6 +137,21 @@ func InsertTaggingRule(userId string, tagId string, taggingSetId string, enabled
 		Pattern: pattern,
 		Enabled: enabled,
 	}
+
+	var existing_tag types.Tag
+	tx := core.DB.First(&existing_tag, "name = ?", tag)
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			tag, err := InsertTag(tag, "")
+			if err != nil {
+				return nil, errors.New("failed to create tag for tagging rule, try again later.")
+			}
+
+			existing_tag = *tag
+		}
+	}
+
+	tagId := existing_tag.Id.String()
 
 	taggingSetIdParsed, err := uuid.Parse(taggingSetId)
 	if err != nil {
@@ -160,7 +175,7 @@ func InsertTaggingRule(userId string, tagId string, taggingSetId string, enabled
 	rule.UserId = userIdParsed
 	rule.TaggingSetID = &taggingSetIdParsed
 
-	tx := core.DB.Create(rule)
+	tx = core.DB.Create(rule)
 	if tx.Error != nil {
 		core.Logger.Error("failed to insert tagging rule into database", "error", tx.Error)
 		return nil, errors.New("failed to insert tagging rule into database, try again later.")
@@ -259,7 +274,7 @@ func RouteInsertTaggingRule(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("a valid user is required to perform this operation, please try again after signing in")
 	}
 
-	rule, err := InsertTaggingRule(user.Id.String(), r.FormValue("tag_id"), r.FormValue("tagging_set_id"), r.FormValue("enabled") == "true", r.FormValue("pattern"))
+	rule, err := InsertTaggingRule(user.Id.String(), r.FormValue("tag"), r.FormValue("tagging_set_id"), r.FormValue("enabled") == "true", r.FormValue("pattern"))
 	if err != nil {
 		return err
 	}
