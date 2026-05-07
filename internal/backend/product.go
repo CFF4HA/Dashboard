@@ -155,15 +155,15 @@ func DeleteProductById(id string, u *uuid.UUID) error {
 	// and then we can delete the product itself.
 
 	bypass_role := "admin"
-	hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, id)
-	if err != nil || !hasAccess {
-		core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", id, "error", err, "access", hasAccess)
-		return errors.New("user does not have permission to delete this product")
+	if u != nil {
+		hasAccess, err := ValidateUserAccessToProduct(u, &bypass_role, id)
+		if err != nil || !hasAccess {
+			core.Logger.Error("user does not have permission to delete product", "user_id", u, "product_id", id, "error", err, "access", hasAccess)
+			return errors.New("user does not have permission to delete this product")
+		}
 	}
 
 	tx := core.DB.Begin()
-	tx = core.DB.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id)
-	tx = core.DB.Exec("DELETE FROM product_tags WHERE product_id = ?", id)
 	tx = core.DB.Exec("DELETE FROM user_products WHERE product_id = ?", id)
 
 	if tx.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id).Error != nil {

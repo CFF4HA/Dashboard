@@ -22,6 +22,7 @@ func Test(v *verb.Verb) {
 func Index(v *verb.Verb) {
 	v.Page("", "v2/pages/index.html")
 	v.Page("/v2", "v3/pages/landing.html")
+	v.Page("/v2/admin", "v3/pages/admin.html")
 }
 
 func Compare(v *verb.Verb) {

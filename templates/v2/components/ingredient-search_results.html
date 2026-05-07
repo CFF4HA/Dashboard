@@ -564,7 +564,7 @@
                 style="display:flex;gap:0.4rem;margin-bottom:0.5rem;">
             <input type="hidden" name="ingredient_id" value="{{ $ingId }}">
             <input class="ingredient-synonym-search" style="margin-bottom:0;flex:1;"
-                   type="text" name="tag_name" placeholder="Add tag…" autocomplete="off" required>
+                   type="text" name="tag" placeholder="Add tag…" autocomplete="off" required>
             <button type="submit" class="btn-add-inline" title="Add tag"><i class="bi bi-plus-lg"></i></button>
           </form>
           <div id="tag-list-{{ $ingId }}">
@@ -574,7 +574,7 @@
               <span class="ingredient-tag-pill-wrap"{{if .Description}} title="{{ .Description }}"{{end}}>
                 <span class="ingredient-tag-pill">{{ .Name }}</span>
                 <button class="ingredient-tag-remove-btn"
-                        hx-delete="/ingredient/tag"
+                        hx-delete="/ingredient/tag/remove"
                         hx-vals='{"ingredient_id": "{{ $ingId }}", "tag_id": "{{ .Id }}"}'
                         hx-target="closest .ingredient-tag-pill-wrap"
                         hx-swap="outerHTML"
@@ -613,7 +613,7 @@
               <div class="ingredient-note-meta">
                 <span>{{ .Created.Format "Jan 2, 2006" }}</span>
                 <button class="btn-icon btn-danger"
-                        hx-delete="/ingredient/note?id={{.Id}}"
+                        hx-delete="/ingredient/note/remove?id={{.Id}}"
                         hx-target="#note-{{ .Id }}"
                         hx-swap="outerHTML"
                         title="Delete note">
