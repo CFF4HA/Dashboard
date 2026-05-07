@@ -1,0 +1,146 @@
+<style>
+  /* ── Automated Tagging UI ── */
+  .tagging-container {
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  }
+
+  /* Natural Language Form Styling */
+  .tagging-sentence-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.9rem;
+    color: var(--forest-green);
+    font-weight: 500;
+  }
+
+  .tagging-sentence-wrap .form-control,
+  .tagging-sentence-wrap .form-select {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 2px solid var(--apothecary-border);
+    border-radius: 0;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    background-color: transparent;
+    font-weight: 700;
+    color: var(--forest-green);
+    transition: border-color 0.2s ease;
+  }
+
+  .tagging-sentence-wrap .form-control:focus,
+  .tagging-sentence-wrap .form-select:focus {
+    box-shadow: none;
+    border-bottom-color: var(--forest-green);
+    background-color: var(--soft-white);
+  }
+
+  /* Tag Search Dropdown */
+  #tag-search-results {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .tag-search-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .tag-search-item:hover {
+    background: var(--soft-white);
+  }
+</style>
+
+<div class="tagging-container">
+  <div class="row mb-4">
+    <div class="col">
+      <h4 class="fw-bold mb-1" style="color: var(--forest-green);">
+        <i class="bi bi-robot me-2"></i>Automated Tagging
+      </h4>
+      <p class="text-muted small mb-0">
+        Define logic to categorize substances. Rules are applied instantly to all matching ingredients.
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="tagging-sentence-wrap">
+        <span class="text-nowrap">If the ingredient label</span>
+
+        <select name="operation" class="form-select form-select-sm" style="width: 140px;">
+          <option value="contains" selected>contains</option>
+          <option value="dncontains">does not contain</option>
+          <option value="regex">matches regex</option>
+        </select>
+        
+        <input type="text" 
+               class="form-control form-control-sm" 
+               style="width: 180px;" 
+               placeholder="keyword (e.g. 'acid')" 
+               name="regex">
+
+        <span class="text-nowrap">then apply the tag</span>
+
+        <div class="position-relative">
+          <input type="text" 
+            class="form-control form-control-sm" 
+            style="width: 180px;" 
+            placeholder="search tags..." 
+            name="name"
+            id="tag-name-input"
+            hx-get="/htmx/tagging-search_results_sm"
+            hx-include="this"
+            hx-target="#tag-search-results"
+            hx-swap="innerHTML"
+            hx-trigger="keyup changed delay:400ms"
+            onkeyup="document.getElementById('tag-name-value').value = this.value;"
+            autocomplete="off"
+          />
+          <input type="hidden" name="tag" id="tag-name-value"/>
+          <div id="tag-search-results" class="position-absolute top-100 start-0 w-100 bg-white border rounded-3 mt-2" style="z-index: 1050;"></div>
+        </div>
+
+        <span class="text-nowrap">.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-auto">
+      <button type="submit" class="btn btn-success btn-sm px-4 rounded-pill shadow-sm"
+        hx-put="/tag/rule/create"
+        hx-include="[name='regex'], [name='tag'], [name='operation']"
+        hx-swap="none"
+        hx-on::after-request="this.closest('.tagging-container').querySelectorAll('input').forEach(i => i.value = ''); htmx.trigger('#hx-tagging-table', 'update-tag-table-manual')"
+      >
+        <i class="bi bi-plus-lg me-1"></i> Create Rule
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * Helper to select a tag from the dropdown
+   */
+  function selectTagRule(name, id) {
+    const input = document.getElementById('tag-name-input');
+    const hidden = document.getElementById('tag-name-value');
+    const results = document.getElementById('tag-search-results');
+    
+    input.value = name;
+    hidden.value = id || name;
+    results.innerHTML = '';
+  }
+</script>

@@ -1,0 +1,93 @@
+<div class="container">
+  <style>
+    /* ── Shared section shell (mirrors tagging-container) ────── */
+    .notif-section {
+      background: #ffffff;
+      border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+      border-radius: 15px;
+      padding: 1.1rem 1.2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      font-family: 'Lato', sans-serif;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+  
+    .notif-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+  
+    .notif-section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted, #6c8f70);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin: 0;
+    }
+  
+    .notif-section-divider {
+      border: none;
+      border-top: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+      margin: 0;
+    }
+  </style>
+  
+  <div class="container">
+    {{/*
+    The user page will contain all kinds of configuration behavior, as well as
+    summaries of products, ingredients, etc.
+    */}}
+  
+    {{/* Tagging Related Configuration Section */}}
+    <div class="row mb-4">
+      <div hx-get="/htmx/form-tag_rule_create" hx-trigger="load"></div>
+      <div id="hx-tagging-table" hx-get="/htmx/table-tagging_rules" hx-trigger="load, update-tag-table-manual"></div>
+    </div>
+  
+    {{/* ── Notification Admin Section ──────────────────────── */}}
+    <div class="row mb-4">
+      <div class="col-12 mb-3">
+  
+        <!-- Create form -->
+        <div hx-get="/htmx/form-notification_create" hx-trigger="load"></div>
+  
+      </div>
+  
+      <!-- Active notifications (live/enabled only) -->
+      <div class="col-12 col-lg-5 mb-3">
+        <div class="notif-section">
+          <div class="notif-section-header">
+            <p class="notif-section-title"><i class="bi bi-broadcast"></i> Live Notifications</p>
+          </div>
+          <hr class="notif-section-divider">
+          <div id="hx-notif-active"
+               hx-get="/notification/get/enabled"
+               hx-trigger="load, notificationsUpdated from:body">
+          </div>
+        </div>
+      </div>
+  
+      <!-- All notifications admin list -->
+      <div class="col-12 col-lg-7 mb-3">
+        <div class="notif-section">
+          <div class="notif-section-header">
+            <p class="notif-section-title"><i class="bi bi-list-ul"></i> All Notifications</p>
+          </div>
+          <hr class="notif-section-divider">
+          <div id="hx-notif-all"
+               hx-get="/notification/get"
+               hx-trigger="load, notificationsUpdated from:body">
+          </div>
+        </div>
+      </div>
+  
+    </div>
+  </div>
+</div>

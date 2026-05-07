@@ -1,0 +1,45 @@
+digraph flow_general_render {
+  rankdir=TB
+  graph [
+    label="UML Sequence — General: Page Render (GET)",
+    labelloc=t, labeljust=l,
+    fontname="Helvetica", fontsize=12,
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
+  ]
+  node [fontname="Helvetica", fontsize=10, height=0.5]
+  edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
+
+  // ── Lifelines ─────────────────────────────────────────────────────────────
+  { rank=min
+    Browser [label="Browser",                    shape=rect, style="filled,rounded", fillcolor="#fff196"]
+    Bridge  [label="Bridge\ninternal/bridges",   shape=rect, style="filled,rounded", fillcolor="#96b1ff"]
+    DB      [label="PostgreSQL",                  shape=cylinder, style=filled,       fillcolor="#ffcccc"]
+    Tmpl    [label="Template\ntemplates/v2/**",  shape=rect, style="filled,rounded", fillcolor="#96b1ff"]
+  }
+
+  // ── Lifeline step nodes ───────────────────────────────────────────────────
+  node [shape=point, width=0.04, height=0.04, label=""]
+
+  // ── Lifeline chains (dashed vertical) ────────────────────────────────────
+  edge [style=dashed, arrowhead=none, color="#cccccc", weight=20]
+  Browser -> b0 -> b1 -> b2 -> b3 -> b4
+  Bridge  -> r0 -> r1 -> r2 -> r3 -> r4
+  DB      -> d0 -> d1 -> d2 -> d3 -> d4
+  Tmpl    -> t0 -> t1 -> t2 -> t3 -> t4
+
+  // ── Step alignment ────────────────────────────────────────────────────────
+  { rank=same; b0; r0; d0; t0 }
+  { rank=same; b1; r1; d1; t1 }
+  { rank=same; b2; r2; d2; t2 }
+  { rank=same; b3; r3; d3; t3 }
+  { rank=same; b4; r4; d4; t4 }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  edge [constraint=false, fontsize=9]
+  b0 -> r0 [label="  GET /page  \n",     style=solid,  color="#4477CC", fontcolor="#4477CC"]
+  r1 -> d1 [label="  SELECT  \n",        style=solid,  color="#4477CC", fontcolor="#4477CC"]
+  d2 -> r2 [label="  rows  \n",          style=dashed, color="#4477CC", fontcolor="#4477CC"]
+  r3 -> t3 [label="  exec w/ ctx  \n",   style=solid,  color="#4477CC", fontcolor="#4477CC"]
+  t4 -> b4 [label="  HTML response  \n", style=dashed, color="#4477CC", fontcolor="#4477CC"]
+}

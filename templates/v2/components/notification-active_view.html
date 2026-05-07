@@ -1,0 +1,89 @@
+{{- with .Notifications }}
+{{- if gt (len .) 0 }}
+<style>
+  .notif-active-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .notif-active-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #ffffff;
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    font-family: 'Lato', sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    transition: box-shadow 0.15s ease;
+  }
+
+  .notif-active-item:hover { box-shadow: 0 4px 14px rgba(26, 46, 30, 0.08); }
+
+  /* type accent on left edge */
+  .notif-active-item.notif--info    { border-left: 3px solid var(--regular-green, #274229); }
+  .notif-active-item.notif--warning { border-left: 3px solid #d97706; }
+  .notif-active-item.notif--alert   { border-left: 3px solid #c0392b; }
+
+  .notif-active-icon {
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    margin-top: 0.05rem;
+  }
+
+  .notif-active-icon.notif--info    { background: var(--mint-green, #CFF9C3); color: var(--regular-green, #274229); }
+  .notif-active-icon.notif--warning { background: #fef3c7; color: #92400e; }
+  .notif-active-icon.notif--alert   { background: #fef2f2; color: #c0392b; }
+
+  .notif-active-body { flex: 1; min-width: 0; }
+
+  .notif-active-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--forest-green, #1a2e1e);
+    margin: 0 0 0.15rem 0;
+  }
+
+  .notif-active-message {
+    font-size: 0.78rem;
+    color: var(--muted, #6c8f70);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .notif-active-meta {
+    font-size: 0.68rem;
+    color: var(--muted, #6c8f70);
+    margin-top: 0.3rem;
+  }
+</style>
+
+<div class="notif-active-list">
+  {{- range . }}
+  <div class="notif-active-item notif--{{ .Type }}">
+    <div class="notif-active-icon notif--{{ .Type }}">
+      {{- if eq .Type "warning" }}<i class="bi bi-exclamation-triangle"></i>
+      {{- else if eq .Type "alert" }}<i class="bi bi-shield-exclamation"></i>
+      {{- else }}<i class="bi bi-bell"></i>
+      {{- end }}
+    </div>
+    <div class="notif-active-body">
+      <p class="notif-active-title">{{ .Title }}</p>
+      <p class="notif-active-message">{{ .Message }}</p>
+      <div class="notif-active-meta">{{ .Created.Format "Jan 2, 2006" }}</div>
+    </div>
+  </div>
+  {{- end }}
+</div>
+{{- else }}
+<p style="font-size:0.82rem;color:var(--muted,#6c8f70);font-family:'Lato',sans-serif;">No active notifications.</p>
+{{- end }}
+{{- end }}

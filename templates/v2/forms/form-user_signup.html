@@ -1,107 +1,138 @@
 <style>
+  /* ── Apothecary Form Shell: Strict Green & Neutral ── */
   .form-shell {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 20px;
+    padding: 2.5rem;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    color: #495057;
+    color: var(--forest-green);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
   }
 
   .form-shell .form-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #94a3b8; /* Slate Neutral */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+    display: block;
   }
 
   .form-shell .form-control {
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.9rem;
-    color: #495057;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background: var(--soft-white);
+    border: 1px solid var(--apothecary-border);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: var(--forest-green);
+    transition: all 0.2s ease;
   }
 
   .form-shell .form-control::placeholder {
-    color: #adb5bd;
+    color: #cbd5e1;
   }
 
   .form-shell .form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    border-color: var(--forest-green);
+    box-shadow: 0 0 0 3px rgba(26, 46, 28, 0.05);
     outline: none;
   }
 
+  /* ── Action Button: Monochromatic Forest ── */
   .btn-form-submit {
-    background: #0d6efd;
-    border: none;
-    border-radius: 8px;
-    padding: 0.4rem 1.1rem;
+    background: var(--forest-green);
+    border: 1px solid var(--forest-green);
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
     font-size: 0.85rem;
     color: #ffffff;
     cursor: pointer;
-    font-weight: 500;
-    transition: background 0.2s ease;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
   }
 
   .btn-form-submit:hover {
-    background: #0b5ed7;
+    background: #233d25; /* Slightly deeper green */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 46, 28, 0.15);
   }
 
   .form-divider {
     border: none;
-    border-top: 1px solid #dee2e6;
-    margin: 1rem 0;
+    border-top: 1px solid var(--apothecary-border);
+    margin: 2rem 0;
+  }
+
+  /* ── Link: Forest Green Accent ── */
+  .auth-link {
+    color: var(--forest-green);
+    text-decoration: underline;
+    text-decoration-color: #cbd5e1;
+    font-weight: 700;
+    transition: color 0.2s ease;
+  }
+
+  .auth-link:hover {
+    color: #233d25;
+    text-decoration-color: var(--forest-green);
   }
 </style>
 
-<div id="auth-panel">
+<div id="auth-panel" class="d-flex justify-content-center py-5">
   <form class="form-shell"
+        style="width: 100%; max-width: 420px;"
         hx-put="/user"
         hx-target="#auth-panel"
         hx-swap="outerHTML">
 
-    <h6 class="mb-3" style="font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.95rem; font-weight: 600; color: #495057;">
-      <i class="bi bi-person-plus me-2" style="color: #adb5bd;"></i>Create an account
-    </h6>
+    <div class="text-center mb-5">
+      <div class="mb-3" style="font-size: 2.5rem; color: var(--forest-green); opacity: 0.9;">
+        <i class="bi bi-person-badge"></i>
+      </div>
+      <h5 class="fw-bold m-0" style="color: var(--forest-green); letter-spacing: -0.02em;">Create Account</h5>
+    </div>
 
-    <div class="mb-3">
-      <label for="signup-username" class="form-label">Username <span style="color: #dc3545;">*</span></label>
+    <div class="mb-4">
+      <label for="signup-username" class="form-label">Create Username</label>
       <input type="text"
              id="signup-username"
              name="username"
              class="form-control"
-             placeholder="Choose a username"
+             placeholder="Choose an alias"
              autocomplete="username"
              required
              autofocus>
     </div>
 
     <div class="mb-4">
-      <label for="signup-password" class="form-label">Password <span style="color: #dc3545;">*</span></label>
+      <label for="signup-password" class="form-label">Create Password</label>
       <input type="password"
              id="signup-password"
              name="password"
              class="form-control"
-             placeholder="Choose a password"
+             placeholder="••••••••"
              autocomplete="new-password"
              required>
     </div>
 
     <hr class="form-divider">
 
-    <div class="d-grid mb-3">
-      <button type="submit" class="btn-form-submit">
-        <i class="bi bi-check2 me-1"></i>Sign up
-      </button>
-    </div>
+    <button type="submit" class="btn-form-submit w-100">
+      Create Account <i class="bi bi-arrow-right"></i>
+    </button>
 
-    <div class="text-center" style="font-size: 0.82rem; color: #adb5bd;">
-      Already have an account?
-      <a href="/login" style="color: #0d6efd; text-decoration: none;">Log in</a>
+    <div class="text-center mt-4" style="font-size: 0.85rem; color: #94a3b8;">
+      Already registered in the archives? 
+      <a href="/login" class="auth-link">Access Terminal</a>
     </div>
   </form>
 </div>

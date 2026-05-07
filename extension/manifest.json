@@ -1,0 +1,47 @@
+{ 
+    "name": "Fragrance Free Extension",
+    "version": "1.0",
+    "description": "Import multiple ingredients from retail sites without leaving the page.",
+    "manifest_version": 3,
+    "permissions": [
+        "activeTab",
+        "storage",
+        "sidePanel"
+    ],
+
+    "action": {
+        "default_icon": {
+            "16": "github-ff-banner.png",
+            "32": "github-ff-banner.png",
+            "48": "github-ff-banner.png",
+            "128": "github-ff-banner.png"
+        }
+    },
+
+    "side_panel": {
+        "default_path": "form.html"
+    },
+
+    "background": {
+        "service_worker": "background.js"
+    },
+
+    "icons": {
+        "16": "github-ff-banner.png",
+        "32": "github-ff-banner.png",
+        "48": "github-ff-banner.png",
+        "128": "github-ff-banner.png"
+    
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["popup.js"],
+            "css": ["style.css"]
+        }
+    ],   
+    "host_permissions": [
+        "https://cff4ha.godiegogo.me"
+    ]
+
+}

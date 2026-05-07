@@ -11,21 +11,16 @@ type Ingredient struct {
 	Failed      bool   `json:"failed" gorm:"type:boolean;not null;default:false"`
 	PrimaryName string `json:"primary_name" gorm:"type:text;not null;index;"`
 
-	Labels   []Label            `json:"labels" gorm:"many2many:ingredient_labels;"`
-	Names    []Name             `json:"names" gorm:"many2many:ingredient_names"`
-	Metadata IngredientMetadata `json:"metadata" gorm:"foreignKey:IngredientId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Labels []Label `json:"labels" gorm:"foreignKey:IngredientId;references:Id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Tags   []Tag   `json:"tags" gorm:"many2many:ingredient_tags;"`
 }
 
-type IngredientMetadata struct {
+type IngredientNote struct {
 	Model
-	IngredientId uuid.UUID `json:"ingredient_id" gorm:"type:uuid;not null;uniqueIndex;"`
+	UserId       uuid.UUID `json:"user_id" gorm:"type:uuid;not null;"`
+	IngredientId uuid.UUID `json:"ingredient_id" gorm:"type:uuid;not null;"`
 
-	NumHazards     int `json:"num_hazards" gorm:"type:int;default:0"`
-	NumEffects     int `json:"num_effects" gorm:"type:int;default:0"`
-	NumSymptoms    int `json:"num_symptoms" gorm:"type:int;default:0"`
-	NumRegulations int `json:"num_regulations" gorm:"type:int;default:0"`
-
-	AiBlurb *string `json:"ai_blurb" gorm:"type:text;default:null"`
+	Content string `json:"content" gorm:"type:text;not null;"`
 }
 
 // This is the Name table, which is how we will access ingredients.
@@ -41,10 +36,9 @@ type Name struct {
 // should suffice for now.
 type Label struct {
 	Model
+	IngredientId uuid.UUID `json:"ingredient_id" gorm:"type:uuid;not null;"`
 
 	Type    string  `json:"type" gorm:"type:text;not null;check:type IN ('hazard', 'symptom', 'general', 'effect', 'regulation');default:'general';"`
 	Payload string  `json:"name" gorm:"type:text;not null"`
 	Origin  *string `json:"origin" gorm:"type:text;default:null"`
-
-	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:ingredient_labels;"`
 }

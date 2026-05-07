@@ -2,248 +2,204 @@
 <h5 hx-swap-oob="true" id="side-modal-label">{{ .Name }}</h5>
 
 <style>
-  /* ── Ingredient card styles (from ingredient-search_results.html) ────────────────────────── */
-  .ingredient-card {
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    padding: 1rem 1.1rem;
-    max-width: 20rem;
+  /* ── Design tokens (mirrors base.html palette) ─────────────── */
+  .pd-wrap {
+    --forest:       #1a2e1e;
+    --forest-mid:   #274229;
+    --mint:         #CFF9C3;
+    --mint-dim:     #b6f0a8;
+    --white:        #ffffff;
+    --gray-bg:      #f4f6f4;
+    --gray-border:  rgba(26, 46, 30, 0.12);
+    --gray-hover:   rgba(26, 46, 30, 0.22);
+    --muted:        #6b8070;
+    --text:         #1a2e1e;
+    --text-sm:      #4a6352;
+    font-family: 'Lato', system-ui, -apple-system, sans-serif;
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    transition: box-shadow 0.2s ease;
   }
 
-  .ingredient-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  /* ── Sections ───────────────────────────────────────────────── */
+  .pd-section {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
   }
 
-  .ingredient-card--failed {
-    opacity: 0.6;
-  }
-
-  .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
-  .btn-star:hover { color: #ffc107; }
-
-  .ingredient-card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .ingredient-card-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #495057;
-    margin: 0;
-    line-height: 1.3;
-  }
-
-  .ingredient-card-badge {
-    flex-shrink: 0;
+  .pd-section-title {
     font-size: 0.7rem;
-    border-radius: 6px;
-    padding: 0.15rem 0.5rem;
-    white-space: nowrap;
-    margin-top: 0.1rem;
-  }
-
-  .ingredient-card-badge--failed {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffc107;
-  }
-
-  .ingredient-card-divider {
-    border: none;
-    border-top: 1px solid #dee2e6;
-    margin: 0;
-  }
-
-  .ingredient-card-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #adb5bd;
+    font-weight: 700;
+    color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.3rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
   }
 
-  /* ── Synonym pills ──────────────────────────────────────────── */
-  .ingredient-synonym-search {
+  /* ── Edit toggle ────────────────────────────────────────────── */
+  .pd-edit-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    color: var(--forest-mid);
+    cursor: pointer;
+    font-family: 'Lato', system-ui, sans-serif;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pd-edit-toggle:hover { background: var(--mint); border-color: var(--forest-mid); }
+
+  /* ── Edit form ──────────────────────────────────────────────── */
+  .pe-form { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.75rem; }
+
+  .pe-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+  }
+
+  .pe-input {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.8rem;
-    color: #495057;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.82rem;
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
     outline: none;
-    transition: border-color 0.2s ease;
-    margin-bottom: 0.4rem;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 0.35rem;
   }
+  .pe-input::placeholder { color: var(--muted); }
+  .pe-input:focus { border-color: var(--forest-mid); background: var(--white); }
 
-  .ingredient-synonym-search::placeholder { color: #adb5bd; }
-  .ingredient-synonym-search:focus { border-color: #0d6efd; }
-
-  .ingredient-synonym-scroll {
+  .pe-tag-box {
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.3rem 0.5rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem;
-    max-height: 6rem;
-    overflow-y: auto;
-    padding-right: 0.1rem;
-  }
-
-  .ingredient-synonym-scroll::-webkit-scrollbar { width: 3px; }
-  .ingredient-synonym-scroll::-webkit-scrollbar-track { background: transparent; }
-  .ingredient-synonym-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
-
-  .ingredient-synonym-pill {
-    font-size: 0.75rem;
-    color: #495057;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 20px;
-    padding: 0.15rem 0.55rem;
-    white-space: nowrap;
-  }
-
-  .ingredient-synonym-pill[hidden] { display: none; }
-
-  /* ── Metric stats ───────────────────────────────────────────── */
-  .ingredient-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.35rem;
-  }
-
-  .ingredient-stat {
-    display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    min-width: 0;
-    overflow: hidden;
+    cursor: text;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 0.3rem;
   }
+  .pe-tag-box:focus-within { border-color: var(--forest-mid); background: var(--white); }
 
-  .ingredient-stat-icon {
-    flex-shrink: 0;
-    font-size: 0.75rem;
-    color: #adb5bd;
-    width: 1rem;
-    text-align: center;
-  }
-
-  .ingredient-stat-value {
-    flex-shrink: 0;
-    font-weight: 600;
-    color: #495057;
-  }
-
-  .ingredient-stat-name {
-    color: #adb5bd;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .ingredient-ai-blurb {
-    font-size: 0.8rem;
-    color: #6c757d;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin: 0;
-  }
-
-  .ingredient-card-footer {
-    margin-top: auto;
-    font-size: 0.72rem;
-    color: #adb5bd;
-  }
-
-  /* ── Empty / retrieve state ─────────────────────────────────── */
-  .ingredient-empty-state {
-    padding: 1rem 0;
-  }
-
-  .btn-retrieve-pubchem {
+  .ingredient-tag {
     display: inline-flex;
     align-items: center;
-    background: transparent;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.35rem 0.85rem;
-    font-size: 0.85rem;
-    color: #495057;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    gap: 0.22rem;
+    background: var(--mint);
+    border: 1px solid var(--mint-dim);
+    border-radius: 20px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.76rem;
+    color: var(--forest);
+    white-space: nowrap;
+  }
+  .ingredient-tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.7rem;
+    color: var(--forest-mid);
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    line-height: 1;
+    transition: color 0.15s;
   }
+  .ingredient-tag-remove:hover { color: var(--forest); }
 
-  .btn-retrieve-pubchem:hover {
-    background: #e9ecef;
-    border-color: #adb5bd;
+  .ingredient-tag-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.82rem;
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
+    flex: 1;
+    min-width: 6rem;
+    padding: 0.1rem 0;
   }
+  .ingredient-tag-input::placeholder { color: var(--muted); }
 
-  .btn-retrieve-pubchem.loading {
-    color: #adb5bd;
-    pointer-events: none;
-  }
-
-  /* ── Shared detail styles (kept from original product-detail.html) ──────────────── */
-  .pd-section-title {
-    font-size: 0.72rem;
+  .pe-btn-save {
+    background: var(--forest);
+    border: none;
+    border-radius: 8px;
+    padding: 0.28rem 0.8rem;
+    font-size: 0.8rem;
+    color: #fff;
+    cursor: pointer;
     font-weight: 600;
-    color: #adb5bd;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.4rem;
+    font-family: 'Lato', system-ui, sans-serif;
+    transition: background 0.15s;
   }
+  .pe-btn-save:hover { background: var(--forest-mid); }
 
-  .pd-section {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.75rem;
+  .pe-btn-cancel {
+    background: transparent;
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 0.28rem 0.8rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Lato', system-ui, sans-serif;
+    transition: background 0.15s;
   }
+  .pe-btn-cancel:hover { background: var(--gray-bg); }
 
+  /* ── Metric stat grid ───────────────────────────────────────── */
+  .pd-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+
+  .pd-stat {
+    background: var(--gray-bg);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+  }
+  .pd-stat-icon { flex-shrink: 0; font-size: 0.85rem; color: var(--forest-mid); width: 1.1rem; text-align: center; }
+  .pd-stat-value { flex-shrink: 0; font-size: 1rem; font-weight: 700; color: var(--forest); }
+  .pd-stat-name { color: var(--muted); }
+
+  /* ── AI blurb ───────────────────────────────────────────────── */
+  .pd-ing-blurb { font-size: 0.82rem; color: var(--text-sm); line-height: 1.6; margin: 0; }
+
+  /* ── Filter input (shared) ──────────────────────────────────── */
   .pd-filter-input {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.25rem 0.6rem;
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 9px;
+    padding: 0.25rem 0.65rem;
     font-size: 0.8rem;
-    color: #495057;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
     outline: none;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s, background 0.2s;
     margin-bottom: 0.5rem;
   }
+  .pd-filter-input::placeholder { color: var(--muted); }
+  .pd-filter-input:focus { border-color: var(--forest-mid); background: var(--white); }
 
-  .pd-filter-input::placeholder { color: #adb5bd; }
-  .pd-filter-input:focus { border-color: #0d6efd; }
-
-  .pd-empty-note { font-size: 0.78rem; color: #adb5bd; }
-
-  /* ── Metrics ────────────────────────────────────────────────── */
-  .pd-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
-  .pd-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; min-width: 0; overflow: hidden; }
-  .pd-stat-icon { flex-shrink: 0; font-size: 0.75rem; color: #adb5bd; width: 1rem; text-align: center; }
-  .pd-stat-value { flex-shrink: 0; font-weight: 600; color: #495057; }
-  .pd-stat-name { color: #adb5bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pd-empty-note { font-size: 0.77rem; color: var(--muted); }
 
   /* ── Ingredient carousel ────────────────────────────────────── */
   .pd-carousel {
@@ -253,18 +209,139 @@
     padding-bottom: 0.4rem;
     scroll-snap-type: x mandatory;
   }
-
   .pd-carousel::-webkit-scrollbar { height: 3px; }
   .pd-carousel::-webkit-scrollbar-track { background: transparent; }
-  .pd-carousel::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+  .pd-carousel::-webkit-scrollbar-thumb { background: var(--mint-dim); border-radius: 2px; }
 
-  @keyframes pd-flash {
-    0%   { border-color: #0d6efd; box-shadow: 0 0 0 3px rgba(13,110,253,0.25); }
-    100% { border-color: #dee2e6; box-shadow: none; }
+  /* ── Ingredient cards ───────────────────────────────────────── */
+  .ingredient-card {
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: 13px;
+    padding: 0.85rem 1rem;
+    min-width: 210px;
+    max-width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    scroll-snap-align: start;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ingredient-card:hover { border-color: var(--forest-mid); box-shadow: 0 2px 12px rgba(26,46,30,0.08); }
+  .ingredient-card--failed { opacity: 0.6; }
+
+  .ingredient-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.4rem; }
+
+  .ingredient-card-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--forest);
+    margin: 0;
+    line-height: 1.3;
   }
 
-  .pd-ing-card--highlighted { animation: pd-flash 1.4s ease-out forwards; }
+  .ingredient-card-actions { display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0; }
 
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.95rem;
+    padding: 0.1rem;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .btn-icon:hover { color: var(--forest); }
+
+  .btn-star.starred { color: #d4950e; }
+  .btn-star.starred:hover { color: #b07800; }
+
+  .ingredient-card-badge {
+    flex-shrink: 0;
+    font-size: 0.67rem;
+    border-radius: 6px;
+    padding: 0.12rem 0.45rem;
+    background: #fff8e1;
+    color: #7a5c00;
+    border: 1px solid #f0d060;
+    white-space: nowrap;
+    margin-top: 0.1rem;
+  }
+
+  .ingredient-card-divider { border: none; border-top: 1px solid var(--gray-border); margin: 0; }
+
+  .ingredient-card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+  }
+
+  /* ── Synonym pills ──────────────────────────────────────────── */
+  .ingredient-synonym-search {
+    width: 100%;
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.77rem;
+    color: var(--text);
+    font-family: 'Lato', system-ui, sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 0.3rem;
+  }
+  .ingredient-synonym-search::placeholder { color: var(--muted); }
+  .ingredient-synonym-search:focus { border-color: var(--forest-mid); }
+
+  .ingredient-synonym-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    max-height: 5rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+  .ingredient-synonym-scroll::-webkit-scrollbar { width: 3px; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-thumb { background: var(--mint-dim); border-radius: 2px; }
+
+  .ingredient-synonym-pill {
+    font-size: 0.72rem;
+    color: var(--forest-mid);
+    background: var(--mint);
+    border: 1px solid var(--mint-dim);
+    border-radius: 20px;
+    padding: 0.1rem 0.5rem;
+    white-space: nowrap;
+  }
+  .ingredient-synonym-pill[hidden] { display: none; }
+
+  /* ── Ingredient metric stats ────────────────────────────────── */
+  .ingredient-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; }
+
+  .ingredient-stat { display: flex; align-items: center; gap: 0.35rem; font-size: 0.77rem; min-width: 0; overflow: hidden; }
+  .ingredient-stat-icon { flex-shrink: 0; font-size: 0.72rem; color: var(--muted); width: 0.9rem; text-align: center; }
+  .ingredient-stat-value { flex-shrink: 0; font-weight: 700; color: var(--forest); }
+  .ingredient-stat-name { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .ingredient-ai-blurb {
+    font-size: 0.77rem;
+    color: var(--text-sm);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .ingredient-card-footer { margin-top: auto; font-size: 0.68rem; color: var(--muted); }
+
+  /* ── Label pills (hazards / effects / symptoms / regulations) ── */
   .pd-label-scroll {
     display: flex;
     flex-wrap: wrap;
@@ -273,35 +350,37 @@
     overflow-y: auto;
     padding-right: 0.1rem;
   }
-
   .pd-label-scroll::-webkit-scrollbar { width: 3px; }
-  .pd-label-scroll::-webkit-scrollbar-track { background: transparent; }
-  .pd-label-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+  .pd-label-scroll::-webkit-scrollbar-thumb { background: var(--mint-dim); border-radius: 2px; }
 
   .pd-label-pill {
     display: inline-flex;
     flex-direction: column;
-    gap: 0.1rem;
-    font-size: 0.75rem;
-    color: #495057;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
+    gap: 0.08rem;
+    font-size: 0.74rem;
+    color: var(--forest);
+    background: var(--gray-bg);
+    border: 1px solid var(--gray-border);
     border-radius: 10px;
     padding: 0.2rem 0.6rem;
     white-space: normal;
     word-break: break-word;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: background 0.15s, border-color 0.15s;
     text-align: left;
+    font-family: 'Lato', system-ui, sans-serif;
   }
-
-  .pd-label-pill:hover { background: #e9ecef; border-color: #adb5bd; }
+  .pd-label-pill:hover { background: var(--mint); border-color: var(--forest-mid); }
   .pd-label-pill[hidden] { display: none; }
 
-  .pd-label-source {
-    font-size: 0.66rem;
-    color: #adb5bd;
+  .pd-label-source { font-size: 0.64rem; color: var(--muted); }
+
+  /* ── Highlight flash (carousel scroll-to) ───────────────────── */
+  @keyframes pd-flash {
+    0%   { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(26,46,30,0.18); }
+    100% { border-color: var(--gray-border); box-shadow: none; }
   }
+  .pd-ing-card--highlighted { animation: pd-flash 1.4s ease-out forwards; }
 </style>
 
 <script>
@@ -329,239 +408,387 @@
 
   function pdFilterCarousel(input) {
     const q = input.value.toLowerCase().trim();
-    const carousel = input.nextElementSibling; // This is the .pd-carousel div
-    const cards = carousel.querySelectorAll('.ingredient-card'); // Select the new card class
-
-    cards.forEach(card => {
-      const cardName = card.dataset.name || '';
-      card.hidden = q !== '' && !cardName.includes(q);
+    const carousel = input.nextElementSibling;
+    carousel.querySelectorAll('.ingredient-card').forEach(card => {
+      const name = card.dataset.name || '';
+      card.hidden = q !== '' && !name.includes(q);
     });
   }
 
   function pdHighlightIngredient(id) {
-    // Keep id selector as 'pd-ing-' for compatibility with existing JS
     const card = document.getElementById('pd-ing-' + id);
     if (!card) return;
     card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     card.classList.remove('pd-ing-card--highlighted');
-    void card.offsetWidth; // reflow to restart animation
+    void card.offsetWidth;
     card.classList.add('pd-ing-card--highlighted');
     card.addEventListener('animationend', () => card.classList.remove('pd-ing-card--highlighted'), { once: true });
   }
+
+  /* ── Ingredient tag-box helpers ─────────────────────────────── */
+  function _commitIngredientToBox(boxId, hiddenId, inputId, name) {
+    if (!name) return;
+    const box = document.getElementById(boxId);
+    const hiddenCt = document.getElementById(hiddenId);
+    const input = document.getElementById(inputId);
+    if (!box || !hiddenCt || !input) return;
+    const nameLower = name.toLowerCase();
+    if (box.querySelector('.ingredient-tag[data-name="' + CSS.escape(nameLower) + '"]')) return;
+
+    const tag = document.createElement('span');
+    tag.className = 'ingredient-tag';
+    tag.dataset.name = nameLower;
+    tag.dataset.hiddenId = hiddenId;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ingredient-tag-remove';
+    btn.setAttribute('onclick', '_removeIngredientTagEl(this)');
+    btn.innerHTML = '<i class="bi bi-x"></i>';
+    tag.appendChild(document.createTextNode(name));
+    tag.appendChild(btn);
+    box.insertBefore(tag, input);
+
+    const h = document.createElement('input');
+    h.type = 'hidden';
+    h.name = 'ingredient_names';
+    h.value = name;
+    h.dataset.tag = nameLower;
+    hiddenCt.appendChild(h);
+  }
+
+  function _removeIngredientTagEl(btn) {
+    const tag = btn.parentElement;
+    const hiddenId = tag.dataset.hiddenId;
+    const name = tag.dataset.name;
+    tag.remove();
+    if (hiddenId) {
+      const ct = document.getElementById(hiddenId);
+      if (ct) {
+        const h = ct.querySelector('input[data-tag="' + CSS.escape(name) + '"]');
+        if (h) h.remove();
+      }
+    }
+  }
+
+  /* ── Detail-card edit ──────────────────────────────────────── */
+  function togglePdEdit(id) {
+    const toggle = document.getElementById('pd-edit-toggle-' + id);
+    const form = document.getElementById('pd-edit-form-' + id);
+    if (!form) return;
+    const editing = form.style.display !== 'none';
+    form.style.display = editing ? 'none' : 'flex';
+    if (toggle) {
+      toggle.innerHTML = editing
+        ? '<i class="bi bi-pencil me-1"></i>Edit Details'
+        : '<i class="bi bi-x me-1"></i>Cancel Edit';
+    }
+  }
+
+  function handlePdIngredientInput(e, id) {
+    const raw = e.target.value;
+    const parts = raw.split(', ');
+    if (parts.length > 1) {
+      parts.slice(0, -1).forEach(p => _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, p.trim()));
+      _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, parts[parts.length - 1].trim());
+      e.target.value = '';
+    }
+  }
+
+  function handlePdIngredientKeydown(e, id) {
+    const input = e.target;
+    if ((e.key === 'Enter' || e.key === 'Tab') && input.value.trim()) {
+      e.preventDefault();
+      input.value.split(', ').forEach(p => _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, p.trim()));
+      input.value = '';
+    }
+    if (e.key === 'Backspace' && input.value === '') {
+      const box = document.getElementById('pd-tag-box-' + id);
+      const lastTag = box ? box.querySelector('.ingredient-tag:last-of-type') : null;
+      if (lastTag) {
+        const removeBtn = lastTag.querySelector('.ingredient-tag-remove');
+        if (removeBtn) _removeIngredientTagEl(removeBtn);
+      }
+    }
+  }
+
+  function autoCommitPdIngredient(id) {
+    const input = document.getElementById('pd-tag-input-' + id);
+    if (input && input.value.trim()) {
+      _commitIngredientToBox('pd-tag-box-' + id, 'pd-hidden-' + id, 'pd-tag-input-' + id, input.value.trim());
+      input.value = '';
+    }
+  }
 </script>
 
-<!-- Metrics -->
-<div class="pd-section">
-  <div class="pd-section-title">Metrics</div>
-  <div class="pd-stats">
-    <div class="pd-stat">
-      <i class="bi bi-exclamation-triangle pd-stat-icon"></i>
-      <span class="pd-stat-value">{{ .Metadata.NumHazard }}</span>
-      <span class="pd-stat-name">Hazards</span>
-    </div>
-    <div class="pd-stat">
-      <i class="bi bi-activity pd-stat-icon"></i>
-      <span class="pd-stat-value">{{ .Metadata.NumEffect }}</span>
-      <span class="pd-stat-name">Effects</span>
-    </div>
-    <div class="pd-stat">
-      <i class="bi bi-heart-pulse pd-stat-icon"></i>
-      <span class="pd-stat-value">{{ .Metadata.NumSymptom }}</span>
-      <span class="pd-stat-name">Symptoms</span>
-    </div>
-    <div class="pd-stat">
-      <i class="bi bi-shield-check pd-stat-icon"></i>
-      <span class="pd-stat-value">{{ .Metadata.NumReglations }}</span>
-      <span class="pd-stat-name">Regulations</span>
+<div class="pd-wrap">
+
+  <!-- Edit product details -->
+  <div class="pd-section" style="margin-bottom:0;">
+    <button class="pd-edit-toggle" id="pd-edit-toggle-{{ .Id }}" onclick="togglePdEdit('{{ .Id }}')">
+      <i class="bi bi-pencil me-1"></i>Edit Details
+    </button>
+
+    {{- $pid := .Id }}
+    <div id="pd-edit-form-{{ .Id }}" class="pe-form" style="display:none;">
+      <input type="hidden" name="id" value="{{ .Id }}">
+
+      <div>
+        <label class="pe-label">Name *</label>
+        <input type="text" name="name" class="pe-input" value="{{ .Name }}" placeholder="Product name" autocomplete="off">
+      </div>
+
+      <div>
+        <label class="pe-label">Origin</label>
+        <input type="text" name="origin" class="pe-input" value="{{ if .Origin }}{{ deref .Origin }}{{ end }}" placeholder="Origin URL (optional)" autocomplete="off">
+      </div>
+
+      <div>
+        <label class="pe-label">Ingredients *</label>
+        <div class="pe-tag-box" id="pd-tag-box-{{ .Id }}"
+             onclick="document.getElementById('pd-tag-input-{{ .Id }}').focus()">
+          {{- range .Ingredients }}
+          <span class="ingredient-tag" data-name="{{ .PrimaryName | lower }}" data-hidden-id="pd-hidden-{{ $pid }}">
+            {{ .PrimaryName }}<button type="button" class="ingredient-tag-remove" onclick="_removeIngredientTagEl(this)"><i class="bi bi-x"></i></button>
+          </span>
+          {{- end }}
+          <input id="pd-tag-input-{{ .Id }}"
+                 class="ingredient-tag-input"
+                 type="text"
+                 placeholder="Type name, press Enter…"
+                 autocomplete="off"
+                 oninput="handlePdIngredientInput(event, '{{ .Id }}')"
+                 onkeydown="handlePdIngredientKeydown(event, '{{ .Id }}')">
+        </div>
+        <div id="pd-hidden-{{ .Id }}">
+          {{- range .Ingredients }}
+          <input type="hidden" name="ingredient_names" value="{{ .PrimaryName }}" data-tag="{{ .PrimaryName | lower }}">
+          {{- end }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end" style="margin-top:0.1rem;">
+        <button type="button" class="pe-btn-cancel" onclick="togglePdEdit('{{ .Id }}')">Cancel</button>
+        <button type="button" class="pe-btn-save"
+                hx-post="/product"
+                hx-include="#pd-edit-form-{{ .Id }}"
+                hx-swap="none"
+                hx-on::before-request="autoCommitPdIngredient('{{ .Id }}')"
+                hx-on::after-request="if(event.detail.successful){ htmx.ajax('GET', '/htmx/product-detail?id={{ .Id }}', {target: '#side-modal_content', swap: 'innerHTML'}); htmx.trigger(document.body, 'productUpdated') }">
+          <i class="bi bi-check2 me-1"></i>Save Changes
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-{{- if .Metadata.AiBlurb }}
-<div class="pd-section">
-  <div class="pd-section-title">Summary</div>
-  <p class="pd-ing-blurb" style="-webkit-line-clamp:unset;overflow:visible;">{{ deref .Metadata.AiBlurb }}</p>
-</div>
-{{- end }}
-
-<!-- Ingredients carousel -->
-<div class="pd-section">
-  <div class="pd-section-title">Ingredients ({{ len .Ingredients }})</div>
-  {{- if gt (len .Ingredients) 0 }}
-  <input class="pd-filter-input" type="text" placeholder="&#128269; Filter ingredients..." autocomplete="off" oninput="pdFilterCarousel(this)">
-  <div class="pd-carousel">
-    {{- range .Ingredients }}
-    <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}" id="pd-ing-{{ .Id }}" data-name="{{ .PrimaryName | lower }}">
-
-      <div class="ingredient-card-header">
-        <p class="ingredient-card-name">{{ .PrimaryName }}</p>
-        <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
-          <button class="btn-star"
-            data-bs-toggle="modal"
-            data-bs-target="#modal"
-            hx-get="/htmx/ingredient-detail?id={{ .Id }}"
-            hx-target="#modal-content"
-            hx-swap="innerHTML"
-            title="View details">
-            <i class="bi bi-arrow-right-circle"></i>
-          </button>
-          {{- if .Failed }}
-          <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
-          {{- end }}
-          {{- if exists $.FavoriteIngredients .Id }}
-          <button class="btn-star starred" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
-            <i class="bi bi-star-fill"></i>
-          </button>
-          {{- else }}
-          <button class="btn-star" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save ingredient">
-            <i class="bi bi-star"></i>
-          </button>
-          {{- end }}
-        </div>
+  <!-- Metrics -->
+  <div class="pd-section">
+    <div class="pd-section-title">Metrics</div>
+    <div class="pd-stats">
+      <div class="pd-stat">
+        <i class="bi bi-exclamation-triangle pd-stat-icon"></i>
+        <span class="pd-stat-value">{{ .Metadata.NumHazard }}</span>
+        <span class="pd-stat-name">Hazards</span>
       </div>
-
-      {{- if not .Failed }}
-      <hr class="ingredient-card-divider">
-
-      <div>
-        <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
-        {{- if gt (len .Names) 0 }}
-        <input
-          class="ingredient-synonym-search"
-          type="text"
-          placeholder="&#128269; Filter synonyms..."
-          autocomplete="off"
-          oninput="pdFilterSynonyms(this)">
-        <div class="ingredient-synonym-scroll">
-          {{- range .Names }}
-          <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
-          {{- end }}
-        </div>
-        <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:#adb5bd;">No synonyms match.</span>
-        {{- else }}
-        <span style="font-size:0.78rem;color:#adb5bd;">No synonyms on record.</span>
-        {{- end }}
+      <div class="pd-stat">
+        <i class="bi bi-activity pd-stat-icon"></i>
+        <span class="pd-stat-value">{{ .Metadata.NumEffect }}</span>
+        <span class="pd-stat-name">Effects</span>
       </div>
-
-      <hr class="ingredient-card-divider">
-
-      <div>
-        <div class="ingredient-card-label">Metrics</div>
-        <div class="ingredient-stats">
-          <div class="ingredient-stat">
-            <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
-            <span class="ingredient-stat-name">Hazards</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-activity ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
-            <span class="ingredient-stat-name">Effects</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
-            <span class="ingredient-stat-name">Symptoms</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-shield-check ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
-            <span class="ingredient-stat-name">Regulations</span>
-          </div>
-        </div>
+      <div class="pd-stat">
+        <i class="bi bi-heart-pulse pd-stat-icon"></i>
+        <span class="pd-stat-value">{{ .Metadata.NumSymptom }}</span>
+        <span class="pd-stat-name">Symptoms</span>
       </div>
-
-      {{- if .Metadata.AiBlurb }}
-      <hr class="ingredient-card-divider">
-      <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-      {{- end }}
-      {{- end }}
-
-      <div class="ingredient-card-footer">
-        Added {{ .Created.Format "Jan 2, 2006" }}
+      <div class="pd-stat">
+        <i class="bi bi-shield-check pd-stat-icon"></i>
+        <span class="pd-stat-value">{{ .Metadata.NumReglations }}</span>
+        <span class="pd-stat-name">Regulations</span>
       </div>
-
     </div>
+  </div>
+
+  {{- if .Metadata.AiBlurb }}
+  <!-- Summary -->
+  <div class="pd-section">
+    <div class="pd-section-title">Summary</div>
+    <p class="pd-ing-blurb">{{ deref .Metadata.AiBlurb }}</p>
+  </div>
+  {{- end }}
+
+  <!-- Ingredients carousel -->
+  <div class="pd-section">
+    <div class="pd-section-title">Ingredients ({{ len .Ingredients }})</div>
+    {{- if gt (len .Ingredients) 0 }}
+    <input class="pd-filter-input" type="text" placeholder="&#128269; Filter ingredients..." autocomplete="off" oninput="pdFilterCarousel(this)">
+    <div class="pd-carousel">
+      {{- range .Ingredients }}
+      <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ end }}" id="pd-ing-{{ .Id }}" data-name="{{ .PrimaryName | lower }}">
+
+        <div class="ingredient-card-header">
+          <p class="ingredient-card-name">{{ .PrimaryName }}</p>
+          <div class="ingredient-card-actions">
+            <button class="btn-icon"
+              data-bs-toggle="modal"
+              data-bs-target="#modal"
+              hx-get="/htmx/ingredient-detail?id={{ .Id }}"
+              hx-target="#modal-content"
+              hx-swap="innerHTML"
+              title="View details">
+              <i class="bi bi-arrow-right-circle"></i>
+            </button>
+            {{- if .Failed }}
+            <span class="ingredient-card-badge">Retrieval failed</span>
+            {{- end }}
+            {{- if exists $.FavoriteIngredients .Id }}
+            <button class="btn-icon btn-star starred" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
+              <i class="bi bi-star-fill"></i>
+            </button>
+            {{- else }}
+            <button class="btn-icon btn-star" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save ingredient">
+              <i class="bi bi-star"></i>
+            </button>
+            {{- end }}
+          </div>
+        </div>
+
+        {{- if not .Failed }}
+        <hr class="ingredient-card-divider">
+
+        <div>
+          <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
+          {{- if gt (len .Names) 0 }}
+          <input class="ingredient-synonym-search" type="text" placeholder="&#128269; Filter synonyms..." autocomplete="off" oninput="pdFilterSynonyms(this)">
+          <div class="ingredient-synonym-scroll">
+            {{- range .Names }}
+            <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
+            {{- end }}
+          </div>
+          <span class="ingredient-synonym-empty" style="display:none;font-size:0.75rem;color:var(--muted);">No synonyms match.</span>
+          {{- else }}
+          <span style="font-size:0.75rem;color:var(--muted);">No synonyms on record.</span>
+          {{- end }}
+        </div>
+
+        <hr class="ingredient-card-divider">
+
+        <div>
+          <div class="ingredient-card-label">Metrics</div>
+          <div class="ingredient-stats">
+            <div class="ingredient-stat">
+              <i class="bi bi-exclamation-triangle ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span>
+              <span class="ingredient-stat-name">Hazards</span>
+            </div>
+            <div class="ingredient-stat">
+              <i class="bi bi-activity ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span>
+              <span class="ingredient-stat-name">Effects</span>
+            </div>
+            <div class="ingredient-stat">
+              <i class="bi bi-heart-pulse ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumSymptoms }}</span>
+              <span class="ingredient-stat-name">Symptoms</span>
+            </div>
+            <div class="ingredient-stat">
+              <i class="bi bi-shield-check ingredient-stat-icon"></i>
+              <span class="ingredient-stat-value">{{ .Metadata.NumRegulations }}</span>
+              <span class="ingredient-stat-name">Regulations</span>
+            </div>
+          </div>
+        </div>
+
+        {{- if .Metadata.AiBlurb }}
+        <hr class="ingredient-card-divider">
+        <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+        {{- end }}
+        {{- end }}
+
+        <div class="ingredient-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+
+      </div>
+      {{- end }}
+    </div>
+    {{- else }}
+    <span class="pd-empty-note">No ingredients linked to this product.</span>
     {{- end }}
   </div>
-  {{- else }}
-  <span class="pd-empty-note">No ingredients linked to this product.</span>
-  {{- end }}
-</div>
 
-<!-- Hazards -->
-<div class="pd-section">
-  <div class="pd-section-title">Hazards ({{ .Metadata.NumHazard }})</div>
-  {{- if gt .Metadata.NumHazard 0 }}
-  <input class="pd-filter-input" type="text" placeholder="&#128269; Filter hazards..." autocomplete="off" oninput="pdFilterPills(this)">
-  <div class="pd-label-scroll">
-    {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "hazard" }}
-    <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
-      {{ .Payload }}
-      <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
-    </button>
-    {{- end }}{{- end }}{{- end }}
+  <!-- Hazards -->
+  <div class="pd-section">
+    <div class="pd-section-title">Hazards ({{ .Metadata.NumHazard }})</div>
+    {{- if gt .Metadata.NumHazard 0 }}
+    <input class="pd-filter-input" type="text" placeholder="&#128269; Filter hazards..." autocomplete="off" oninput="pdFilterPills(this)">
+    <div class="pd-label-scroll">
+      {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "hazard" }}
+      <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
+        {{ .Payload }}
+        <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
+      </button>
+      {{- end }}{{- end }}{{- end }}
+    </div>
+    <span class="pd-empty-note" style="display:none;">No hazards match.</span>
+    {{- else }}
+    <span class="pd-empty-note">No hazards across ingredients.</span>
+    {{- end }}
   </div>
-  <span class="pd-empty-note" style="display:none;">No hazards match.</span>
-  {{- else }}
-  <span class="pd-empty-note">No hazards across ingredients.</span>
-  {{- end }}
-</div>
 
-<!-- Effects -->
-<div class="pd-section">
-  <div class="pd-section-title">Effects ({{ .Metadata.NumEffect }})</div>
-  {{- if gt .Metadata.NumEffect 0 }}
-  <input class="pd-filter-input" type="text" placeholder="&#128269; Filter effects..." autocomplete="off" oninput="pdFilterPills(this)">
-  <div class="pd-label-scroll">
-    {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "effect" }}
-    <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
-      {{ .Payload }}
-      <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
-    </button>
-    {{- end }}{{- end }}{{- end }}
+  <!-- Effects -->
+  <div class="pd-section">
+    <div class="pd-section-title">Effects ({{ .Metadata.NumEffect }})</div>
+    {{- if gt .Metadata.NumEffect 0 }}
+    <input class="pd-filter-input" type="text" placeholder="&#128269; Filter effects..." autocomplete="off" oninput="pdFilterPills(this)">
+    <div class="pd-label-scroll">
+      {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "effect" }}
+      <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
+        {{ .Payload }}
+        <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
+      </button>
+      {{- end }}{{- end }}{{- end }}
+    </div>
+    <span class="pd-empty-note" style="display:none;">No effects match.</span>
+    {{- else }}
+    <span class="pd-empty-note">No effects across ingredients.</span>
+    {{- end }}
   </div>
-  <span class="pd-empty-note" style="display:none;">No effects match.</span>
-  {{- else }}
-  <span class="pd-empty-note">No effects across ingredients.</span>
-  {{- end }}
-</div>
 
-<!-- Symptoms -->
-<div class="pd-section">
-  <div class="pd-section-title">Symptoms ({{ .Metadata.NumSymptom }})</div>
-  {{- if gt .Metadata.NumSymptom 0 }}
-  <input class="pd-filter-input" type="text" placeholder="&#128269; Filter symptoms..." autocomplete="off" oninput="pdFilterPills(this)">
-  <div class="pd-label-scroll">
-    {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "symptom" }}
-    <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
-      {{ .Payload }}
-      <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
-    </button>
-    {{- end }}{{- end }}{{- end }}
+  <!-- Symptoms -->
+  <div class="pd-section">
+    <div class="pd-section-title">Symptoms ({{ .Metadata.NumSymptom }})</div>
+    {{- if gt .Metadata.NumSymptom 0 }}
+    <input class="pd-filter-input" type="text" placeholder="&#128269; Filter symptoms..." autocomplete="off" oninput="pdFilterPills(this)">
+    <div class="pd-label-scroll">
+      {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "symptom" }}
+      <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
+        {{ .Payload }}
+        <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
+      </button>
+      {{- end }}{{- end }}{{- end }}
+    </div>
+    <span class="pd-empty-note" style="display:none;">No symptoms match.</span>
+    {{- else }}
+    <span class="pd-empty-note">No symptoms across ingredients.</span>
+    {{- end }}
   </div>
-  <span class="pd-empty-note" style="display:none;">No symptoms match.</span>
-  {{- else }}
-  <span class="pd-empty-note">No symptoms across ingredients.</span>
-  {{- end }}
-</div>
 
-<!-- Regulations -->
-<div class="pd-section">
-  <div class="pd-section-title">Regulations ({{ .Metadata.NumReglations }})</div>
-  {{- if gt .Metadata.NumReglations 0 }}
-  <input class="pd-filter-input" type="text" placeholder="&#128269; Filter regulations..." autocomplete="off" oninput="pdFilterPills(this)">
-  <div class="pd-label-scroll">
-    {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "regulation" }}
-    <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
-      {{ .Payload }}
-      <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
-    </button>
-    {{- end }}{{- end }}{{- end }}
+  <!-- Regulations -->
+  <div class="pd-section">
+    <div class="pd-section-title">Regulations ({{ .Metadata.NumReglations }})</div>
+    {{- if gt .Metadata.NumReglations 0 }}
+    <input class="pd-filter-input" type="text" placeholder="&#128269; Filter regulations..." autocomplete="off" oninput="pdFilterPills(this)">
+    <div class="pd-label-scroll">
+      {{- range .Ingredients }}{{- $ing := . }}{{- range .Labels }}{{- if eq .Type "regulation" }}
+      <button class="pd-label-pill" data-name="{{ .Payload | lower }}" onclick="pdHighlightIngredient('{{ $ing.Id }}')">
+        {{ .Payload }}
+        <span class="pd-label-source">{{ $ing.PrimaryName }}</span>
+      </button>
+      {{- end }}{{- end }}{{- end }}
+    </div>
+    <span class="pd-empty-note" style="display:none;">No regulations match.</span>
+    {{- else }}
+    <span class="pd-empty-note">No regulations across ingredients.</span>
+    {{- end }}
   </div>
-  <span class="pd-empty-note" style="display:none;">No regulations match.</span>
-  {{- else }}
-  <span class="pd-empty-note">No regulations across ingredients.</span>
-  {{- end }}
+
 </div>
 {{- end }}

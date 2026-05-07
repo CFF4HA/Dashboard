@@ -1,0 +1,27 @@
+{{- with .MonitorOptions }}
+{{- range . }}
+<div class="monitor-option-row{{ if .IsMonitored }} selected{{ end }}"
+     onclick="_monitorToggle('{{ .Id }}', this)"
+     {{ if .IsMonitored }}data-already-monitored="true"{{ end }}>
+  <div class="monitor-option-icon">
+    <i class="bi bi-{{ if .IsMonitored }}bookmark-check-fill{{ else }}flask{{ end }}"></i>
+  </div>
+  <div class="flex-grow-1">
+    <div class="monitor-option-name">{{ .PrimaryName }}</div>
+    <div class="monitor-option-meta">{{ .Metadata.NumHazards }} hazards · {{ .Metadata.NumEffects }} effects</div>
+  </div>
+  {{- if .IsMonitored }}
+  <span class="monitor-option-already"><i class="bi bi-check-lg me-1"></i>Monitored</span>
+  {{- else }}
+  <div class="monitor-option-check">
+    <i class="bi bi-check-lg"></i>
+  </div>
+  {{- end }}
+</div>
+{{- else }}
+<div class="text-center py-4 text-muted">
+  <i class="bi bi-journal-x mb-2 d-block h4"></i>
+  <p class="small mb-0">No ingredients found. Try a different search or fetch from PubChem below.</p>
+</div>
+{{- end }}
+{{- end }}

@@ -1,52 +1,156 @@
-{{/*
-  Purpose: This will render the list of products
-  being compared in the "/compare" page.
-
-  * It should have the name of the product.
-  * It should have the list of ingredients in small pills.
-  * The list of ingredients should be a fixed height, scrollable in the y-axis.
-  * Clicking the card activates the corresponding Unique tab in the investigation view.
-  * Good/Bad vote buttons allow the user to mark the product.
-*/}}
 {{- with .Product }}
 <style>
-  .cpc-pill {
-    font-size: 0.73rem;
-    color: #495057;
+  /* ── Compare product card ────────────────────────────────── */
+  .compare-product-card {
+    position: relative;
     background: #ffffff;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    border-radius: 15px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-family: 'Lato', sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+
+  .compare-product-card:hover {
+    box-shadow: 0 8px 24px rgba(26, 46, 30, 0.1);
+  }
+
+  /* ── Remove button ───────────────────────────────────────── */
+  .cpc-remove-btn {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted, #6c8f70);
+    font-size: 1rem;
+    padding: 0.15rem 0.2rem;
+    border-radius: 7px;
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .cpc-remove-btn:hover {
+    background: #fef2f2;
+    color: var(--danger, #c0392b);
+  }
+
+  /* ── Product name ────────────────────────────────────────── */
+  .compare-product-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--forest-green, #1a2e1e);
+    margin: 0;
+    padding-right: 1.6rem;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  /* ── Divider ─────────────────────────────────────────────── */
+  .cpc-divider {
+    border: none;
+    border-top: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    margin: 0;
+  }
+
+  /* ── Section label ───────────────────────────────────────── */
+  .cpc-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted, #6c8f70);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── Ingredient pill container ───────────────────────────── */
+  .cpc-pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 90px;
+    overflow-y: auto;
+    padding: 0.4rem 0.5rem;
+    background: var(--soft-white, #fbfbfb);
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    border-radius: 10px;
+  }
+
+  .cpc-pill-container::-webkit-scrollbar       { width: 3px; }
+  .cpc-pill-container::-webkit-scrollbar-track  { background: transparent; }
+  .cpc-pill-container::-webkit-scrollbar-thumb  { background: var(--border, rgba(26, 46, 30, 0.12)); border-radius: 2px; }
+
+  .cpc-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--forest-green, #1a2e1e);
+    background: #ffffff;
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
     border-radius: 20px;
-    padding: 0.15rem 0.55rem;
+    padding: 0.12rem 0.5rem;
     white-space: nowrap;
   }
 
+  /* ── Substance count ─────────────────────────────────────── */
+  .cpc-count {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted, #6c8f70);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Vote row ────────────────────────────────────────────── */
   .cpc-vote-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
-    margin-top: auto;
   }
 
   .cpc-vote-btn {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    font-size: 0.72rem;
-    font-weight: 500;
-    padding: 0.2rem 0.4rem;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
-    background: #fff;
-    color: #adb5bd;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: 'Lato', sans-serif;
+    padding: 0.45rem 0.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    background: var(--soft-white, #fbfbfb);
+    color: var(--muted, #6c8f70);
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .cpc-vote-btn:hover { border-color: #adb5bd; color: #6c757d; }
-  .cpc-vote-btn.cpc-vote-good--active { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
-  .cpc-vote-btn.cpc-vote-bad--active  { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+  .cpc-vote-btn:hover {
+    background: var(--mint-green, #CFF9C3);
+    border-color: rgba(39, 66, 41, 0.25);
+    color: var(--forest-green, #1a2e1e);
+  }
+
+  /* Active: Safe */
+  .cpc-vote-btn.cpc-vote-good--active {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #16a34a;
+    box-shadow: 0 2px 8px rgba(134, 239, 172, 0.3);
+  }
+
+  /* Active: Reacts */
+  .cpc-vote-btn.cpc-vote-bad--active {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+    box-shadow: 0 2px 8px rgba(252, 165, 165, 0.3);
+  }
 </style>
 
 <div class="compare-carousel-item" id="compare-item-{{ .Id }}">
@@ -55,30 +159,51 @@
        data-bs-target="#unique-tab-{{ .Id }}"
        role="button"
        tabindex="0">
-    <button class="compare-product-remove" onclick="compareRemoveProduct('{{ .Id }}', event)" title="Remove">
+
+    <!-- Remove -->
+    <button class="cpc-remove-btn"
+            onclick="compareRemoveProduct('{{ .Id }}', event)"
+            title="Remove from comparison">
       <i class="bi bi-x-lg"></i>
     </button>
+
+    <!-- Name -->
     <p class="compare-product-name">{{ .Name }}</p>
-    <div style="display:flex; flex-wrap:wrap; gap:0.3rem; max-height:5rem; overflow-y:auto; padding-right:0.1rem;">
-      {{- range .Ingredients }}
-      <span class="cpc-pill">{{ .PrimaryName }}</span>
-      {{- end }}
+
+    <hr class="cpc-divider">
+
+    <!-- Ingredients -->
+    <div>
+      <div class="cpc-label">Ingredients</div>
+      <div class="cpc-pill-container">
+        {{- range .Ingredients }}
+        <span class="cpc-pill">{{ .PrimaryName }}</span>
+        {{- end }}
+      </div>
     </div>
-    <div class="compare-product-meta">{{ len .Ingredients }} ingredients</div>
-    <div class="cpc-vote-row">
-      <button class="cpc-vote-btn" id="cpc-good-{{ .Id }}"
-              onclick="cpcToggleVote(event, 'good', '{{ .Id }}')" title="Mark as good">
-        <i class="bi bi-hand-thumbs-up"></i> Good
-      </button>
-      <button class="cpc-vote-btn" id="cpc-bad-{{ .Id }}"
-              onclick="cpcToggleVote(event, 'bad', '{{ .Id }}')" title="Mark as bad">
-        <i class="bi bi-hand-thumbs-down"></i> Bad
-      </button>
+
+    <!-- Count + vote row -->
+    <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:auto;">
+      <span class="cpc-count">{{ len .Ingredients }} substances</span>
+      <div class="cpc-vote-row">
+        <button class="cpc-vote-btn" id="cpc-good-{{ .Id }}"
+                onclick="cpcToggleVote(event, 'good', '{{ .Id }}')">
+          <i class="bi bi-shield-check"></i> Safe
+        </button>
+        <button class="cpc-vote-btn" id="cpc-bad-{{ .Id }}"
+                onclick="cpcToggleVote(event, 'bad', '{{ .Id }}')">
+          <i class="bi bi-shield-exclamation"></i> Reacts
+        </button>
+      </div>
     </div>
+
   </div>
 </div>
 
 <script>
+  /**
+   * Store product ingredient data globally for the Investigation logic
+   */
   window.__cpcProductIngredients = window.__cpcProductIngredients || {};
   window.__cpcProductIngredients['{{ .Id }}'] = [
     {{- range .Ingredients }}
@@ -86,6 +211,9 @@
     {{- end }}
   ];
 
+  /**
+   * Toggles the Safe/Reacts vote and communicates with the investigation view
+   */
   function cpcToggleVote(event, type, id) {
     event.stopPropagation();
     const goodBtn = document.getElementById('cpc-good-' + id);
@@ -98,6 +226,7 @@
       active = !wasActive;
       goodBtn.classList.toggle('cpc-vote-good--active', active);
       badBtn.classList.remove('cpc-vote-bad--active');
+
       if (window.invUpdateBadIngredients) {
         window.invUpdateBadIngredients(id, 'good', active);
         window.invUpdateBadIngredients(id, 'bad', false);
@@ -107,6 +236,7 @@
       active = !wasActive;
       badBtn.classList.toggle('cpc-vote-bad--active', active);
       goodBtn.classList.remove('cpc-vote-good--active');
+
       if (window.invUpdateBadIngredients) {
         window.invUpdateBadIngredients(id, 'good', false);
         window.invUpdateBadIngredients(id, 'bad', active);

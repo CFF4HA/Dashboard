@@ -24,12 +24,20 @@ func InitializeDatabase(url string) error {
 	DB = d
 	DB.AutoMigrate(
 		&types.Ingredient{},
-		&types.IngredientMetadata{},
+		&types.IngredientNote{},
 		&types.Product{},
-		&types.ProductMetadata{},
-		&types.Name{},
 		&types.Label{},
+		&types.PubChemLabelConfig{},
+
 		&types.User{},
+		&types.Role{},
+		&types.Notification{},
+		&types.UsageMetric{},
+
+		&types.Tag{},
+		&types.TaggingRule{},
+		&types.TaggingSet{},
+		&types.TaggingJob{},
 	)
 	return nil
 }

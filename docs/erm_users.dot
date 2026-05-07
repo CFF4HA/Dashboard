@@ -1,0 +1,106 @@
+digraph {
+	graph [label="Data Design - Entity Relationship Model (Users & Access)"]
+	edge [margin=2];
+	rankdir=LR;
+
+	// Primary Entities
+	node [shape=rect, fontname="Courier"]
+	ent_User [label="<<Entity>>\nUser", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_Role [label="<<Entity>>\nRole", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_Session [label="<<Entity>>\nSession", style="filled", fillcolor="#333333", fontcolor="white"];
+
+	// Referenced Entities (defined in erm_core)
+	ent_Product [label="<<Entity>>\nProduct\n(see erm_core)", style="filled", fillcolor="#555555", fontcolor="#AAAAAA"];
+	ent_Ingredient [label="<<Entity>>\nIngredient\n(see erm_core)", style="filled", fillcolor="#555555", fontcolor="#AAAAAA"];
+
+
+	// Entity Attribute Clusters
+	subgraph cluster_UserAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_user_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_user_Username [label="<<Text>>\nUsername"];
+		attr_user_PasswordHash [label="<<Text>>\nPasswordHash"];
+		attr_user_Products [label="<<[]FK>>\nProducts\n(favorites)", style="filled", fillcolor="#D4FFE6"];
+		attr_user_Ingredients [label="<<[]FK>>\nIngredients\n(favorites)", style="filled", fillcolor="#D4FFE6"];
+		attr_user_GoodProducts [label="<<[]FK>>\nGoodProducts", style="filled", fillcolor="#D4FFE6"];
+		attr_user_GoodIngredients [label="<<[]FK>>\nGoodIngredients", style="filled", fillcolor="#D4FFE6"];
+		attr_user_BadProducts [label="<<[]FK>>\nBadProducts", style="filled", fillcolor="#D4FFE6"];
+		attr_user_BadIngredients [label="<<[]FK>>\nBadIngredients", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_user_ID,
+			attr_user_Username,
+			attr_user_PasswordHash,
+			attr_user_Products,
+			attr_user_Ingredients,
+			attr_user_GoodProducts,
+			attr_user_GoodIngredients,
+			attr_user_BadProducts,
+			attr_user_BadIngredients
+		} -> ent_User;
+	}
+
+	subgraph cluster_RoleAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_role_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_role_Name [label="<<Text>>\nName"];
+		attr_role_Description [label="<<Text>>\nDescription"];
+		attr_role_Users [label="<<[]FK>>\nUsers", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_role_ID,
+			attr_role_Name,
+			attr_role_Description,
+			attr_role_Users
+		} -> ent_Role;
+	}
+
+	subgraph cluster_SessionAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_session_Session [label="<<UUID>>\nSession", style="filled", fillcolor="#D4F4FF"];
+
+		edge [arrowhead=none];
+		attr_session_Session -> ent_Session;
+	}
+
+
+	// Behaviors / Relationships
+	node [shape=diamond, style="filled", fillcolor="lightgray", fontname="Courier"];
+	bh_role_user [label="Grants"];
+	bh_user_fav_prod [label="Favorites"];
+	bh_user_fav_ing [label="Favorites"];
+	bh_user_good_prod [label="Good"];
+	bh_user_good_ing [label="Good"];
+	bh_user_bad_prod [label="Bad"];
+	bh_user_bad_ing [label="Bad"];
+
+	// Behavior Mapping
+	edge [arrowhead=none];
+	ent_Role -> bh_role_user [headlabel="\nn"];
+	bh_role_user -> ent_User [taillabel="\nn"];
+
+	ent_User -> bh_user_fav_prod [headlabel="\nn"];
+	bh_user_fav_prod -> ent_Product [taillabel="\nn"];
+
+	ent_User -> bh_user_fav_ing [headlabel="\nn"];
+	bh_user_fav_ing -> ent_Ingredient [taillabel="\nn"];
+
+	ent_User -> bh_user_good_prod [headlabel="\nn"];
+	bh_user_good_prod -> ent_Product [taillabel="\nn"];
+
+	ent_User -> bh_user_good_ing [headlabel="\nn"];
+	bh_user_good_ing -> ent_Ingredient [taillabel="\nn"];
+
+	ent_User -> bh_user_bad_prod [headlabel="\nn"];
+	bh_user_bad_prod -> ent_Product [taillabel="\nn"];
+
+	ent_User -> bh_user_bad_ing [headlabel="\nn"];
+	bh_user_bad_ing -> ent_Ingredient [taillabel="\nn"];
+
+
+}

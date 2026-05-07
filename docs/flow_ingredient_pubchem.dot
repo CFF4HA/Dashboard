@@ -1,0 +1,47 @@
+digraph flow_ingredient_pubchem {
+  rankdir=TB
+  graph [
+    label="UML Sequence — ingredient-search_results: PubChem Retrieve\n(PUT /ingredient  →  sync POST /ingredient/sync)",
+    labelloc=t, labeljust=l,
+    fontname="Helvetica", fontsize=12,
+    nodesep=1.2, ranksep=0.6,
+    splines=line, pad=0.5
+  ]
+  node [fontname="Helvetica", fontsize=10, height=0.5]
+  edge [fontname="Helvetica", fontsize=9, arrowsize=0.75]
+
+  // ── Lifelines ─────────────────────────────────────────────────────────────
+  { rank=min
+    Browser [label="Browser",                                              shape=rect,     style="filled,rounded",       fillcolor="#fff196"]
+    PubH    [label="PubChem Handler\ninternal/handlers/ingredient/create.go", shape=rect,  style="filled,rounded",       fillcolor="#96b1ff"]
+    PubChem [label="PubChem REST API",                                     shape=rect,     style="filled,dashed,rounded", fillcolor="#e9ecef"]
+    DB      [label="PostgreSQL",                                            shape=cylinder, style=filled,                 fillcolor="#ffcccc"]
+  }
+
+  // ── Lifeline step nodes ───────────────────────────────────────────────────
+  node [shape=point, width=0.04, height=0.04, label=""]
+
+  // ── Lifeline chains ───────────────────────────────────────────────────────
+  edge [style=dashed, arrowhead=none, color="#cccccc", weight=20]
+  Browser -> b0 -> b1 -> b2 -> b3 -> b4 -> b5
+  PubH    -> p0 -> p1 -> p2 -> p3 -> p4 -> p5
+  PubChem -> c0 -> c1 -> c2 -> c3 -> c4 -> c5
+  DB      -> d0 -> d1 -> d2 -> d3 -> d4 -> d5
+
+  // ── Step alignment ────────────────────────────────────────────────────────
+  { rank=same; b0; p0; c0; d0 }
+  { rank=same; b1; p1; c1; d1 }
+  { rank=same; b2; p2; c2; d2 }
+  { rank=same; b3; p3; c3; d3 }
+  { rank=same; b4; p4; c4; d4 }
+  { rank=same; b5; p5; c5; d5 }
+
+  // ── Messages ──────────────────────────────────────────────────────────────
+  edge [constraint=false, fontsize=9]
+  b0 -> p0 [label="  PUT /ingredient  \n",                                        style=solid,  color="#EE7722", fontcolor="#EE7722"]
+  p1 -> c1 [label="  GET compound / substance (by name)  \n",                     style=solid,  color="#EE7722", fontcolor="#EE7722"]
+  c2 -> p2 [label="  JSON (hazards · names · labels)  \n",                        style=dashed, color="#EE7722", fontcolor="#EE7722"]
+  p3 -> d3 [label="  INSERT ingredient + labels + names  \n",                     style=solid,  color="#EE7722", fontcolor="#EE7722"]
+  p4 -> b4 [label="  200 OK  \n",                                                  style=dashed, color="#EE7722", fontcolor="#EE7722"]
+  b5 -> b5 [label="  htmx.ajax() re-fires\ningredient search  \n",                style=solid,  color="#EE7722", fontcolor="#EE7722"]
+}

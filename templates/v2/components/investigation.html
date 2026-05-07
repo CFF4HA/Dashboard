@@ -1,455 +1,284 @@
-{{/* This will render a list of shared and unique attributes across compared products. */}}
 <style>
-  /* ── Investigation carousel ─────────────────────────────────── */
+  /* ── Investigation Container ── */
+  .inv-container { font-family: 'Lato', sans-serif !important; }
+
+  /* ── Carousel & Layout ── */
   .inv-carousel {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
-    overflow-x: auto;
     padding-bottom: 0.5rem;
   }
 
-  .inv-carousel::-webkit-scrollbar { height: 3px; }
-  .inv-carousel::-webkit-scrollbar-track { background: transparent; }
-  .inv-carousel::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
-
   .inv-carousel-item {
     flex-shrink: 0;
-    width: 270px;
+    width: 280px;
   }
 
-  /* ── Ingredient card ────────────────────────────────────────── */
+  /* ── Apothecary Ingredient Card ── */
   .inv-ingredient-card {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    padding: 1rem 1.1rem;
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 18px;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    gap: 0.75rem;
     height: 100%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease;
   }
 
-  .inv-card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem;
+  .inv-ingredient-card:hover {
+    transform: translateY(-3px);
   }
 
   .inv-card-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #495057;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--forest-green);
     margin: 0;
     line-height: 1.3;
-    word-break: break-word;
   }
 
-  .inv-btn-detail {
-    background: none;
+  /* ── Bad Ingredient Section ── */
+  #inv-bad-section {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .inv-tag-bad-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #c53030;
     border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
     cursor: pointer;
-    color: #adb5bd;
-    font-size: 1rem;
-    padding: 0;
-    line-height: 1;
-    flex-shrink: 0;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
   }
 
-  .inv-btn-detail:hover { color: #0d6efd; }
+  .inv-tag-bad-btn:hover:not(:disabled) { background: #9b2c2c; transform: scale(1.02); }
+  .inv-tag-bad-btn:disabled { background: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
 
-  .inv-divider { border: none; border-top: 1px solid #dee2e6; margin: 0; }
-
-  .inv-card-label {
-    font-size: 0.72rem;
-    font-weight: 600;
+  /* ── Label & UI Elements ── */
+  .inv-section-label {
+    font-size: 0.7rem;
+    font-weight: 800;
     color: #adb5bd;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.3rem;
-  }
-
-  .inv-synonym-scroll {
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    max-height: 5rem;
-    overflow-y: auto;
-    padding-right: 0.1rem;
+    align-items: center;
+    gap: 0.5rem;
   }
 
-  .inv-synonym-scroll::-webkit-scrollbar { width: 3px; }
-  .inv-synonym-scroll::-webkit-scrollbar-track { background: transparent; }
-  .inv-synonym-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+  .inv-label-card {
+    background: #ffffff;
+    border: 1px solid var(--apothecary-border);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--forest-green);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
 
   .inv-synonym-pill {
-    font-size: 0.75rem;
-    color: #495057;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 20px;
-    padding: 0.15rem 0.55rem;
-    white-space: nowrap;
-  }
-
-  .inv-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
-
-  .inv-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; min-width: 0; overflow: hidden; }
-  .inv-stat-icon { flex-shrink: 0; font-size: 0.75rem; color: #adb5bd; width: 1rem; text-align: center; }
-  .inv-stat-value { flex-shrink: 0; font-weight: 600; color: #495057; }
-  .inv-stat-name { color: #adb5bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  .inv-ai-blurb {
-    font-size: 0.8rem;
-    color: #6c757d;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin: 0;
-  }
-
-  .inv-card-footer { margin-top: auto; font-size: 0.72rem; color: #adb5bd; }
-
-  /* ── Label card (hazards / effects / symptoms) ──────────────── */
-  .inv-label-card {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 10px;
-    padding: 0.6rem 0.85rem;
-    font-size: 0.85rem;
-    color: #495057;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  /* ── Section label ──────────────────────────────────────────── */
-  .inv-section-label {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
     font-weight: 600;
-    color: #adb5bd;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.75rem;
-    margin-top: 1.5rem;
+  }
+
+  /* ── Custom Tabs ── */
+  .nav-tabs .nav-link {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #94a3b8;
+    border: none;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: var(--forest-green);
+    border-bottom: 3px solid var(--forest-green);
+    background: transparent;
+  }
+
+  .nav-pills .nav-link {
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    background: #f1f5f9;
+    color: #64748b;
+    margin-right: 0.5rem;
+  }
+
+  .nav-pills .nav-link.active {
+    background: var(--forest-green);
+    color: white;
   }
 </style>
 
-<div class="row">
-  <div class="col">
+<div class="inv-container">
+  <div class="row">
+    <div class="col">
 
-    {{/* ── Bad Ingredients ─────────────────────────────────────── */}}
-    <div id="inv-bad-section" style="display:none;">
-      <p class="inv-section-label" style="color:#dc2626; margin-top:0;"><i class="bi bi-exclamation-circle me-1"></i>Bad Ingredients</p>
-      <p class="inv-section-label text-muted">
-        The following ingredients may be harmful based on the products you've marked as "Good" 
-        and those you've marked as "Bad".
-      </p>
-      <div id="inv-bad-carousel" class="inv-carousel mb-4" style="flex-wrap:wrap; overflow-x:visible;"></div>
-    </div>
+      {{/* ── Bad Ingredients (Dynamic Logic) ── */}}
+      <div id="inv-bad-section" style="display:none;">
+        <p class="inv-section-label" style="color:#c53030;"><i class="bi bi-shield-exclamation"></i> Potential Irritants Identified</p>
+        <p class="text-muted mb-3" style="font-size: 0.85rem;">
+          Based on your "Good" and "Bad" product selections, we have isolated the following ingredients as likely culprits:
+        </p>
+        <div id="inv-bad-carousel" class="inv-carousel mb-4"></div>
 
-    {{/* ── Shared ─────────────────────────────────────────────── */}}
-    <p class="inv-section-label"><i class="bi bi-intersect me-1"></i>Shared</p>
+        <div id="inv-bad-ids" style="display:none;"></div>
 
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link active" data-bs-toggle="tab" data-bs-target="#compare-tab_shared_ingredients">Shared Ingredients</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" data-bs-target="#compare-tab_shared_hazards">Shared Hazards</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" data-bs-target="#compare-tab_shared_effects">Shared Effects</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" data-bs-target="#compare-tab_shared_symptoms">Shared Symptoms</a>
-      </li>
-    </ul>
+        <button id="inv-tag-bad-btn"
+                class="inv-tag-bad-btn"
+                hx-post="/tag/bad"
+                hx-include="[name='ingredient_ids']"
+                hx-swap="none"
+                hx-on::before-request="invPopulateBadIds()"
+                hx-on::after-request="if(event.detail.successful) invOnTagBadSuccess(this)">
+          <i class="bi bi-bookmark-x me-2"></i>Mark as "Known Irritants"
+        </button>
+      </div>
 
-    <div class="tab-content p-3 border border-top-0 mb-4" style="border-radius:0 0 12px 12px;">
+      {{/* ── Shared Attributes ── */}}
+      <p class="inv-section-label mt-4"><i class="bi bi-intersect"></i> Common Characteristics</p>
 
-      <div class="tab-pane fade show active" id="compare-tab_shared_ingredients" role="tabpanel" tabindex="0">
-        {{- if and .Investigation .Investigation.Shared.Ingredients (gt (len .Investigation.Shared.Ingredients) 0) }}
-        <div class="inv-carousel">
-          {{- range .Investigation.Shared.Ingredients }}
-          <div class="inv-carousel-item">
-            <div class="inv-ingredient-card">
-              <div class="inv-card-header">
-                <p class="inv-card-name">{{ .PrimaryName }}</p>
-                <button class="inv-btn-detail"
-                  hx-get="/htmx/ingredient-detail?id={{ .Id }}"
-                  hx-target="#side-modal_content"
-                  hx-swap="innerHTML"
-                  hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
-                  title="View details">
-                  <i class="bi bi-arrow-right-circle"></i>
-                </button>
-              </div>
-              {{- if .Names }}
-              <hr class="inv-divider">
-              <div>
-                <div class="inv-card-label">Synonyms ({{ len .Names }})</div>
-                <div class="inv-synonym-scroll">
+      <ul class="nav nav-tabs border-bottom">
+        <li class="nav-item">
+          <a class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-shared-ing">Ingredients</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-shared-haz">Hazards</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-shared-eff">Effects</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-shared-sym">Symptoms</a>
+        </li>
+      </ul>
+
+      <div class="tab-content py-4">
+        <div class="tab-pane fade show active" id="tab-shared-ing">
+          {{- if and .Investigation .Investigation.Shared.Ingredients (gt (len .Investigation.Shared.Ingredients) 0) }}
+          <div class="inv-carousel">
+            {{- range .Investigation.Shared.Ingredients }}
+            <div class="inv-carousel-item">
+              <div class="inv-ingredient-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <p class="inv-card-name">{{ .PrimaryName }}</p>
+                  <button class="btn-icon" hx-get="/htmx/ingredient-detail?id={{ .Id }}" hx-target="#side-modal_content" hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
+                    <i class="bi bi-info-circle"></i>
+                  </button>
+                </div>
+                {{- if .Names }}
+                <div class="d-flex flex-wrap gap-1">
                   {{- range .Names }}
                   <span class="inv-synonym-pill">{{ .Text }}</span>
                   {{- end }}
                 </div>
-              </div>
-              {{- end }}
-              {{- if .Metadata }}
-              <hr class="inv-divider">
-              <div>
-                <div class="inv-card-label">Metrics</div>
-                <div class="inv-stats">
-                  <div class="inv-stat">
-                    <i class="bi bi-exclamation-triangle inv-stat-icon"></i>
-                    <span class="inv-stat-value">{{ .Metadata.NumHazards }}</span>
-                    <span class="inv-stat-name">Hazards</span>
-                  </div>
-                  <div class="inv-stat">
-                    <i class="bi bi-activity inv-stat-icon"></i>
-                    <span class="inv-stat-value">{{ .Metadata.NumEffects }}</span>
-                    <span class="inv-stat-name">Effects</span>
-                  </div>
-                  <div class="inv-stat">
-                    <i class="bi bi-heart-pulse inv-stat-icon"></i>
-                    <span class="inv-stat-value">{{ .Metadata.NumSymptoms }}</span>
-                    <span class="inv-stat-name">Symptoms</span>
-                  </div>
-                  <div class="inv-stat">
-                    <i class="bi bi-shield-check inv-stat-icon"></i>
-                    <span class="inv-stat-value">{{ .Metadata.NumRegulations }}</span>
-                    <span class="inv-stat-name">Regulations</span>
-                  </div>
+                {{- end }}
+                <div class="mt-auto pt-2 border-top">
+                    <span class="inv-section-label" style="margin:0; font-size: 0.6rem;">Common to all selected</span>
                 </div>
               </div>
-              {{- if .Metadata.AiBlurb }}
-              <hr class="inv-divider">
-              <p class="inv-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-              {{- end }}
-              {{- end }}
-              <div class="inv-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
             </div>
+            {{- end }}
           </div>
+          {{- else }}
+          <p class="text-muted small">No common ingredients found in this comparison.</p>
           {{- end }}
         </div>
-        {{- else }}
-        <p class="text-muted" style="font-size:0.88rem;">No shared ingredients found across the selected products.</p>
-        {{- end }}
-      </div>
-
-      <div class="tab-pane fade" id="compare-tab_shared_hazards" role="tabpanel" tabindex="0">
-        {{- if and .Investigation .Investigation.Shared.Hazards (gt (len .Investigation.Shared.Hazards) 0) }}
-        <div class="inv-carousel">
-          {{- range .Investigation.Shared.Hazards }}
-          <div class="inv-label-card">{{ . }}</div>
-          {{- end }}
+        
+        {{/* Hazards/Effects/Symptoms Shared Panes (Simplified Labels) */}}
+        <div class="tab-pane fade" id="tab-shared-haz">
+          <div class="d-flex flex-wrap gap-2">
+            {{- range .Investigation.Shared.Hazards }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+          </div>
         </div>
-        {{- else }}
-        <p class="text-muted" style="font-size:0.88rem;">No shared hazards found across the selected products.</p>
-        {{- end }}
-      </div>
-
-      <div class="tab-pane fade" id="compare-tab_shared_effects" role="tabpanel" tabindex="0">
-        {{- if and .Investigation .Investigation.Shared.Effects (gt (len .Investigation.Shared.Effects) 0) }}
-        <div class="inv-carousel">
-          {{- range .Investigation.Shared.Effects }}
-          <div class="inv-label-card">{{ . }}</div>
-          {{- end }}
+        <div class="tab-pane fade" id="tab-shared-eff">
+          <div class="d-flex flex-wrap gap-2">
+            {{- range .Investigation.Shared.Effects }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+          </div>
         </div>
-        {{- else }}
-        <p class="text-muted" style="font-size:0.88rem;">No shared effects found across the selected products.</p>
-        {{- end }}
-      </div>
-
-      <div class="tab-pane fade" id="compare-tab_shared_symptoms" role="tabpanel" tabindex="0">
-        {{- if and .Investigation .Investigation.Shared.Symptoms (gt (len .Investigation.Shared.Symptoms) 0) }}
-        <div class="inv-carousel">
-          {{- range .Investigation.Shared.Symptoms }}
-          <div class="inv-label-card">{{ . }}</div>
-          {{- end }}
+        <div class="tab-pane fade" id="tab-shared-sym">
+          <div class="d-flex flex-wrap gap-2">
+            {{- range .Investigation.Shared.Symptoms }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+          </div>
         </div>
-        {{- else }}
-        <p class="text-muted" style="font-size:0.88rem;">No shared symptoms found across the selected products.</p>
-        {{- end }}
       </div>
 
-    </div>
+      {{/* ── Unique Attributes by Product ── */}}
+      {{- if and .Investigation .Investigation.ProductList (gt (len .Investigation.ProductList) 0) }}
+      <p class="inv-section-label mt-5"><i class="bi bi-distribute-horizontal"></i> Product Exclusives</p>
 
-    {{/* ── Unique by Product ───────────────────────────────────── */}}
-    {{- if and .Investigation .Investigation.ProductList (gt (len .Investigation.ProductList) 0) }}
-    <p class="inv-section-label"><i class="bi bi-exclude me-1"></i>Unique to Product</p>
+      <ul class="nav nav-pills mb-4" id="unique-product-pills">
+        {{- range $i, $p := .Investigation.ProductList }}
+        <li class="nav-item">
+          <a class="nav-link{{ if eq $i 0 }} active{{ end }}" data-bs-toggle="tab" data-bs-target="#unique-tab-{{ $p.Id }}">{{ $p.Name }}</a>
+        </li>
+        {{- end }}
+      </ul>
 
-    <ul class="nav nav-pills mb-3" id="unique-product-pills">
-      {{- range $i, $p := .Investigation.ProductList }}
-      <li class="nav-item">
-        <a class="nav-link{{ if eq $i 0 }} active{{ end }}"
-           data-bs-toggle="tab"
-           data-bs-target="#unique-tab-{{ $p.Id }}"
-           role="tab">
-          {{ $p.Name }}
-        </a>
-      </li>
-      {{- end }}
-    </ul>
-
-    <div class="tab-content border rounded p-3" style="border-radius:12px!important;">
-      {{- range $i, $p := .Investigation.ProductList }}
-      {{- $u := index $.Investigation.Unique $p.Id }}
-      <div class="tab-pane fade{{ if eq $i 0 }} show active{{ end }}" id="unique-tab-{{ $p.Id }}" role="tabpanel" tabindex="0">
-
-        <ul class="nav nav-tabs mb-0">
-          <li class="nav-item">
-            <a class="nav-link active" data-bs-toggle="tab" data-bs-target="#unique-{{ $p.Id }}-ingredients">Ingredients</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#unique-{{ $p.Id }}-hazards">Hazards</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#unique-{{ $p.Id }}-effects">Effects</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" data-bs-target="#unique-{{ $p.Id }}-symptoms">Symptoms</a>
-          </li>
-        </ul>
-
-        <div class="tab-content p-3 border border-top-0" style="border-radius:0 0 10px 10px;">
-
-          <div class="tab-pane fade show active" id="unique-{{ $p.Id }}-ingredients" role="tabpanel" tabindex="0">
-            {{- if and $u $u.Ingredients (gt (len $u.Ingredients) 0) }}
-            <div class="inv-carousel">
-              {{- range $u.Ingredients }}
-              <div class="inv-carousel-item">
-                <div class="inv-ingredient-card">
-                  <div class="inv-card-header">
-                    <p class="inv-card-name">{{ .PrimaryName }}</p>
-                    <button class="inv-btn-detail"
-                      hx-get="/htmx/ingredient-detail?id={{ .Id }}"
-                      hx-target="#side-modal_content"
-                      hx-swap="innerHTML"
-                      hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
-                      title="View details">
-                      <i class="bi bi-arrow-right-circle"></i>
-                    </button>
-                  </div>
-                  {{- if .Names }}
-                  <hr class="inv-divider">
-                  <div>
-                    <div class="inv-card-label">Synonyms ({{ len .Names }})</div>
-                    <div class="inv-synonym-scroll">
-                      {{- range .Names }}
-                      <span class="inv-synonym-pill">{{ .Text }}</span>
-                      {{- end }}
+      <div class="tab-content">
+        {{- range $i, $p := .Investigation.ProductList }}
+        {{- $u := index $.Investigation.Unique $p.Id }}
+        <div class="tab-pane fade{{ if eq $i 0 }} show active{{ end }}" id="unique-tab-{{ $p.Id }}">
+          
+          <div class="bg-light rounded-4 p-4 border">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <h6 class="fw-bold" style="color: var(--forest-green);">Unique Ingredients</h6>
+                    <div class="inv-carousel mt-2">
+                        {{- range $u.Ingredients }}
+                        <div class="inv-carousel-item">
+                            <div class="inv-ingredient-card shadow-none border">
+                                <p class="inv-card-name">{{ .PrimaryName }}</p>
+                                <button class="btn btn-sm btn-outline-dark mt-2" style="font-size: 0.65rem;" hx-get="/htmx/ingredient-detail?id={{ .Id }}" hx-target="#side-modal_content" hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">VIEW SOURCE</button>
+                            </div>
+                        </div>
+                        {{- else }}
+                        <p class="text-muted small">This product shares all its ingredients with others in the comparison.</p>
+                        {{- end }}
                     </div>
-                  </div>
-                  {{- end }}
-                  <div class="inv-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
                 </div>
-              </div>
-              {{- end }}
+                <div class="col-md-4">
+                    <p class="inv-section-label mb-2">Unique Hazards</p>
+                    {{- range $u.Hazards }} <div class="inv-label-card mb-1">{{ . }}</div> {{- else }} <span class="text-muted small">None</span> {{- end }}
+                </div>
+                <div class="col-md-4">
+                    <p class="inv-section-label mb-2">Unique Effects</p>
+                    {{- range $u.Effects }} <div class="inv-label-card mb-1">{{ . }}</div> {{- else }} <span class="text-muted small">None</span> {{- end }}
+                </div>
+                <div class="col-md-4">
+                    <p class="inv-section-label mb-2">Unique Symptoms</p>
+                    {{- range $u.Symptoms }} <div class="inv-label-card mb-1">{{ . }}</div> {{- else }} <span class="text-muted small">None</span> {{- end }}
+                </div>
             </div>
-            {{- else }}
-            <p class="text-muted" style="font-size:0.88rem;">No unique ingredients for this product.</p>
-            {{- end }}
           </div>
-
-          <div class="tab-pane fade" id="unique-{{ $p.Id }}-hazards" role="tabpanel" tabindex="0">
-            {{- if and $u $u.Hazards (gt (len $u.Hazards) 0) }}
-            <div class="inv-carousel">
-              {{- range $u.Hazards }}
-              <div class="inv-label-card">{{ . }}</div>
-              {{- end }}
-            </div>
-            {{- else }}
-            <p class="text-muted" style="font-size:0.88rem;">No unique hazards for this product.</p>
-            {{- end }}
-          </div>
-
-          <div class="tab-pane fade" id="unique-{{ $p.Id }}-effects" role="tabpanel" tabindex="0">
-            {{- if and $u $u.Effects (gt (len $u.Effects) 0) }}
-            <div class="inv-carousel">
-              {{- range $u.Effects }}
-              <div class="inv-label-card">{{ . }}</div>
-              {{- end }}
-            </div>
-            {{- else }}
-            <p class="text-muted" style="font-size:0.88rem;">No unique effects for this product.</p>
-            {{- end }}
-          </div>
-
-          <div class="tab-pane fade" id="unique-{{ $p.Id }}-symptoms" role="tabpanel" tabindex="0">
-            {{- if and $u $u.Symptoms (gt (len $u.Symptoms) 0) }}
-            <div class="inv-carousel">
-              {{- range $u.Symptoms }}
-              <div class="inv-label-card">{{ . }}</div>
-              {{- end }}
-            </div>
-            {{- else }}
-            <p class="text-muted" style="font-size:0.88rem;">No unique symptoms for this product.</p>
-            {{- end }}
-          </div>
-
         </div>
+        {{- end }}
       </div>
       {{- end }}
-    </div>
-    {{- end }}
 
+    </div>
   </div>
 </div>
-
-<script>
-  window.__invBadIngredients     = window.__invBadIngredients     || {};
-  window.__invGoodIngredients    = window.__invGoodIngredients    || {};
-  window.__invProductIngredients = window.__invProductIngredients || {};
-
-  window.invUpdateBadIngredients = function(productId, type, active) {
-    const ingredients = (window.__cpcProductIngredients || {})[productId] || [];
-
-    if (type === 'bad') {
-      if (active) {
-        ingredients.forEach(function(ing) {
-          window.__invBadIngredients[ing.id] = ing.name;
-        });
-      } else {
-        ingredients.forEach(function(ing) {
-          delete window.__invBadIngredients[ing.id];
-        });
-      }
-    } else {
-      if (active) {
-        ingredients.forEach(function(ing) {
-          window.__invGoodIngredients[ing.id] = true;
-        });
-      } else {
-        ingredients.forEach(function(ing) {
-          delete window.__invGoodIngredients[ing.id];
-        });
-      }
-    }
-
-    invRenderBadIngredients();
-  };
-
-  function invRenderBadIngredients() {
-    const section  = document.getElementById('inv-bad-section');
-    const carousel = document.getElementById('inv-bad-carousel');
-    if (!section || !carousel) return;
-
-    const entries = Object.entries(window.__invBadIngredients).filter(function(e) {
-      return !window.__invGoodIngredients[e[0]];
-    });
-    section.style.display = entries.length > 0 ? '' : 'none';
-    carousel.innerHTML = entries.map(function(e) {
-      return '<div hx-trigger="click" hx-get="/htmx/ingredient-detail?id='+e[0]+'" hx-target="#side-modal_content" hx-swap="innerHTML" hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById(\'side-modal\')).show()" class="inv-label-card" style="background:#fef2f2;border-color:#fca5a5;color:#dc2626;">'
-           + '<i class="bi bi-exclamation-triangle me-1"></i>' + e[1]
-           + '</div>';
-    }).join('');
-
-    htmx.process(carousel);
-  }
-</script>

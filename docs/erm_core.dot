@@ -1,0 +1,192 @@
+digraph {
+	graph [label="Data Design - Entity Relationship Model (Core)"]
+	edge [margin=2];
+	rankdir=LR;
+
+	// Primary Entities
+	node [shape=rect, fontname="Courier"]
+	ent_Product [label="<<Entity>>\nProduct", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_ProductMetadata [label="<<Entity>>\nProductMetadata", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_Ingredient [label="<<Entity>>\nIngredient", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_IngredientMetadata [label="<<Entity>>\nIngredientMetadata", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_Name [label="<<Entity>>\nName", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_Label [label="<<Entity>>\nLabel", style="filled", fillcolor="#333333", fontcolor="white"];
+
+	// Referenced Entities (defined in erm_tagging)
+	ent_Tag [label="<<Entity>>\nTag\n(see erm_tagging)", style="filled", fillcolor="#555555", fontcolor="#AAAAAA"];
+
+
+	// Entity Attribute Clusters
+	subgraph cluster_ProductAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_prod_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_prod_Name [label="<<Text>>\nName"];
+		attr_prod_Origin [label="<<Text?>>\nOrigin"];
+		attr_prod_Ingredients [label="<<[]FK>>\nIngredients", style="filled", fillcolor="#D4FFE6"];
+		attr_prod_Tags [label="<<[]FK>>\nTags", style="filled", fillcolor="#D4FFE6"];
+		attr_prod_Metadata [label="<<FK>>\nMetadata", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_prod_ID,
+			attr_prod_Name,
+			attr_prod_Origin,
+			attr_prod_Ingredients,
+			attr_prod_Tags,
+			attr_prod_Metadata
+		} -> ent_Product;
+	}
+
+	subgraph cluster_ProductMetadataAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_pmeta_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_pmeta_ProductId [label="<<FK>>\nProductId", style="filled", fillcolor="#D4FFE6"];
+		attr_pmeta_NumHazard [label="<<Integer>>\nNumHazard"];
+		attr_pmeta_NumEffect [label="<<Integer>>\nNumEffect"];
+		attr_pmeta_NumSymptom [label="<<Integer>>\nNumSymptom"];
+		attr_pmeta_NumRegulations [label="<<Integer>>\nNumRegulations"];
+		attr_pmeta_AiBlurb [label="<<Text?>>\nAiBlurb"];
+
+		edge [arrowhead=none];
+		{
+			attr_pmeta_ID,
+			attr_pmeta_ProductId,
+			attr_pmeta_NumHazard,
+			attr_pmeta_NumEffect,
+			attr_pmeta_NumSymptom,
+			attr_pmeta_NumRegulations,
+			attr_pmeta_AiBlurb
+		} -> ent_ProductMetadata;
+	}
+
+	subgraph cluster_IngredientAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_ing_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_ing_Failed [label="<<Boolean>>\nFailed"];
+		attr_ing_PrimaryName [label="<<Text>>\nPrimaryName"];
+		attr_ing_Labels [label="<<[]FK>>\nLabels", style="filled", fillcolor="#D4FFE6"];
+		attr_ing_Tags [label="<<[]FK>>\nTags", style="filled", fillcolor="#D4FFE6"];
+		attr_ing_Names [label="<<[]FK>>\nNames", style="filled", fillcolor="#D4FFE6"];
+		attr_ing_Metadata [label="<<FK>>\nMetadata", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_ing_ID,
+			attr_ing_Failed,
+			attr_ing_PrimaryName,
+			attr_ing_Labels,
+			attr_ing_Tags,
+			attr_ing_Names,
+			attr_ing_Metadata
+		} -> ent_Ingredient;
+	}
+
+	subgraph cluster_IngredientMetadataAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_imeta_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_imeta_IngredientId [label="<<FK>>\nIngredientId", style="filled", fillcolor="#D4FFE6"];
+		attr_imeta_NumHazards [label="<<Integer>>\nNumHazards"];
+		attr_imeta_NumEffects [label="<<Integer>>\nNumEffects"];
+		attr_imeta_NumSymptoms [label="<<Integer>>\nNumSymptoms"];
+		attr_imeta_NumRegulations [label="<<Integer>>\nNumRegulations"];
+		attr_imeta_AiBlurb [label="<<Text?>>\nAiBlurb"];
+
+		edge [arrowhead=none];
+		{
+			attr_imeta_ID,
+			attr_imeta_IngredientId,
+			attr_imeta_NumHazards,
+			attr_imeta_NumEffects,
+			attr_imeta_NumSymptoms,
+			attr_imeta_NumRegulations,
+			attr_imeta_AiBlurb
+		} -> ent_IngredientMetadata;
+	}
+
+	subgraph cluster_NameAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_name_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_name_Text [label="<<Text>>\nText"];
+		attr_name_Ingredients [label="<<[]FK>>\nIngredients", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_name_ID,
+			attr_name_Text,
+			attr_name_Ingredients
+		} -> ent_Name;
+	}
+
+	subgraph cluster_LabelAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_label_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_label_Type [label="<<Enum>>\nType\n(hazard|symptom|general\n|effect|regulation)"];
+		attr_label_Payload [label="<<Text>>\nPayload"];
+		attr_label_Origin [label="<<Text?>>\nOrigin"];
+		attr_label_Ingredients [label="<<[]FK>>\nIngredients", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_label_ID,
+			attr_label_Type,
+			attr_label_Payload,
+			attr_label_Origin,
+			attr_label_Ingredients
+		} -> ent_Label;
+	}
+
+
+	// Behaviors / Relationships
+	node [shape=diamond, style="filled", fillcolor="lightgray", fontname="Courier"];
+	bh_prod_ing [label="Has"];
+	bh_prod_meta [label="Has"];
+	bh_prod_tag [label="Has"];
+	bh_ing_label [label="Has"];
+	bh_ing_name [label="Has"];
+	bh_ing_meta [label="Has"];
+	bh_ing_tag [label="Has"];
+
+	// Behavior Mapping
+	edge [arrowhead=none];
+	ent_Product -> bh_prod_ing [headlabel="\nn"];
+	bh_prod_ing -> ent_Ingredient [taillabel="\nn"];
+
+	ent_Product -> bh_prod_meta [headlabel="\n1"];
+	bh_prod_meta -> ent_ProductMetadata [taillabel="\n1"];
+
+	ent_Product -> bh_prod_tag [headlabel="\nn"];
+	bh_prod_tag -> ent_Tag [taillabel="\nn"];
+
+	ent_Ingredient -> bh_ing_label [headlabel="\nn"];
+	bh_ing_label -> ent_Label [taillabel="\nn"];
+
+	ent_Ingredient -> bh_ing_name [headlabel="\nn"];
+	bh_ing_name -> ent_Name [taillabel="\nn"];
+
+	ent_Ingredient -> bh_ing_meta [headlabel="\n1"];
+	bh_ing_meta -> ent_IngredientMetadata [taillabel="\n1"];
+
+	ent_Ingredient -> bh_ing_tag [headlabel="\nn"];
+	bh_ing_tag -> ent_Tag [taillabel="\nn"];
+
+
+	// FK -> PK References
+	edge [style=dashed, arrowhead=none, label="<<References>>", color="#D6D6D6"];
+	attr_prod_Ingredients -> attr_ing_ID;
+	attr_prod_Metadata -> attr_pmeta_ID;
+	attr_pmeta_ProductId -> attr_prod_ID;
+	attr_ing_Labels -> attr_label_ID;
+	attr_ing_Names -> attr_name_ID;
+	attr_ing_Metadata -> attr_imeta_ID;
+	attr_imeta_IngredientId -> attr_ing_ID;
+	attr_name_Ingredients -> attr_ing_ID;
+	attr_label_Ingredients -> attr_ing_ID;
+
+
+}

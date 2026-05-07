@@ -1,48 +1,75 @@
 {{- with .Search }}
 {{- if and (eq (len .Products) 0) (ne .Query "") }}
-<p class="text-muted" style="font-size:0.88rem;">
+<p style="font-size:0.88rem; color:#6c8f70; padding: 0.5rem 0.25rem;">
   No products found for <strong>{{ .Query }}</strong>.
-  <a href="/products" style="font-size:0.88rem;">Create one?</a>
+  <a href="/products" style="font-size:0.88rem; color:#1a2e1e; font-weight:600;">Create one?</a>
 </p>
 {{- else if eq (len .Products) 0 }}
-<p class="text-muted" style="font-size:0.88rem;">No products yet. <a href="/products" style="font-size:0.88rem;">Create one?</a></p>
+<p style="font-size:0.88rem; color:#6c8f70; padding: 0.5rem 0.25rem;">No products yet. <a href="/products" style="font-size:0.88rem; color:#1a2e1e; font-weight:600;">Create one?</a></p>
 {{- else }}
 <style>
-  .sr-product-card {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    padding: 1rem 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    transition: box-shadow 0.2s ease;
+  /* ── Design tokens (mirror base.html) ───────────────────── */
+  :root {
+    --forest-green: #1a2e1e;
+    --mint-green:   #CFF9C3;
+    --soft-white:   #fbfbfb;
+    --regular-green:#274229;
+    --border:       rgba(26, 46, 30, 0.12);
+    --muted:        #6c8f70;
+    --danger:       #c0392b;
   }
 
-  .sr-product-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
+  /* ── Card shell ─────────────────────────────────────────── */
+  .sr-product-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    font-family: 'Lato', sans-serif;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
 
+  .sr-product-card:hover {
+    box-shadow: 0 8px 24px rgba(26, 46, 30, 0.1);
+    transform: translateY(-1px);
+  }
+
+  /* Safe / Unsafe tinting */
   .sr-product-card--safe {
-    background: linear-gradient(135deg, #f0fdf4, #f8f9fa);
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 60%);
     border-color: #86efac;
   }
 
   .sr-product-card--unsafe {
-    background: linear-gradient(135deg, #fef2f2, #f8f9fa);
+    background: linear-gradient(135deg, #fff5f5 0%, #ffffff 60%);
     border-color: #fca5a5;
   }
 
-  .sr-product-card-header { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
-  .sr-product-card-header-meta { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 0; }
+  /* ── Header row ─────────────────────────────────────────── */
+  .sr-product-card-header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
 
-  .btn-star { background: none; border: none; cursor: pointer; color: #adb5bd; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; transition: color 0.2s ease; }
-  .btn-star:hover { color: #ffc107; }
+  .sr-product-card-header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+  }
 
   .sr-product-card-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #495057;
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--forest-green);
     margin: 0;
     line-height: 1.3;
     word-break: break-word;
@@ -52,51 +79,77 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.75rem;
-    color: #adb5bd;
+    font-size: 0.74rem;
+    color: var(--muted);
     min-width: 0;
   }
 
   .sr-product-card-origin a {
-    color: #0d6efd;
+    color: var(--regular-green);
     text-decoration: none;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
     flex: 1;
+    font-weight: 600;
   }
 
   .sr-product-card-origin a:hover { text-decoration: underline; }
 
-  .sr-divider { border: none; border-top: 1px solid #dee2e6; margin: 0; }
-
-  .sr-card-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #adb5bd;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.3rem;
+  /* ── Icon action buttons (top-right cluster) ────────────── */
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1rem;
+    padding: 0.15rem 0.2rem;
+    line-height: 1;
+    flex-shrink: 0;
+    border-radius: 7px;
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
+  .btn-icon:hover                { background: var(--mint-green); color: var(--forest-green); }
+  .btn-icon.btn-danger:hover     { background: #fef2f2;           color: var(--danger); }
+  .btn-icon.btn-star-active      { color: #f59e0b; }
+  .btn-icon.btn-star-active:hover{ background: #fffbeb; color: #d97706; }
+
+  /* ── Divider ─────────────────────────────────────────────── */
+  .sr-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── Section label ───────────────────────────────────────── */
+  .sr-card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.35rem;
+  }
+
+  /* ── Ingredient filter & pills ───────────────────────────── */
   .sr-ingredient-search {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 0.25rem 0.6rem;
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.28rem 0.65rem;
     font-size: 0.8rem;
-    color: #495057;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
     outline: none;
     transition: border-color 0.2s ease;
     margin-bottom: 0.4rem;
   }
 
-  .sr-ingredient-search::placeholder { color: #adb5bd; }
-  .sr-ingredient-search:focus { border-color: #0d6efd; }
+  .sr-ingredient-search::placeholder { color: var(--muted); }
+  .sr-ingredient-search:focus { border-color: var(--regular-green); }
 
   .sr-ingredient-scroll {
     display: flex;
@@ -107,15 +160,15 @@
     padding-right: 0.1rem;
   }
 
-  .sr-ingredient-scroll::-webkit-scrollbar { width: 3px; }
-  .sr-ingredient-scroll::-webkit-scrollbar-track { background: transparent; }
-  .sr-ingredient-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 2px; }
+  .sr-ingredient-scroll::-webkit-scrollbar       { width: 3px; }
+  .sr-ingredient-scroll::-webkit-scrollbar-track  { background: transparent; }
+  .sr-ingredient-scroll::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
 
   .sr-ingredient-pill {
-    font-size: 0.75rem;
-    color: #495057;
-    background: #ffffff;
-    border: 1px solid #dee2e6;
+    font-size: 0.74rem;
+    color: var(--forest-green);
+    background: var(--soft-white);
+    border: 1px solid var(--border);
     border-radius: 20px;
     padding: 0.15rem 0.55rem;
     white-space: nowrap;
@@ -123,29 +176,196 @@
 
   .sr-ingredient-pill[hidden] { display: none; }
 
-  .sr-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
-
-  .sr-stat { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; min-width: 0; overflow: hidden; }
-  .sr-stat-icon { flex-shrink: 0; font-size: 0.75rem; color: #adb5bd; width: 1rem; text-align: center; }
-  .sr-stat-value { flex-shrink: 0; font-weight: 600; color: #495057; }
-  .sr-stat-name { color: #adb5bd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-  .sr-ai-blurb {
-    font-size: 0.8rem;
-    color: #6c757d;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    margin: 0;
+  /* ── Metrics grid ────────────────────────────────────────── */
+  .sr-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
   }
 
-  .sr-card-footer { margin-top: auto; font-size: 0.72rem; color: #adb5bd; }
+  .sr-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .sr-stat-icon  { flex-shrink: 0; font-size: 0.75rem; color: var(--muted); width: 1rem; text-align: center; }
+  .sr-stat-value { flex-shrink: 0; font-weight: 700; color: var(--forest-green); }
+  .sr-stat-name  { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── AI blurb ────────────────────────────────────────────── */
+  .sr-ai-blurb {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ── Tags ────────────────────────────────────────────────── */
+  .sr-tag-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .sr-tag-scroll::-webkit-scrollbar       { width: 3px; }
+  .sr-tag-scroll::-webkit-scrollbar-track  { background: transparent; }
+  .sr-tag-scroll::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
+
+  .sr-tag-pill {
+    font-size: 0.74rem;
+    color: var(--forest-green);
+    background: var(--mint-green);
+    border: 1px solid rgba(39, 66, 41, 0.2);
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  /* ── Card footer ─────────────────────────────────────────── */
+  .sr-card-footer {
+    margin-top: auto;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     Inline edit form
+  ══════════════════════════════════════════════════════════ */
+  .pe-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .pe-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.2rem;
+  }
+
+  .pe-input {
+    width: 100%;
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.82rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.3rem;
+  }
+
+  .pe-input::placeholder { color: var(--muted); }
+  .pe-input:focus { border-color: var(--regular-green); }
+
+  .pe-tag-box {
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.55rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+    cursor: text;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.3rem;
+  }
+
+  .pe-tag-box:focus-within { border-color: var(--regular-green); }
+
+  .pe-btn-save {
+    background: var(--forest-green);
+    border: none;
+    border-radius: 10px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.2s ease;
+  }
+
+  .pe-btn-save:hover { background: var(--regular-green); }
+
+  .pe-btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .pe-btn-cancel:hover { background: var(--mint-green); color: var(--forest-green); }
+
+  /* ── Ingredient tag pill (shared with create form) ──────── */
+  .ingredient-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--mint-green);
+    border: 1px solid rgba(39, 66, 41, 0.2);
+    border-radius: 20px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.78rem;
+    color: var(--forest-green);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .ingredient-tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.7rem;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s ease;
+  }
+
+  .ingredient-tag-remove:hover { color: var(--danger); }
+
+  .ingredient-tag-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.82rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
+    flex: 1;
+    min-width: 6rem;
+    padding: 0.1rem 0;
+  }
+
+  .ingredient-tag-input::placeholder { color: var(--muted); }
 </style>
 
 <div class="row">
   {{- range .Products }}
-  <div class="col-md-4 mb-4">
+  <div class="col-md-4 mb-4 sr-product-card-col">
     <div class="sr-product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} sr-product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} sr-product-card--unsafe{{ end }}">
 
+      <!-- ── Header (always visible) ──────────────────────── -->
       <div class="sr-product-card-header">
         <div class="sr-product-card-header-meta">
           <p class="sr-product-card-name">{{ .Name }}</p>
@@ -156,7 +376,8 @@
           </div>
           {{- end }}
         </div>
-        <button class="btn-star"
+
+        <button class="btn-icon"
           hx-get="/htmx/product-detail?id={{ .Id }}"
           hx-target="#side-modal_content"
           hx-swap="innerHTML"
@@ -164,82 +385,147 @@
           title="View details">
           <i class="bi bi-arrow-right-circle"></i>
         </button>
+        <button class="btn-icon" onclick="toggleProductEdit('{{ .Id }}')" title="Edit product">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn-icon btn-danger"
+          hx-delete="/product/delete"
+          hx-vals='{"id": "{{ .Id }}"}'
+          hx-target="closest .sr-product-card-col"
+          hx-swap="outerHTML"
+          title="Delete product">
+          <i class="bi bi-trash"></i>
+        </button>
         {{- if exists $.FavoriteProducts .Id }}
-        <button class="btn-star starred" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
+        <button class="btn-icon btn-star-active" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
           <i class="bi bi-star-fill"></i>
         </button>
         {{- else }}
-        <button class="btn-star" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save product">
+        <button class="btn-icon" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save product">
           <i class="bi bi-star"></i>
         </button>
         {{- end }}
       </div>
 
-      <div class="dropdown">
-        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding:0.25rem 0.5rem;font-size:0.75rem;">
-          {{- if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }}
-          Safe for Me
-          {{- else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }}
-          Unsafe for Me
+      <!-- ── View mode ─────────────────────────────────────── -->
+      <div id="pv-{{ .Id }}">
+        <hr class="sr-divider">
+
+        <div>
+          <div class="sr-card-label">Tags</div>
+          {{- if and (.Tags) (gt (len .Tags) 0) }}
+          <div class="sr-tag-scroll">
+            {{- range .Tags }}
+            <span class="sr-tag-pill"{{if .Description}} title="{{ .Description }}"{{end}}>{{ .Name }}</span>
+            {{- end }}
+          </div>
           {{- else }}
-          Categorize
-          {{- end }}
-        </button>
-        <ul class="dropdown-menu">
-          <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "safe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Safe for Me</span></li>
-          <li><span class="dropdown-item" hx-post="/product/categorize" hx-swap="none" hx-trigger="click" hx-vals='{"id": "{{ .Id }}", "status": "unsafe"}' hx-on::after-request="htmx.trigger(document.body, 'productCategorized')">Unsafe for Me</span></li>
-        </ul>
-      </div>
-
-      <hr class="sr-divider">
-
-      <div>
-        <div class="sr-card-label">Ingredients ({{ len .Ingredients }})</div>
-        <input class="sr-ingredient-search" type="text"
-               placeholder="&#128269; Filter ingredients..."
-               autocomplete="off"
-               oninput="srFilterIngredients(this)">
-        <div class="sr-ingredient-scroll">
-          {{- range .Ingredients }}
-          <span class="sr-ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
+          <span style="font-size:0.78rem; color:var(--muted);">No tags applied.</span>
           {{- end }}
         </div>
-      </div>
 
-      <hr class="sr-divider">
+        <hr class="sr-divider">
 
-      <div>
-        <div class="sr-card-label">Metrics</div>
-        <div class="sr-stats">
-          <div class="sr-stat">
-            <i class="bi bi-exclamation-triangle sr-stat-icon"></i>
-            <span class="sr-stat-value">{{ .Metadata.NumHazard }}</span>
-            <span class="sr-stat-name">Hazards</span>
-          </div>
-          <div class="sr-stat">
-            <i class="bi bi-activity sr-stat-icon"></i>
-            <span class="sr-stat-value">{{ .Metadata.NumEffect }}</span>
-            <span class="sr-stat-name">Effects</span>
-          </div>
-          <div class="sr-stat">
-            <i class="bi bi-heart-pulse sr-stat-icon"></i>
-            <span class="sr-stat-value">{{ .Metadata.NumSymptom }}</span>
-            <span class="sr-stat-name">Symptoms</span>
-          </div>
-          <div class="sr-stat">
-            <i class="bi bi-shield-check sr-stat-icon"></i>
-            <span class="sr-stat-value">{{ .Metadata.NumReglations }}</span>
-            <span class="sr-stat-name">Regulations</span>
+        <div>
+          <div class="sr-card-label">Ingredients ({{ len .Ingredients }})</div>
+          <input class="sr-ingredient-search" type="text"
+                 placeholder="&#128269; Filter ingredients..."
+                 autocomplete="off"
+                 oninput="srFilterIngredients(this)">
+          <div class="sr-ingredient-scroll">
+            {{- range .Ingredients }}
+            <span class="sr-ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
+            {{- end }}
           </div>
         </div>
-      </div>
 
-      {{- if .Metadata.AiBlurb }}
-      <hr class="sr-divider">
-      <p class="sr-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-      {{- end }}
+        <hr class="sr-divider">
 
-      <div class="sr-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+        <div>
+          <div class="sr-card-label">Metrics</div>
+          <div class="sr-stats">
+            <div class="sr-stat">
+              <i class="bi bi-exclamation-triangle sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumHazard }}</span>
+              <span class="sr-stat-name">Hazards</span>
+            </div>
+            <div class="sr-stat">
+              <i class="bi bi-activity sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumEffect }}</span>
+              <span class="sr-stat-name">Effects</span>
+            </div>
+            <div class="sr-stat">
+              <i class="bi bi-heart-pulse sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumSymptom }}</span>
+              <span class="sr-stat-name">Symptoms</span>
+            </div>
+            <div class="sr-stat">
+              <i class="bi bi-shield-check sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumReglations }}</span>
+              <span class="sr-stat-name">Regulations</span>
+            </div>
+          </div>
+        </div>
+
+        {{- if .Metadata.AiBlurb }}
+        <hr class="sr-divider">
+        <p class="sr-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+        {{- end }}
+
+        <div class="sr-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+      </div><!-- /pv -->
+
+      <!-- ── Edit mode form (hidden by default) ────────────── -->
+      {{- $pid := .Id }}
+      <div id="pe-{{ .Id }}" class="pe-form" style="display:none;">
+        <input type="hidden" name="id" value="{{ .Id }}">
+
+        <div>
+          <label class="pe-label">Name *</label>
+          <input type="text" name="name" class="pe-input" value="{{ .Name }}" placeholder="Product name" autocomplete="off">
+        </div>
+
+        <div>
+          <label class="pe-label">Origin</label>
+          <input type="text" name="origin" class="pe-input" value="{{ if .Origin }}{{ deref .Origin }}{{ end }}" placeholder="Origin URL (optional)" autocomplete="off">
+        </div>
+
+        <div>
+          <label class="pe-label">Ingredients *</label>
+          <div class="pe-tag-box" id="pe-tag-box-{{ .Id }}"
+               onclick="document.getElementById('pe-tag-input-{{ .Id }}').focus()">
+            {{- range .Ingredients }}
+            <span class="ingredient-tag" data-name="{{ .PrimaryName | lower }}" data-hidden-id="pe-hidden-{{ $pid }}">
+              {{ .PrimaryName }}<button type="button" class="ingredient-tag-remove" onclick="_removeIngredientTagEl(this)"><i class="bi bi-x"></i></button>
+            </span>
+            {{- end }}
+            <input id="pe-tag-input-{{ .Id }}"
+                   class="ingredient-tag-input"
+                   type="text"
+                   placeholder="Type name, press Enter…"
+                   autocomplete="off"
+                   oninput="handleEditIngredientInput(event, '{{ .Id }}')"
+                   onkeydown="handleEditIngredientKeydown(event, '{{ .Id }}')">
+          </div>
+          <div id="pe-hidden-{{ .Id }}">
+            {{- range .Ingredients }}
+            <input type="hidden" name="ingredient_names" value="{{ .PrimaryName }}" data-tag="{{ .PrimaryName | lower }}">
+            {{- end }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end" style="margin-top:0.15rem;">
+          <button type="button" class="pe-btn-cancel" onclick="toggleProductEdit('{{ .Id }}')">Cancel</button>
+          <button type="button" class="pe-btn-save"
+                  hx-post="/product/update"
+                  hx-include="#pe-{{ .Id }}"
+                  hx-swap="none"
+                  hx-on::before-request="autoCommitEditIngredient('{{ .Id }}')"
+                  hx-on::after-request="if(event.detail.successful){ toggleProductEdit('{{ .Id }}'); htmx.trigger(document.body, 'productUpdated') }">
+            <i class="bi bi-check2 me-1"></i>Save
+          </button>
+        </div>
+      </div><!-- /pe -->
 
     </div>
   </div>
@@ -253,6 +539,105 @@
     scroll.querySelectorAll('.sr-ingredient-pill').forEach(pill => {
       pill.hidden = !pill.dataset.name.includes(q);
     });
+  }
+
+  /* ── Shared ingredient-tag-box helpers ───────────────────── */
+  function _commitIngredientToBox(boxId, hiddenId, inputId, name) {
+    if (!name) return;
+    const box = document.getElementById(boxId);
+    const hiddenCt = document.getElementById(hiddenId);
+    const input = document.getElementById(inputId);
+    if (!box || !hiddenCt || !input) return;
+    const nameLower = name.toLowerCase();
+    if (box.querySelector('.ingredient-tag[data-name="' + CSS.escape(nameLower) + '"]')) return;
+
+    const tag = document.createElement('span');
+    tag.className = 'ingredient-tag';
+    tag.dataset.name = nameLower;
+    tag.dataset.hiddenId = hiddenId;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ingredient-tag-remove';
+    btn.setAttribute('onclick', '_removeIngredientTagEl(this)');
+    btn.innerHTML = '<i class="bi bi-x"></i>';
+    tag.appendChild(document.createTextNode(name));
+    tag.appendChild(btn);
+    box.insertBefore(tag, input);
+
+    const h = document.createElement('input');
+    h.type = 'hidden';
+    h.name = 'ingredient_names';
+    h.value = name;
+    h.dataset.tag = nameLower;
+    hiddenCt.appendChild(h);
+  }
+
+  function _removeIngredientTagEl(btn) {
+    const tag = btn.parentElement;
+    const hiddenId = tag.dataset.hiddenId;
+    const name = tag.dataset.name;
+    tag.remove();
+    if (hiddenId) {
+      const ct = document.getElementById(hiddenId);
+      if (ct) {
+        const h = ct.querySelector('input[data-tag="' + CSS.escape(name) + '"]');
+        if (h) h.remove();
+      }
+    }
+  }
+
+  function _handleIngredientBoxInput(e, boxId, hiddenId, inputId) {
+    const raw = e.target.value;
+    const parts = raw.split(', ');
+    if (parts.length > 1) {
+      parts.slice(0, -1).forEach(p => _commitIngredientToBox(boxId, hiddenId, inputId, p.trim()));
+      _commitIngredientToBox(boxId, hiddenId, inputId, parts[parts.length - 1].trim());
+      e.target.value = '';
+    }
+  }
+
+  function _handleIngredientBoxKeydown(e, boxId, hiddenId, inputId) {
+    const input = e.target;
+    if ((e.key === 'Enter' || e.key === 'Tab') && input.value.trim()) {
+      e.preventDefault();
+      input.value.split(', ').forEach(p => _commitIngredientToBox(boxId, hiddenId, inputId, p.trim()));
+      input.value = '';
+    }
+    if (e.key === 'Backspace' && input.value === '') {
+      const box = document.getElementById(boxId);
+      const lastTag = box ? box.querySelector('.ingredient-tag:last-of-type') : null;
+      if (lastTag) {
+        const removeBtn = lastTag.querySelector('.ingredient-tag-remove');
+        if (removeBtn) _removeIngredientTagEl(removeBtn);
+      }
+    }
+  }
+
+  /* ── Search-card edit ────────────────────────────────────── */
+  function toggleProductEdit(id) {
+    const view = document.getElementById('pv-' + id);
+    const form = document.getElementById('pe-' + id);
+    if (!view || !form) return;
+    const editing = form.style.display !== 'none';
+    view.style.display = editing ? '' : 'none';
+    form.style.display = editing ? 'none' : 'flex';
+  }
+
+  function handleEditIngredientInput(e, id) {
+    _handleIngredientBoxInput(e, 'pe-tag-box-' + id, 'pe-hidden-' + id, 'pe-tag-input-' + id);
+  }
+
+  function handleEditIngredientKeydown(e, id) {
+    _handleIngredientBoxKeydown(e, 'pe-tag-box-' + id, 'pe-hidden-' + id, 'pe-tag-input-' + id);
+  }
+
+  function autoCommitEditIngredient(id) {
+    const input = document.getElementById('pe-tag-input-' + id);
+    if (input && input.value.trim()) {
+      _commitIngredientToBox('pe-tag-box-' + id, 'pe-hidden-' + id, 'pe-tag-input-' + id, input.value.trim());
+      input.value = '';
+    }
   }
 </script>
 {{- end }}

@@ -1,0 +1,166 @@
+digraph {
+	graph [label="Data Design - Entity Relationship Model (Tagging & Investigation)"]
+	edge [margin=2];
+	rankdir=LR;
+
+	// Primary Entities
+	node [shape=rect, fontname="Courier"]
+	ent_Tag [label="<<Entity>>\nTag", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_TaggingRule [label="<<Entity>>\nTaggingRule", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_TaggingSet [label="<<Entity>>\nTaggingSet", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_TaggingJob [label="<<Entity>>\nTaggingJob", style="filled", fillcolor="#333333", fontcolor="white"];
+	ent_Investigation [label="<<Entity>>\nInvestigation", style="filled", fillcolor="#333333", fontcolor="white"];
+
+	// Referenced Entities (defined in erm_core / erm_users)
+	ent_Product [label="<<Entity>>\nProduct\n(see erm_core)", style="filled", fillcolor="#555555", fontcolor="#AAAAAA"];
+	ent_Ingredient [label="<<Entity>>\nIngredient\n(see erm_core)", style="filled", fillcolor="#555555", fontcolor="#AAAAAA"];
+	ent_User [label="<<Entity>>\nUser\n(see erm_users)", style="filled", fillcolor="#555555", fontcolor="#AAAAAA"];
+
+
+	// Entity Attribute Clusters
+	subgraph cluster_TagAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_tag_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_tag_Name [label="<<Text>>\nName"];
+		attr_tag_Description [label="<<Text>>\nDescription"];
+		attr_tag_Ingredients [label="<<[]FK>>\nIngredients", style="filled", fillcolor="#D4FFE6"];
+		attr_tag_Products [label="<<[]FK>>\nProducts", style="filled", fillcolor="#D4FFE6"];
+		attr_tag_Users [label="<<[]FK>>\nUsers", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_tag_ID,
+			attr_tag_Name,
+			attr_tag_Description,
+			attr_tag_Ingredients,
+			attr_tag_Products,
+			attr_tag_Users
+		} -> ent_Tag;
+	}
+
+	subgraph cluster_TaggingRuleAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_rule_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_rule_Contains [label="<<Boolean>>\nContains"];
+		attr_rule_Regex [label="<<Text>>\nRegex"];
+		attr_rule_Enabled [label="<<Boolean>>\nEnabled"];
+		attr_rule_TagID [label="<<FK>>\nTagID", style="filled", fillcolor="#D4FFE6"];
+		attr_rule_TaggingSetID [label="<<FK?>>\nTaggingSetID", style="filled", fillcolor="#D4FFE6"];
+		attr_rule_UserId [label="<<FK>>\nUserId", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_rule_ID,
+			attr_rule_Contains,
+			attr_rule_Regex,
+			attr_rule_Enabled,
+			attr_rule_TagID,
+			attr_rule_TaggingSetID,
+			attr_rule_UserId
+		} -> ent_TaggingRule;
+	}
+
+	subgraph cluster_TaggingSetAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_set_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_set_Name [label="<<Text>>\nName"];
+		attr_set_Description [label="<<Text>>\nDescription"];
+		attr_set_Public [label="<<Boolean>>\nPublic"];
+		attr_set_Users [label="<<[]FK>>\nUsers", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_set_ID,
+			attr_set_Name,
+			attr_set_Description,
+			attr_set_Public,
+			attr_set_Users
+		} -> ent_TaggingSet;
+	}
+
+	subgraph cluster_TaggingJobAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_job_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_job_IngredientScanNum [label="<<Integer>>\nIngredientScanNum"];
+		attr_job_Error [label="<<Text>>\nError"];
+		attr_job_TagRuleID [label="<<FK>>\nTagRuleID", style="filled", fillcolor="#D4FFE6"];
+
+		edge [arrowhead=none];
+		{
+			attr_job_ID,
+			attr_job_IngredientScanNum,
+			attr_job_Error,
+			attr_job_TagRuleID
+		} -> ent_TaggingJob;
+	}
+
+	subgraph cluster_InvestigationAttributes {
+		graph [style=invis]
+		node [shape="oval"];
+		attr_inv_ID [label="<<PK>>\nID", style="filled", fillcolor="#D4F4FF"];
+		attr_inv_ProductList [label="<<[]FK>>\nProductList", style="filled", fillcolor="#D4FFE6"];
+		attr_inv_GoodProducts [label="<<[]UUID>>\nGoodProducts"];
+		attr_inv_BadProducts [label="<<[]UUID>>\nBadProducts"];
+		attr_inv_BadIngredients [label="<<[]UUID>>\nBadIngredients"];
+
+		edge [arrowhead=none];
+		{
+			attr_inv_ID,
+			attr_inv_ProductList,
+			attr_inv_GoodProducts,
+			attr_inv_BadProducts,
+			attr_inv_BadIngredients
+		} -> ent_Investigation;
+	}
+
+
+	// Behaviors / Relationships
+	node [shape=diamond, style="filled", fillcolor="lightgray", fontname="Courier"];
+	bh_tag_ing [label="Tags"];
+	bh_tag_prod [label="Tags"];
+	bh_tag_user [label="Tags"];
+	bh_rule_tag [label="Applies"];
+	bh_rule_set [label="BelongsTo"];
+	bh_rule_user [label="OwnedBy"];
+	bh_job_rule [label="Runs"];
+	bh_inv_prod [label="Contains"];
+
+	// Behavior Mapping
+	edge [arrowhead=none];
+	ent_Tag -> bh_tag_ing [headlabel="\nn"];
+	bh_tag_ing -> ent_Ingredient [taillabel="\nn"];
+
+	ent_Tag -> bh_tag_prod [headlabel="\nn"];
+	bh_tag_prod -> ent_Product [taillabel="\nn"];
+
+	ent_Tag -> bh_tag_user [headlabel="\nn"];
+	bh_tag_user -> ent_User [taillabel="\nn"];
+
+	ent_TaggingRule -> bh_rule_tag [headlabel="\n1"];
+	bh_rule_tag -> ent_Tag [taillabel="\n1"];
+
+	ent_TaggingRule -> bh_rule_set [headlabel="\n1"];
+	bh_rule_set -> ent_TaggingSet [taillabel="\nn"];
+
+	ent_TaggingRule -> bh_rule_user [headlabel="\n1"];
+	bh_rule_user -> ent_User [taillabel="\n1"];
+
+	ent_TaggingJob -> bh_job_rule [headlabel="\n1"];
+	bh_job_rule -> ent_TaggingRule [taillabel="\n1"];
+
+	ent_Investigation -> bh_inv_prod [headlabel="\nn"];
+	bh_inv_prod -> ent_Product [taillabel="\nn"];
+
+
+	// FK -> PK References
+	edge [style=dashed, arrowhead=none, label="<<References>>", color="#D6D6D6"];
+	attr_rule_TagID -> attr_tag_ID;
+	attr_rule_TaggingSetID -> attr_set_ID;
+	attr_job_TagRuleID -> attr_rule_ID;
+
+
+}

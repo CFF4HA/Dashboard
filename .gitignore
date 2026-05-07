@@ -3,3 +3,4 @@
 .claude
 internal/pubchem/__pycache__/
 internal/pubchem/*.pdf
+.DS*
