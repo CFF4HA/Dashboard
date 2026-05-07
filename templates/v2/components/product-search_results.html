@@ -388,8 +388,7 @@
           <i class="bi bi-pencil"></i>
         </button>
         <button class="btn-icon btn-danger"
-          hx-delete="/product/delete"
-          hx-vals='{"id": "{{ .Id }}"}'
+          hx-delete="/product/remove?id={{ .Id }}"
           hx-target="closest .sr-product-card-col"
           hx-swap="outerHTML"
           title="Delete product">
