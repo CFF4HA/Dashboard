@@ -150,6 +150,96 @@ func GetProductsByName(name string, cursor string, u *uuid.UUID) ([]types.Produc
 	return products, nil
 }
 
+func CompareProductsByIdList(ids []uuid.UUID) (*types.ProductComparison, error) {
+	if len(ids) == 0 {
+		return nil, errors.New("no product ids provided")
+	}
+
+	products := make([]types.Product, 0, len(ids))
+	for _, id := range ids {
+		prod := &types.Product{}
+		tx := core.DB.Scopes(WithPreload("Ingredients", "Ingredients.Labels")).First(prod, "id = ?", id)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
+		products = append(products, *prod)
+	}
+
+	// Build ingredient-id → ingredient map per product.
+	// An ingredient is "shared" if it appears in every product.
+	type ingKey = uuid.UUID
+	counts := make(map[ingKey]int)
+	byId := make(map[ingKey]types.Ingredient)
+	for _, p := range products {
+		seen := make(map[ingKey]bool)
+		for _, ing := range p.Ingredients {
+			if !seen[ing.Id] {
+				counts[ing.Id]++
+				byId[ing.Id] = ing
+				seen[ing.Id] = true
+			}
+		}
+	}
+
+	total := len(products)
+	sharedIngIds := make(map[ingKey]bool)
+	sharedIngs := []types.Ingredient{}
+	for id, cnt := range counts {
+		if cnt == total {
+			sharedIngIds[id] = true
+			sharedIngs = append(sharedIngs, byId[id])
+		}
+	}
+
+	// Shared labels: label payloads present in every product (via their ingredients).
+	labelCounts := make(map[string]int)
+	for _, p := range products {
+		seen := make(map[string]bool)
+		for _, ing := range p.Ingredients {
+			for _, lbl := range ing.Labels {
+				if !seen[lbl.Payload] {
+					labelCounts[lbl.Payload]++
+					seen[lbl.Payload] = true
+				}
+			}
+		}
+	}
+	sharedLabels := []string{}
+	for payload, cnt := range labelCounts {
+		if cnt == total {
+			sharedLabels = append(sharedLabels, payload)
+		}
+	}
+
+	// Unique ingredients and label payloads per product.
+	uniqueIngToProduct := make(map[string][]types.Ingredient)
+	uniqueLabToProduct := make(map[string][]string)
+	for _, p := range products {
+		key := p.Id.String()
+		for _, ing := range p.Ingredients {
+			if !sharedIngIds[ing.Id] {
+				uniqueIngToProduct[key] = append(uniqueIngToProduct[key], ing)
+			}
+		}
+		seen := make(map[string]bool)
+		for _, ing := range p.Ingredients {
+			for _, lbl := range ing.Labels {
+				if !seen[lbl.Payload] && labelCounts[lbl.Payload] < total {
+					uniqueLabToProduct[key] = append(uniqueLabToProduct[key], lbl.Payload)
+					seen[lbl.Payload] = true
+				}
+			}
+		}
+	}
+
+	return &types.ProductComparison{
+		SharedIngredients:  sharedIngs,
+		SharedLabels:       map[string][]string{"shared": sharedLabels},
+		UniqueIngToProduct: uniqueIngToProduct,
+		UniqueLabToProduct: uniqueLabToProduct,
+	}, nil
+}
+
 func DeleteProductById(id string, u *uuid.UUID) error {
 	// TODO: we first want to delete the product_ingredients join table rows,
 	// and then we can delete the product itself.
@@ -296,6 +386,8 @@ func GetProductsByUser(user_id *uuid.UUID, cursor string) ([]types.Product, erro
 // Routing Related Functions
 // ------------------------------
 func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	name := r.FormValue("name")
 	origin := r.FormValue("origin")
 	ingredientList := r.Form["ingredients"]

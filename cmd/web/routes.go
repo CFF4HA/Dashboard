@@ -27,10 +27,11 @@ func Index(v *verb.Verb) {
 
 func Compare(v *verb.Verb) {
 	v.Page("/compare", "v2/pages/compare.html")
-	v.Component("v2/components/compare-product_search.html", htmx.Div())
-	v.Component("v2/components/investigation.html", htmx.Div())
+	v.Component("v2/components/compare-product_search.html", htmx.Div()).Bridge(bridges.ProductsByName)
+	v.Component("v2/components/investigation.html", htmx.Div()).Bridge(bridges.ProductComparison)
 
-	v.Component("v2/components/compare-product_card.html", htmx.Div())
+	v.Component("v2/components/compare-product_card.html", htmx.Div()).
+		Bridge(bridges.ProductById)
 }
 
 func Notifications(v *verb.Verb) {

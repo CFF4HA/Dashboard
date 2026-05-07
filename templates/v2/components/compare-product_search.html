@@ -53,12 +53,10 @@
 </style>
 
 <ul class="compare-result-list">
-  {{- if and .Search .Search.Products }}
-  {{- range .Search.Products }}
+  {{- range .Products }}
   <li class="compare-result-item" onclick="addProductToCompare('{{ .Id }}')">
     <i class="bi bi-plus-circle"></i>{{ .Name }}
   </li>
-  {{- end }}
   {{- else }}
   <li class="compare-result-empty">No products found.</li>
   {{- end }}

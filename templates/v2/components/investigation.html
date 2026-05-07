@@ -174,13 +174,16 @@
         <li class="nav-item">
           <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-shared-sym">Symptoms</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-shared-reg">Regulations</a>
+        </li>
       </ul>
 
       <div class="tab-content py-4">
         <div class="tab-pane fade show active" id="tab-shared-ing">
-          {{- if and .Investigation .Investigation.Shared.Ingredients (gt (len .Investigation.Shared.Ingredients) 0) }}
+          {{- if and .Investigation .Investigation.SharedIngredients (gt (len .Investigation.SharedIngredients) 0) }}
           <div class="inv-carousel">
-            {{- range .Investigation.Shared.Ingredients }}
+            {{- range .Investigation.SharedIngredients }}
             <div class="inv-carousel-item">
               <div class="inv-ingredient-card">
                 <div class="d-flex justify-content-between align-items-start">
@@ -211,73 +214,25 @@
         {{/* Hazards/Effects/Symptoms Shared Panes (Simplified Labels) */}}
         <div class="tab-pane fade" id="tab-shared-haz">
           <div class="d-flex flex-wrap gap-2">
-            {{- range .Investigation.Shared.Hazards }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+            {{- range index .Investigation.SharedLabels "hazard" }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
           </div>
         </div>
         <div class="tab-pane fade" id="tab-shared-eff">
           <div class="d-flex flex-wrap gap-2">
-            {{- range .Investigation.Shared.Effects }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+            {{- range index .Investigation.SharedLabels "effect" }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
           </div>
         </div>
         <div class="tab-pane fade" id="tab-shared-sym">
           <div class="d-flex flex-wrap gap-2">
-            {{- range .Investigation.Shared.Symptoms }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+            {{- range index .Investigation.SharedLabels "symptom" }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab-shared-reg">
+          <div class="d-flex flex-wrap gap-2">
+            {{- range index .Investigation.SharedLabels "regulation" }} <div class="inv-label-card">{{ . }}</div> {{- else }} <p class="text-muted small">None</p> {{- end }}
           </div>
         </div>
       </div>
-
-      {{/* ── Unique Attributes by Product ── */}}
-      {{- if and .Investigation .Investigation.ProductList (gt (len .Investigation.ProductList) 0) }}
-      <p class="inv-section-label mt-5"><i class="bi bi-distribute-horizontal"></i> Product Exclusives</p>
-
-      <ul class="nav nav-pills mb-4" id="unique-product-pills">
-        {{- range $i, $p := .Investigation.ProductList }}
-        <li class="nav-item">
-          <a class="nav-link{{ if eq $i 0 }} active{{ end }}" data-bs-toggle="tab" data-bs-target="#unique-tab-{{ $p.Id }}">{{ $p.Name }}</a>
-        </li>
-        {{- end }}
-      </ul>
-
-      <div class="tab-content">
-        {{- range $i, $p := .Investigation.ProductList }}
-        {{- $u := index $.Investigation.Unique $p.Id }}
-        <div class="tab-pane fade{{ if eq $i 0 }} show active{{ end }}" id="unique-tab-{{ $p.Id }}">
-          
-          <div class="bg-light rounded-4 p-4 border">
-            <div class="row">
-                <div class="col-12 mb-3">
-                    <h6 class="fw-bold" style="color: var(--forest-green);">Unique Ingredients</h6>
-                    <div class="inv-carousel mt-2">
-                        {{- range $u.Ingredients }}
-                        <div class="inv-carousel-item">
-                            <div class="inv-ingredient-card shadow-none border">
-                                <p class="inv-card-name">{{ .PrimaryName }}</p>
-                                <button class="btn btn-sm btn-outline-dark mt-2" style="font-size: 0.65rem;" hx-get="/htmx/ingredient-detail?id={{ .Id }}" hx-target="#side-modal_content" hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">VIEW SOURCE</button>
-                            </div>
-                        </div>
-                        {{- else }}
-                        <p class="text-muted small">This product shares all its ingredients with others in the comparison.</p>
-                        {{- end }}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <p class="inv-section-label mb-2">Unique Hazards</p>
-                    {{- range $u.Hazards }} <div class="inv-label-card mb-1">{{ . }}</div> {{- else }} <span class="text-muted small">None</span> {{- end }}
-                </div>
-                <div class="col-md-4">
-                    <p class="inv-section-label mb-2">Unique Effects</p>
-                    {{- range $u.Effects }} <div class="inv-label-card mb-1">{{ . }}</div> {{- else }} <span class="text-muted small">None</span> {{- end }}
-                </div>
-                <div class="col-md-4">
-                    <p class="inv-section-label mb-2">Unique Symptoms</p>
-                    {{- range $u.Symptoms }} <div class="inv-label-card mb-1">{{ . }}</div> {{- else }} <span class="text-muted small">None</span> {{- end }}
-                </div>
-            </div>
-          </div>
-        </div>
-        {{- end }}
-      </div>
-      {{- end }}
 
     </div>
   </div>
