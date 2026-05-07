@@ -1,4 +1,3 @@
-{{- with .Search }}
 {{- if and (eq (len .Products) 0) (ne .Query "") }}
 <p style="font-size:0.88rem; color:#6c8f70; padding: 0.5rem 0.25rem;">
   No products found for <strong>{{ .Query }}</strong>.
@@ -441,37 +440,6 @@
 
         <hr class="sr-divider">
 
-        <div>
-          <div class="sr-card-label">Metrics</div>
-          <div class="sr-stats">
-            <div class="sr-stat">
-              <i class="bi bi-exclamation-triangle sr-stat-icon"></i>
-              <span class="sr-stat-value">{{ .Metadata.NumHazard }}</span>
-              <span class="sr-stat-name">Hazards</span>
-            </div>
-            <div class="sr-stat">
-              <i class="bi bi-activity sr-stat-icon"></i>
-              <span class="sr-stat-value">{{ .Metadata.NumEffect }}</span>
-              <span class="sr-stat-name">Effects</span>
-            </div>
-            <div class="sr-stat">
-              <i class="bi bi-heart-pulse sr-stat-icon"></i>
-              <span class="sr-stat-value">{{ .Metadata.NumSymptom }}</span>
-              <span class="sr-stat-name">Symptoms</span>
-            </div>
-            <div class="sr-stat">
-              <i class="bi bi-shield-check sr-stat-icon"></i>
-              <span class="sr-stat-value">{{ .Metadata.NumReglations }}</span>
-              <span class="sr-stat-name">Regulations</span>
-            </div>
-          </div>
-        </div>
-
-        {{- if .Metadata.AiBlurb }}
-        <hr class="sr-divider">
-        <p class="sr-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-        {{- end }}
-
         <div class="sr-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
       </div><!-- /pv -->
 
@@ -640,5 +608,4 @@
     }
   }
 </script>
-{{- end }}
 {{- end }}

@@ -123,71 +123,6 @@
     </div>
   </div>
 
-  {{- if .FavoriteIngredients }}
-  <p class="section-label mb-3"><i class="bi bi-bookmark-star-fill text-warning me-2"></i>Monitored Substances</p>
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
-    {{- range .FavoriteIngredients }}
-    <div class="col">
-      <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
-
-        <div class="d-flex justify-content-between align-items-start">
-          <h5 class="ingredient-card-name">{{ .PrimaryName }}</h5>
-          <div class="d-flex gap-2">
-            <button class="btn-icon" 
-                    hx-get="/htmx/ingredient-detail?id={{ .Id }}" 
-                    hx-target="#side-modal_content" 
-                    hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
-              <i class="bi bi-info-circle"></i>
-            </button>
-            <button class="btn-icon btn-icon-star starred" hx-post="/user/ingredient" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML">
-              <i class="bi bi-star-fill"></i>
-            </button>
-          </div>
-        </div>
-
-        {{- if not .Failed }}
-        <div>
-          <div class="ingredient-card-label">Synonyms ({{ len .Names }})</div>
-          {{- if gt (len .Names) 0 }}
-          <input class="ingredient-synonym-search" type="text" placeholder="Filter..." oninput="filterSynonyms(this)">
-          <div class="d-flex flex-wrap gap-1" style="max-height: 50px; overflow-y: auto;">
-            {{- range .Names }}
-            <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
-            {{- end }}
-          </div>
-          {{- end }}
-        </div>
-
-        <div class="ingredient-stats">
-          <div class="ingredient-stat">
-            <i class="bi bi-exclamation-triangle-fill ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumHazards }}</span> <span>Hazards</span>
-          </div>
-          <div class="ingredient-stat">
-            <i class="bi bi-activity ingredient-stat-icon"></i>
-            <span class="ingredient-stat-value">{{ .Metadata.NumEffects }}</span> <span>Effects</span>
-          </div>
-        </div>
-
-        {{- if .Metadata.AiBlurb }}
-        <p class="ingredient-ai-blurb">"{{ deref .Metadata.AiBlurb }}"</p>
-        {{- end }}
-        {{- else }}
-        <div class="text-center py-3 bg-light rounded-3">
-          <i class="bi bi-cloud-slash h4 text-muted"></i>
-          <p class="small text-muted mb-0">Extended data retrieval failed</p>
-        </div>
-        {{- end }}
-
-        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-            <span class="text-muted" style="font-size: 0.65rem;">Updated: {{ .Created.Format "Jan 2006" }}</span>
-        </div>
-      </div>
-    </div>
-    {{- end }}
-  </div>
-  {{- end }}
-
   <div class="row justify-content-center mb-5">
     <div class="col-lg-10">
       <div class="ingredient-searchbar-wrapper">
@@ -196,7 +131,7 @@
           id="ingredient-search-input"
           class="ingredient-searchbar-input"
           type="text"
-          name="query"
+          name="name"
           placeholder="Enter ingredient name (e.g., 'Phenoxyethanol')..."
           hx-get="/htmx/ingredient-search_results"
           hx-trigger="keyup changed delay:400ms"
