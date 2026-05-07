@@ -123,7 +123,7 @@ function handleIngredientInput(e) {
 
       alert('Error creating product');
     }
-});
+  });
 
   document.getElementById('close-btn').addEventListener('click', () => {
     window.close();
