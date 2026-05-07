@@ -36,6 +36,8 @@ func Compare(v *verb.Verb) {
 		Bridge(bridges.ProductDetailBridge)
 }
 
+
+
 func Ingredients(v *verb.Verb) {
 	v.Page("/ingredients", "v2/pages/ingredients.html").
 		Bridge(bridges.CategorizedIngredients{}).
