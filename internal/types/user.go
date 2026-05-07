@@ -17,7 +17,8 @@ type User struct {
 }
 
 type UserInformation struct {
-	Username string `json:"username"`
+	Username string    `json:"username"`
+	Id       uuid.UUID `json:"id"`
 
 	Roles       []Role       `json:"roles"`
 	Products    []Product    `json:"products"`

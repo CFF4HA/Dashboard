@@ -78,15 +78,23 @@ func DeleteUser(u uuid.UUID) error {
 	return nil
 }
 
-func GetUserInformation(u uuid.UUID) (*types.User, error) {
+func GetUserInformation(u uuid.UUID) (*types.UserInformation, error) {
 	var user *types.User
 
-	tx := core.DB.Scopes(WithPreload("Roles", "Ingredients", "Products")).First(user, "id = ?", u)
+	tx := core.DB.Scopes(WithPreload("Roles", "Ingredients", "Products")).First(&user, "id = ?", u)
 	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve user information", "err", tx.Error)
 		return nil, errors.New("failed to retrieve user information, try again later.")
 	}
 
-	return user, nil
+	userInformation := &types.UserInformation{}
+	userInformation.Id = user.Model.Id
+	userInformation.Username = user.Username
+	userInformation.Roles = user.Roles
+	userInformation.Products = user.Products
+	userInformation.Ingredients = user.Ingredients
+
+	return userInformation, nil
 }
 
 func GetUsers(cursor int, count int) ([]uuid.UUID, error) {
