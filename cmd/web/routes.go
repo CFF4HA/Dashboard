@@ -27,8 +27,7 @@ func Index(v *verb.Verb) {
 func Compare(v *verb.Verb) {
 	v.Page("/compare", "v2/pages/compare.html")
 	v.Component("v2/components/compare-product_search.html", htmx.Div())
-	v.Component("v2/components/investigation.html", htmx.Div()).
-		Bridge(bridges.InvestigationBridge{})
+	v.Component("v2/components/investigation.html", htmx.Div())
 
 	v.Component("v2/components/compare-product_card.html", htmx.Div())
 }
@@ -57,8 +56,7 @@ func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodDelete, "/ingredient/scrape/config/remove", backend.RouteDeletePubChemLabelConfig)
 	v.ActionClassic(http.MethodGet, "/ingredient/scrape/config/get", backend.RouteGetPubChemLabelConfigs)
 
-	v.Page("/ingredients", "v2/pages/ingredients.html").
-		Bridge(bridges.UserFavoriteIngredientsBridge)
+	v.Page("/ingredients", "v2/pages/ingredients.html")
 
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
 		Bridge(bridges.IngredientsByName{})
@@ -91,13 +89,12 @@ func Products(v *verb.Verb) {
 
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
-		Bridge(bridges.ProductsByName{})
+		Bridge(bridges.ProductsByName)
 
 	v.Component("v2/components/product-detail.html", htmx.Div())
 
 	// this will be the primary products page.
-	v.Page("/products", "v2/pages/products.html").
-		Bridge(bridges.UserFavoriteProductsBridge)
+	v.Page("/products", "v2/pages/products.html")
 }
 
 func User(v *verb.Verb) {
@@ -164,12 +161,12 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/forms/form-tag_rule_create.html", htmx.Div())
 	v.Component("v2/tables/table-tagging_rules.html", htmx.Div()).
-		Bridge(bridges.TaggingRules{})
+		Bridge(bridges.TaggingRules)
 	v.Component("v2/components/tagging-search_results_sm.html", htmx.Div()).
 		Bridge(bridges.TagsByName)
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
-		Bridge(bridges.AllTagsBridge)
+		Bridge(bridges.Tags)
 }
 
 func FormsV2(v *verb.Verb) {

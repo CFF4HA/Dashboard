@@ -7,6 +7,12 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/backend"
 )
 
+var (
+	IngredientById = DataBridge{Key: "IngredientById", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
+		return backend.GetIngredientById(r.FormValue("id"))
+	}}
+)
+
 type IngredientsByName struct {
 }
 
