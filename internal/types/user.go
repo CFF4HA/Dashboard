@@ -13,6 +13,15 @@ type User struct {
 	// ingredients.
 	Products    []Product    `json:"products" gorm:"many2many:user_products;"`
 	Ingredients []Ingredient `json:"ingredients" gorm:"many2many:user_ingredients;"`
+	Roles       []Role       `json:"roles" gorm:"many2many:user_roles;"`
+}
+
+type UserInformation struct {
+	Username string `json:"username"`
+
+	Roles       []Role       `json:"roles"`
+	Products    []Product    `json:"products"`
+	Ingredients []Ingredient `json:"ingredients"`
 }
 
 type Session struct {

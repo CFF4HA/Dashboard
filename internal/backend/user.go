@@ -78,6 +78,17 @@ func DeleteUser(u uuid.UUID) error {
 	return nil
 }
 
+func GetUserInformation(u uuid.UUID) (*types.User, error) {
+	var user *types.User
+
+	tx := core.DB.Scopes(WithPreload("Roles", "Ingredients", "Products")).First(user, "id = ?", u)
+	if tx.Error != nil {
+		return nil, errors.New("failed to retrieve user information, try again later.")
+	}
+
+	return user, nil
+}
+
 func GetUsers(cursor int, count int) ([]uuid.UUID, error) {
 	var users []types.User
 	if err := core.DB.Offset(cursor).Limit(count).Find(&users).Error; err != nil {
@@ -201,4 +212,18 @@ func RouteUserRoleRemove(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("not authenticated")
 	}
 	return UserRoleRemove(u.Model.Id, r.FormValue("role_id"))
+}
+
+func RouteGetUserInformation(w http.ResponseWriter, r *http.Request) error {
+	u, err := user.GetUserFromRequestNoRedirect(w, r)
+	if err != nil || u == nil {
+		return errors.New("not authenticated")
+	}
+
+	info, err := GetUserInformation(u.Model.Id)
+	if err != nil {
+		return err
+	}
+
+	return json.NewEncoder(w).Encode(info)
 }
