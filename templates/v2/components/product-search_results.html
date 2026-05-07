@@ -171,8 +171,12 @@
     border-radius: 20px;
     padding: 0.15rem 0.55rem;
     white-space: nowrap;
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
 
+  .sr-ingredient-pill:hover { background: var(--mint-green); border-color: rgba(39,66,41,0.25); }
   .sr-ingredient-pill[hidden] { display: none; }
 
   /* ── Metrics grid ────────────────────────────────────────── */
@@ -432,7 +436,12 @@
                  oninput="srFilterIngredients(this)">
           <div class="sr-ingredient-scroll">
             {{- range .Ingredients }}
-            <span class="sr-ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
+            <button class="sr-ingredient-pill" data-name="{{ .PrimaryName | lower }}"
+              hx-get="/htmx/ingredient-detail?id={{ .Id }}"
+              hx-target="#side-modal_content"
+              hx-swap="innerHTML"
+              hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+              title="View {{ .PrimaryName }} details">{{ .PrimaryName }}</button>
             {{- end }}
           </div>
         </div>

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ProductById = DataBridge{Key: "ProductById", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
+	ProductById = DataBridge{Key: "Product", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
 		u, _ := user.GetUserFromRequestNoRedirect(w, r)
 		var user_id *uuid.UUID
 		if u != nil {

@@ -124,7 +124,7 @@ func GetProducts(u *uuid.UUID, cursor string) ([]types.Product, error) {
 
 func GetProductById(id string, u *uuid.UUID) (*types.Product, error) {
 	prod := &types.Product{}
-	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithUserBasedFiltering(u)).First(prod, "id = ?", id)
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags", "Ingredients.Labels", "Ingredients.Tags"), WithUserBasedFiltering(u)).First(prod, "id = ?", id)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

@@ -60,7 +60,8 @@ func Ingredients(v *verb.Verb) {
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
 		Bridge(bridges.IngredientsByName{})
 
-	v.Component("v2/components/ingredient-detail.html", htmx.Div())
+	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
+		Bridge(bridges.IngredientById)
 }
 
 func Usage(v *verb.Verb) {
@@ -90,7 +91,8 @@ func Products(v *verb.Verb) {
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
 		Bridge(bridges.ProductsByName)
 
-	v.Component("v2/components/product-detail.html", htmx.Div())
+	v.Component("v2/components/product-detail.html", htmx.Div()).
+		Bridge(bridges.ProductById)
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html")

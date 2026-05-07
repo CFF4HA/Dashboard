@@ -267,7 +267,7 @@ func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient
 func GetIngredientById(id string) (*types.Ingredient, error) {
 	var ingredient *types.Ingredient
 
-	tx := core.DB.Scopes(WithPreload("Labels", "Tags")).First(&ingredient, "id = ?", id)
+	tx := core.DB.Scopes(WithPreload("Labels", "Tags", "Notes")).First(&ingredient, "id = ?", id)
 	if tx.Error != nil {
 		core.Logger.Error("failed to retrieve ingredient from database", "id", id, "error", tx.Error)
 		return nil, errors.New("failed to retrieve ingredient from database, try again later.")

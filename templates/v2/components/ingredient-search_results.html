@@ -546,9 +546,10 @@
           <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tags-pane-{{ .Id }}" type="button" role="tab">Tags</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes-pane-{{ .Id }}" type="button" role="tab">Notes</button>
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#labels-pane-{{ .Id }}" type="button" role="tab">Labels</button>
         </li>
         <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes-pane-{{ .Id }}" type="button" role="tab">Notes</button>
         </li>
       </ul>
 
@@ -628,16 +629,32 @@
           </div>
         </div>
 
-        <!-- Synonyms pane -->
-        
-        <!-- Hazards pane -->
-        
-        <!-- Effects pane -->
-        
-        <!-- Symptoms pane -->
-        
-        <!-- Regulations pane -->
-        
+        <!-- Labels pane -->
+        <div class="tab-pane fade pt-2" id="labels-pane-{{ .Id }}" role="tabpanel">
+          {{- $hasLabels := false }}
+          {{- range .Labels }}{{- $hasLabels = true }}{{- end }}
+          {{- if $hasLabels }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">
+                <span class="badge badge-sm me-1
+                  {{- if eq .Type "hazard" }} bg-danger
+                  {{- else if eq .Type "effect" }} bg-success
+                  {{- else if eq .Type "symptom" }} bg-warning text-dark
+                  {{- else if eq .Type "regulation" }} bg-primary
+                  {{- else }} bg-secondary
+                  {{- end }}" style="font-size:0.62rem;">{{ .Type }}</span>{{ .Payload }}
+              </span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No labels on record.</span>
+          {{- end }}
+        </div>
+
       </div><!-- /tab-content -->
 
       
