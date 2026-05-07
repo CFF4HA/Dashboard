@@ -1,0 +1,649 @@
+# Imports
+import pubchem
+from collections import Counter, defaultdict
+import models
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+import uuid
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+import io
+
+# Styles for PDFs
+styles = getSampleStyleSheet()
+
+# Custom styles
+titleStyle = ParagraphStyle(
+    "TitleStyle",
+    parent=styles["Title"],
+    alignment=TA_CENTER,
+    fontName="Times-Bold",
+    fontSize=28,
+    spaceAfter=12,
+)
+
+subtitleStyle = ParagraphStyle(
+    "SubtitleStyle",
+    parent=styles["Normal"],
+    alignment=TA_CENTER,
+    fontName="Times-Bold",
+    fontSize=16,
+    spaceAfter=20,
+)
+
+headerStyle = ParagraphStyle(
+    "HeaderStyle",
+    parent=styles["Heading2"],
+    fontName="Times-Bold",
+    spaceBefore=12,
+    spaceAfter=6,
+    underlineWidth=1,  # underline!
+)
+
+bodyStyle = ParagraphStyle(
+    "BodyStyle",
+    parent=styles["Normal"],
+    fontName="Times-Roman",
+    fontSize=12,
+    spaceAfter=4,
+)
+
+"""
+Takes in the names of an ingredient and queries it in Pubchem using our Ingredient function.
+Parameters: Name of an ingredient
+Returns: List of all Labels associated with the ingredient, and a List comprised of the Types
+of Labels
+"""
+def getLabelTypesList(ing) -> tuple[list, list]:
+    _, labels = pubchem.Ingredient(ing)
+    types = [label.Type for label in labels]
+    return labels, types
+
+"""
+Takes in a list of ingredient names and queries them in Pubchem using Ingredient function
+Parameters: List of names of ingredients
+Returns: A List comprised of each ingredient's List of Labels, and a List of the Types of Labels
+present for all ingredients
+"""
+def massGetLabelTypesList(ings) -> tuple[list[list], list]:
+    listLabels = []
+    types = None
+    for ingredient in ings:
+        result = pubchem.Ingredient(ingredient)
+        if result is None:
+            print(f"Warning: No data found for {ingredient}")
+            continue
+        _, labels = result
+        listLabels.append(labels)
+        if (types is None):
+            types = [label.Type for label in labels]
+        else:
+            moreTypes = [label.Type for label in labels]
+            for type in moreTypes:
+                types.append(type)
+    types = sorted(types)
+    return listLabels, types
+
+# Compares the number of unique symptom entries for each ingredient.
+def compareSymptomNumber(ing1, ing2, types1, types2):
+    numSymptoms1 = types1['symptom']
+    numSymptoms2 = types2['symptom']
+    if (numSymptoms1 > numSymptoms2):
+        print(ing1+" has more defined symptoms than "+ing2)
+        print(str(numSymptoms1)+" > "+str(numSymptoms2))
+    elif (numSymptoms1 < numSymptoms2):
+        print(ing2+" has more defined symptoms than "+ing1)
+        print(str(numSymptoms2)+" > "+str(numSymptoms1))
+    else:
+        print(ing1+" and "+ing2+" have the same number of defined symptoms.")
+        print(str(numSymptoms1)+" = "+str(numSymptoms2))
+
+# Compares number of defined symptoms for two lists of ingredients.
+def massCompareSymptomNumber(ingList1, ingList2, types1, types2):
+    numSymptoms1 = types1['symptom']
+    numSymptoms2 = types2['symptom']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numSymptoms1 > numSymptoms2):
+        print("The first ingredient list has more defined symptoms.")
+        print(str(numSymptoms1)+" > "+str(numSymptoms2))
+    elif (numSymptoms1 < numSymptoms2):
+        print("The second ingredient list has more defined symptoms.")
+        print(str(numSymptoms2)+" > "+str(numSymptoms1))
+    else:
+        print("Both ingredient lists have the same number of defined symptoms.")
+        print(str(numSymptoms1)+" = "+str(numSymptoms2))
+
+# Compares the number of unique effect entries of each ingredient.
+def compareEffectNumber(ing1, ing2, types1, types2):
+    numEffects1 = types1['effect']
+    numEffects2 = types2['effect']
+    if (numEffects1 > numEffects2):
+        print(ing1+" has more defined effects than "+ing2)
+        print(str(numEffects1)+" > "+str(numEffects2))
+    elif (numEffects1 < numEffects2):
+        print(ing2+" has more defined effects than "+ing1)
+        print(str(numEffects2)+" > "+str(numEffects1))
+    else:
+        print(ing1+" and "+ing2+" have the same number of defined effects.")
+        print(str(numEffects1)+" = "+str(numEffects2))
+
+# Compares the number of effect entries for two lists of ingredients.
+def massCompareEffectNumber(ingList1, ingList2, types1, types2):
+    numEffects1 = types1['effect']
+    numEffects2 = types2['effect']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numEffects1 > numEffects2):
+        print("The first ingredient list has more defined effects.")
+        print(str(numEffects1)+" > "+str(numEffects2))
+    elif (numEffects1 < numEffects2):
+        print("The second ingredient list has more defined effects.")
+        print(str(numEffects2)+" > "+str(numEffects1))
+    else:
+        print("Both ingredient lists have the same number of defined effects.")
+        print(str(numEffects1)+" = "+str(numEffects2))
+
+# Compares the nubmer of unique hazard entries of each ingredient.
+def compareHazardNumber(types1, types2):
+    numHazards1 = types1['hazard']
+    numHazards2 = types2['hazard']
+    if (numHazards1 > numHazards2):
+        print(ing1+" has more defined hazards than "+ing2)
+        print(str(numHazards1)+" > "+str(numHazards2))
+    elif (numHazards1 < numHazards2):
+        print(ing2+" has more defined hazards than "+ing1)
+        print(str(numHazards2)+" > "+str(numHazards1))
+    else:
+        print(ing1+" and "+ing2+" have the same number of defined hazards.")
+        print(str(numHazards1)+" = "+str(numHazards2))
+
+# Compares the number of defined hazards for two lists of ingredients.
+def massCompareHazardNumber(ingList1, ingList2, types1, types2):
+    numHazards1 = types1['hazard']
+    numHazards2 = types2['hazard']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numHazards1 > numHazards2):
+        print("The first ingredient list has more defined hazards.")
+        print(str(numHazards1)+" > "+str(numHazards2))
+    elif (numHazards1 < numHazards2):
+        print("The second ingredient list has more defined hazards.")
+        print(str(numHazards2)+" > "+str(numHazards1))
+    else:
+        print("Both ingredient lists have the same number of defined hazards.")
+        print(str(numHazards1)+" = "+str(numHazards2))
+        
+# Compares the number of unique regulation entries of each ingredient.
+def compareRegulationNumber(types1, types2):
+    numRegulations1 = types1['regulation']
+    numRegulations2 = types2['regulation']
+    if (numRegulations1 > numRegulations2):
+        print(ing1+" has more defined regulations than "+ing2)
+        print(str(numRegulations1)+" > "+str(numRegulations2))
+    elif (numRegulations1 < numRegulations2):
+        print(ing2+" has more defined regulations than "+ing1)
+        print(str(numRegulations2)+" > "+str(numRegulations1))
+    else:
+        print(ing1+" and "+ing2+" have the same number of defined regulations.")
+        print(str(numRegulations1)+" = "+str(numRegulations2))
+
+# Compares the number of regulation entries for two lists of ingredients.
+def massCompareRegulationNumber(ingList1, ingList2, types1, types2):
+    numRegulations1 = types1['regulation']
+    numRegulations2 = types2['regulation']
+    print("Comparing Ingredient List 1: "+ingList1+"\n")
+    print("with Ingredient List 2: "+ingList2+"\n")
+    if (numRegulations1 > numRegulations2):
+        print("The first ingredient list has more defined regulations.")
+        print(str(numRegulations1)+" > "+str(numRegulations2))
+    elif (numRegulations1 < numRegulations2):
+        print("The second ingredient list has more defined regulations.")
+        print(str(numRegulations2)+" > "+str(numRegulations1))
+    else:
+        print("Both ingredient lists have the same number of defined regulations.")
+        print(str(numRegulations1)+" = "+str(numRegulations2))
+
+# Takes in a list of Labels and returns a list of all symptoms defined in that list.
+def getSymptomList(label1) -> set[str]:
+    payloads_by_type = defaultdict(list)
+    for label in label1:
+        payloads_by_type[label.Type].append(label.Payload)
+    symptoms = payloads_by_type['symptom']
+    return set(symptoms)
+
+# Takes in a list of Ingredient objects and returns Set of their combined symptoms
+def getMassSymptomList(ings : list[models.Ingredient]) -> set[str]:
+    symptomSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'symptom':
+                symptomSet.add(label.Payload)
+    return symptomSet
+
+"""
+Compares two symptom lists from getSymptomList and prints out symptoms that are: 
+1. Common to both ingredients listed.
+2. Unique to the first ingredient listed.
+3. Unique to the second ingredient listed.
+Parameters: Two ingredient names and their respective lists of Symptoms from getSymptomList().
+"""
+def compareSymptoms(ing1, ing2, list1, list2):
+    set1 = set(list1)
+    set2 = set(list2)
+
+    commonSymptoms = set1 & set2
+    uniqueSymptoms1 = set1 - set2
+    uniqueSymptoms2 = set2 - set1
+
+    print("Common Symptoms:", commonSymptoms if commonSymptoms else "None")
+    print("Unique to "+ing1+": ", uniqueSymptoms1 if uniqueSymptoms1 else "None")
+    print("Unique to "+ing2+": ", uniqueSymptoms2 if uniqueSymptoms2 else "None")
+
+"""
+Compares symptoms from two lists of ingredient names. Prints out symptoms that are:
+1. Common to both ingredients lists.
+2. Unique to the first ingredient list.
+3. Unique to the second ingredient list.
+"""
+def massCompareSymptoms(ingList1, ingList2):
+    symptomList1 = []
+    symptomList2 = []
+    for ing in ingList1:
+        symptoms = getSymptomList(getLabelTypesList(ing)[0])
+        symptomList1.extend(symptoms)
+    for ing in ingList2:
+        symptoms = getSymptomList(getLabelTypesList(ing)[0])
+        symptomList2.extend(symptoms)
+
+    set1 = set(symptomList1)
+    set2 = set(symptomList2)
+
+    commonSymptoms = set1 & set2
+    uniqueSymptoms1 = set1 - set2
+    uniqueSymptoms2 = set2 - set1
+
+    print("Common Symptoms:", commonSymptoms if commonSymptoms else "None")
+    print("Unique to Ingredient List 1: ", uniqueSymptoms1 if uniqueSymptoms1 else "None")
+    print("Unique to Ingredient List 2: ", uniqueSymptoms2 if uniqueSymptoms2 else "None")
+
+# Takes in a list of Labels and returns a list of all hazards defined in that list.
+def getHazardList(labelList) -> list:
+    payloads_by_type = defaultdict(list)
+    for label in labelList:
+        payloads_by_type[label.Type].append(label.Payload)
+    hazards = payloads_by_type['hazard']
+    return hazards
+
+# Takes in a list of Ingredient objects and returns Set of their combined hazards
+def getMassHazardList(ings : list[models.Ingredient]) -> set[str]:
+    hazardSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'hazard':
+                hazardSet.add(label.Payload)
+    return hazardSet
+
+"""
+Compares two hazard lists from getHazardList and prints out hazards that are: 
+1. Common to both ingredients listed.
+2. Unique to the first ingredient listed.
+3. Unique to the second ingredient listed.
+Parameters: Two ingredient names and their respective lists of Hazards from getHazardList().
+"""
+def compareHazards(ing1, ing2, list1, list2):
+    set1 = set(list1)
+    set2 = set(list2)
+
+    commonHazards = set1 & set2
+    uniqueHazards1 = set1 - set2
+    uniqueHazards2 = set2 - set1
+
+    print("Common Hazards:", commonHazards if commonHazards else "None")
+    print("Unique to "+ing1+": ", uniqueHazards1 if uniqueHazards1 else "None")
+    print("Unique to "+ing2+": ", uniqueHazards2 if uniqueHazards2 else "None")
+
+def massCompareHazards(ingList1, ingList2):
+    hazardList1 = []
+    hazardList2 = []
+
+    for ing in ingList1:
+        hazards = getHazardList(getLabelTypesList(ing)[0])
+        hazardList1.extend(hazards)
+
+    for ing in ingList2:
+        hazards = getHazardList(getLabelTypesList(ing)[0])
+        hazardList2.extend(hazards)
+
+    set1 = set(hazardList1)
+    set2 = set(hazardList2)
+
+    commonHazards = set1 & set2
+    uniqueHazards1 = set1 - set2
+    uniqueHazards2 = set2 - set1
+
+    print("Common Hazards:", commonHazards if commonHazards else "None")
+    print("Unique to Ingredient List 1:", uniqueHazards1 if uniqueHazards1 else "None")
+    print("Unique to Ingredient List 2:", uniqueHazards2 if uniqueHazards2 else "None")
+
+# Takes in a list of Labels and returns a list of all effects defined in that list.
+def getEffectList(labelList) -> list:
+    payloads_by_type = defaultdict(list)
+    for label in labelList:
+        payloads_by_type[label.Type].append(label.Payload)
+    effects = payloads_by_type['effect']
+    return effects
+
+# Takes in a list of Ingredient objects and returns Set of their combined effects
+def getMassEffectList(ings : list[models.Ingredient]) -> set[str]:
+    effectSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'effect':
+                effectSet.add(label.Payload)
+    return effectSet
+"""
+Compares two effect lists from getEffectList and prints out effects that are: 
+1. Common to both ingredients listed.
+2. Unique to the first ingredient listed.
+3. Unique to the second ingredient listed.
+Parameters: Two ingredient names and their respective lists of Effects from getEffectList().
+"""
+def compareEffects(ing1, ing2, list1, list2):
+    set1 = set(list1)
+    set2 = set(list2)
+
+    commonEffects = set1 & set2
+    uniqueEffects1 = set1 - set2
+    uniqueEffects2 = set2 - set1
+
+    print("Common Effects:", commonEffects if commonEffects else "None")
+    print("Unique to "+ing1+": ", uniqueEffects1 if uniqueEffects1 else "None")
+    print("Unique to "+ing2+": ", uniqueEffects2 if uniqueEffects2 else "None")
+
+"""
+Comopares the combined effect lists from two lists of ingredient names.
+"""
+def massCompareEffects(ingList1, ingList2):
+    effectList1 = []
+    effectList2 = []
+
+    for ing in ingList1:
+        effects = getEffectList(getLabelTypesList(ing)[0])
+        effectList1.extend(effects)
+
+    for ing in ingList2:
+        effects = getEffectList(getLabelTypesList(ing)[0])
+        effectList2.extend(effects)
+
+    set1 = set(effectList1)
+    set2 = set(effectList2)
+
+    commonEffects = set1 & set2
+    uniqueEffects1 = set1 - set2
+    uniqueEffects2 = set2 - set1
+
+    print("Common Effects:", commonEffects if commonEffects else "None")
+    print("Unique to Ingredient List 1: ", uniqueEffects1 if uniqueEffects1 else "None")
+    print("Unique to Ingredient List 2: ", uniqueEffects2 if uniqueEffects2 else "None")
+
+# Takes in a list of Labels and returns a list of all regulations defined in that list.
+def getRegulationList(labelList) -> list:
+    payloads_by_type = defaultdict(list)
+    for label in labelList:
+        payloads_by_type[label.Type].append(label.Payload)
+    regulations = payloads_by_type['regulation']
+    return regulations
+
+# Takes in a list of Ingredient objects and returns a list of their combined regulations
+def getMassRegulationList(ings : list[models.Ingredient]) -> set[str]:
+    regSet = set()
+    for ing in ings:
+        for label in ing.Labels:
+            if label.Type == 'regulation':
+                regSet.add(label.Payload)
+    return regSet
+
+"""
+Compares two regulation lists from getRegulationList and prints out regulations that are: 
+1. Common to both ingredients listed.
+2. Unique to the first ingredient listed.
+3. Unique to the second ingredient listed.
+Parameters: Two ingredient names and their respective lists of Regulations from getRegulationList().
+"""
+def compareRegulations(ing1, ing2, list1, list2):
+    set1 = set(list1)
+    set2 = set(list2)
+
+    commonRegulations = set1 & set2
+    uniqueRegulations1 = set1 - set2
+    uniqueRegulations2 = set2 - set1
+
+    print("Common Regulations:", commonRegulations if commonRegulations else "None")
+    print("Unique to "+ing1+": ", uniqueRegulations1 if uniqueRegulations1 else "None")
+    print("Unique to "+ing2+": ", uniqueRegulations2 if uniqueRegulations2 else "None")
+
+def massCompareRegulations(ingList1, ingList2):
+    regulationList1 = []
+    regulationList2 = []
+
+    for ing in ingList1:
+        regulations = getRegulationList(getLabelTypesList(ing)[0])
+        regulationList1.extend(regulations)
+
+    for ing in ingList2:
+        regulations = getRegulationList(getLabelTypesList(ing)[0])
+        regulationList2.extend(regulations)
+
+    set1 = set(regulationList1)
+    set2 = set(regulationList2)
+
+    commonRegulations = set1 & set2
+    uniqueRegulations1 = set1 - set2
+    uniqueRegulations2 = set2 - set1
+
+    print("Common Regulations:", commonRegulations if commonRegulations else "None")
+    print("Unique to Ingredient List 1:", uniqueRegulations1 if uniqueRegulations1 else "None")
+    print("Unique to Ingredient List 2:", uniqueRegulations2 if uniqueRegulations2 else "None")
+
+def addSection(title, story, items):
+        if not items:
+            return
+        story.append(Paragraph(title, headerStyle))
+        for item in items:
+            story.append(Paragraph(item, bodyStyle))
+        story.append(Spacer(1, 10))
+
+def ingredientPDF(ing: models.Ingredient, name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
+    # Setup stuff
+    name = name.capitalize()
+    buffer = io.BytesIO()
+
+    if expSym:
+        symptoms = getSymptomList(ing.Labels)
+        symptoms = [f"{i+1}: {line}" for i, line in enumerate(symptoms)]
+    if expEff: 
+        effects = getEffectList(ing.Labels)
+        effects = [f"{i+1}: {line}" for i, line in enumerate(effects)]
+    if expHaz:
+        hazards = getHazardList(ing.Labels)
+        hazards = [f"{i+1}: {line}" for i, line in enumerate(hazards)]
+    if expReg:
+        regs = getRegulationList(ing.Labels)
+        regs = [f"{i+1}: {line}" for i, line in enumerate(regs)]
+
+    categories = [
+        ("Symptoms", expSym),
+        ("Effects", expEff),
+        ("Hazards", expHaz),
+        ("Regulations", expReg),
+    ]
+
+    subtitle = ", ".join(label for label, enabled in categories if enabled)
+    
+    # PDF setup
+    doc = SimpleDocTemplate(buffer)
+
+    story = []
+
+    # Title
+    story.append(Paragraph(f"{name} Report", titleStyle))
+
+    # Subtitle
+    story.append(Paragraph(subtitle, subtitleStyle))
+    
+    if expSym:
+        addSection("Symptoms", story, symptoms)
+    if expEff:
+        addSection("Effects", story, effects)
+    if expHaz:
+        addSection("Hazards", story, hazards)
+    if expReg:
+        addSection("Regulations", story, regs)
+
+    # Build PDF
+    doc.build(story)
+
+    buffer.seek(0)
+    return buffer
+
+"""
+Exports a PDF of information related to the set of effects, symptoms, etc. of the ingredients in a product based on which exp 
+flags are active. 
+
+Parameters:
+product : List of Ingredient objects representing the product.
+name : String, name of the product for report titling purposes.
+expSym : Bool, whether to export symptoms of the product.
+expEff : Bool, whether to export effects of the product.
+expHaz : Bool, whether to export hazards of the product.
+expReg : Bool, whether to export regulations of the product.
+
+Returns:
+Byte buffer representing PDF that can be streamed over to the user.
+"""
+def productPDF(product: list[models.Ingredient], name: str, expSym: bool, expEff: bool, expHaz: bool, expReg: bool):
+    # Ensure name is capitalized
+    name = name.capitalize()
+
+    buffer = io.BytesIO()
+
+    if expSym:
+        symptoms = getMassSymptomList(product)
+        symptoms = [f"{i+1}: {line}" for i, line in enumerate(symptoms)]
+    if expEff: 
+        effects = getMassEffectList(product)
+        effects = [f"{i+1}: {line}" for i, line in enumerate(effects)]
+    if expHaz:
+        hazards = getMassHazardList(product)
+        hazards = [f"{i+1}: {line}" for i, line in enumerate(hazards)]
+    if expReg:
+        regs = getMassRegulationList(product)
+        regs = [f"{i+1}: {line}" for i, line in enumerate(regs)]
+
+    categories = [
+        ("Symptoms", expSym),
+        ("Effects", expEff),
+        ("Hazards", expHaz),
+        ("Regulations", expReg),
+    ]
+    subtitle = ", ".join(label for label, enabled in categories if enabled)
+    doc = SimpleDocTemplate(buffer)
+    story = []
+
+    story.append(Paragraph(f"{name} Report", titleStyle))
+    story.append(Paragraph(subtitle, subtitleStyle))
+
+    if expSym:
+        addSection("Symptoms", story, symptoms)
+    if expEff:
+        addSection("Effects", story, effects)
+    if expHaz:
+        addSection("Hazards", story, hazards)
+    if expReg:
+        addSection("Regulations", story, regs)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+def productComparePDF(product1: list[models.Ingredient], p1Name: str, product2: list[models.Ingredient], p2Name: str, expSharedIngs: bool, expUniqueIngs: bool, expSharedAttrs: bool, expUniqueAttrs: bool):
+    p1Name = p1Name.capitalize()
+    p2Name = p2Name.capitalize()
+
+    buffer = io.BytesIO()
+
+    if expSharedIngs:
+        p1Ings = set(ingredient.name for ingredient in product1)
+        p2Ings = set(ingredient.name for ingredient in product2)
+        shared = p1Ings & p2Ings
+        sharedIngs = [f"{i+1}: {line}" for i, line in enumerate(shared)]
+    if expUniqueIngs:
+        p1Ings = set(ingredient.name for ingredient in product1)
+        p2Ings = set(ingredient.name for ingredient in product2)
+        unique1 = p1Ings - p2Ings
+        unique1 = [f"{i+1}: {line}" for i, line in enumerate(unique1)]
+        unique2 = p2Ings - p1Ings
+        unique2 = [f"{i+1}: {line}" for i, line in enumerate(unique2)]
+    if expSharedAttrs:
+        p1sym = getMassSymptomList(product1)
+        p2sym = getMassSymptomList(product2)
+        p1eff = getMassEffectList(product1)
+        p2eff = getMassEffectList(product2)
+        p1haz = getMassHazardList(product1)
+        p2haz = getMassHazardList(product2)
+        p1reg = getMassRegulationList(product1)
+        p2reg = getMassRegulationList(product2)
+        sharedSym = [f"{i+1}: {line}" for i, line in enumerate(p1sym & p2sym)]
+        sharedEff = [f"{i+1}: {line}" for i, line in enumerate(p1eff & p2eff)]
+        sharedHaz = [f"{i+1}: {line}" for i, line in enumerate(p1haz & p2haz)]
+        sharedReg = [f"{i+1}: {line}" for i, line in enumerate(p1reg & p2reg)]        
+    if expUniqueAttrs:
+        p1sym = getMassSymptomList(product1)
+        p2sym = getMassSymptomList(product2)
+        p1eff = getMassEffectList(product1)
+        p2eff = getMassEffectList(product2)
+        p1haz = getMassHazardList(product1)
+        p2haz = getMassHazardList(product2)
+        p1reg = getMassRegulationList(product1)
+        p2reg = getMassRegulationList(product2)
+        uniqueSym1 = [f"{i+1}: {line}" for i, line in enumerate(p1sym - p2sym)]
+        uniqueSym2 = [f"{i+1}: {line}" for i, line in enumerate(p2sym - p1sym)]
+        uniqueEff1 = [f"{i+1}: {line}" for i, line in enumerate(p1eff - p2eff)]
+        uniqueEff2 = [f"{i+1}: {line}" for i, line in enumerate(p2eff - p1eff)]
+        uniqueHaz1 = [f"{i+1}: {line}" for i, line in enumerate(p1haz - p2haz)]
+        uniqueHaz2 = [f"{i+1}: {line}" for i, line in enumerate(p2haz - p1haz)]
+        uniqueReg1 = [f"{i+1}: {line}" for i, line in enumerate(p1reg - p2reg)]
+        uniqueReg2 = [f"{i+1}: {line}" for i, line in enumerate(p2reg - p1reg)]
+    categories = [("Shared Ingredients", expSharedIngs), ("Unique Ingredients", expUniqueIngs), ("Shared Attributes", expSharedAttrs), ("Unique Attributes", expUniqueAttrs)]
+    subtitle = ", ".join(label for label, enabled in categories if enabled)
+    doc = SimpleDocTemplate(buffer)
+    story = []
+
+    story.append(Paragraph(f"{p1Name} and {p2Name} Comparison", titleStyle))
+    story.append(Paragraph(subtitle, subtitleStyle))
+
+    if expSharedIngs:
+        addSection("Shared Ingredients", story, sharedIngs)
+    if expUniqueIngs:
+        addSection(f"Ingredients Unique to {p1Name}", story, unique1)
+        addSection(f"Ingredients Unique to {p2Name}", story, unique2)
+    if expSharedAttrs:
+        addSection("Shared Symptoms", story, sharedSym)
+        addSection("Shared Effects", story, sharedEff)
+        addSection("Shared Hazards", story, sharedHaz)
+        addSection("Shared Regulations", story, sharedReg)
+    if expUniqueAttrs:
+        addSection(f"Symptoms Unique to {p1Name}", story, uniqueSym1)
+        addSection(f"Symptoms Unique to {p2Name}", story, uniqueSym2)
+        addSection(f"Effects Unique to {p1Name}", story, uniqueEff1)
+        addSection(f"Effects Unique to {p2Name}", story, uniqueEff2)
+        addSection(f"Hazards Unique to {p1Name}", story, uniqueHaz1)
+        addSection(f"Hazards Unique to {p2Name}", story, uniqueHaz2)
+        addSection(f"Regulations Unique to {p1Name}", story, uniqueReg1)
+        addSection(f"Regulations Unique to {p2Name}", story, uniqueReg2)
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
