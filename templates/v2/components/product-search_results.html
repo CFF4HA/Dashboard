@@ -141,11 +141,9 @@
   .btn-icon-star.starred { color: #ffc107; }
 </style>
 
-{{- with .Search }}
 <div class="sr-container">
-{{- if and (eq (len .Products) 0) (ne .Query "") }}
+{{- if and (eq (len .Products) 0) }}
 <div class="text-center py-5">
-  <p class="text-muted mb-2">No products found for <strong>{{ .Query }}</strong></p>
   <button class="btn btn-sm btn-outline-success rounded-pill" onclick="document.querySelector('.btn-create-inline').click()">Create New Product</button>
 </div>
 {{- else if eq (len .Products) 0 }}
@@ -202,12 +200,6 @@
           </div>
         </div>
 
-        <div class="sr-stats mb-2">
-          <div class="sr-stat-box sr-stat-haz">{{ .Metadata.NumHazard }} Haz</div>
-          <div class="sr-stat-box sr-stat-eff">{{ .Metadata.NumEffect }} Eff</div>
-          <div class="sr-stat-box sr-stat-sym">{{ .Metadata.NumSymptom }} Sym</div>
-          <div class="sr-stat-box sr-stat-reg">{{ .Metadata.NumReglations }} Reg</div>
-        </div>
 
         <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
             <span class="sr-card-label" style="margin: 0;">{{ .Created.Format "Jan 02, 2006" }}</span>
@@ -271,4 +263,3 @@
 </div>
 {{- end }}
 </div>
-{{- end }}

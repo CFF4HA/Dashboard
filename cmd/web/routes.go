@@ -26,13 +26,11 @@ func Index(v *verb.Verb) {
 
 func Compare(v *verb.Verb) {
 	v.Page("/compare", "v2/pages/compare.html")
-	v.Component("v2/components/compare-product_search.html", htmx.Div()).
-		Bridge(bridges.ProductSearchBridge)
+	v.Component("v2/components/compare-product_search.html", htmx.Div())
 	v.Component("v2/components/investigation.html", htmx.Div()).
 		Bridge(bridges.InvestigationBridge{})
 
-	v.Component("v2/components/compare-product_card.html", htmx.Div()).
-		Bridge(bridges.ProductDetailBridge)
+	v.Component("v2/components/compare-product_card.html", htmx.Div())
 }
 
 func Notifications(v *verb.Verb) {
@@ -95,19 +93,12 @@ func Products(v *verb.Verb) {
 
 	// search results component used by the shared searchbar
 	v.Component("v2/components/product-search_results.html", htmx.Div()).
-		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductSearchBridgeV2).
-		Bridge(bridges.UserFavoriteProductsBridge)
+		Bridge(bridges.ProductsByName{})
 
-	v.Component("v2/components/product-detail.html", htmx.Div()).
-		Bridge(bridges.ProductDetailBridge)
+	v.Component("v2/components/product-detail.html", htmx.Div())
 
 	// this will be the primary products page.
 	v.Page("/products", "v2/pages/products.html").
-		Bridge(bridges.CategorizedProducts{}).
-		Bridge(bridges.ProductBridge(20, map[string]string{
-			"name": " ILIKE ",
-		})).
 		Bridge(bridges.UserFavoriteProductsBridge)
 }
 
