@@ -268,5 +268,35 @@ async def exportProductPDF(product: str, name: str, expSymptoms: bool = False, e
         "Content-Disposition": f"inline; filename={name.capitalize()}_Report.pdf"
     })
 
+@app.get("product/compare/export")
+async def exportProductComparePDF(product1 : str, product1Name: str, product2: str, product2Name: str, expSharedIngs: bool = False, expUniqueIngs: bool = False, expSharedAttrs: bool = False, expUniqueAttrs: bool = False, db: AsyncSession = Depends(get_db)):
+    product1 = product1.split(",")
+    product2 = product2.split(",")
+    ingredients1: list[models.Ingredient] = []
+    ingredients2: list[models.Ingredient] = []
+    for ing in product1:
+        if ing in cache:
+            ingredients1.append(cache[ing])
+        else:
+            _, labels = pubchem.Ingredient(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients1.append(ingredient)
+            cache[ing] = ingredient
+    for ing in product2:
+        if ing in cache:
+            ingredients2.append(cache[ing])
+        else:
+            _, labels = pubchem.Ingredent(ing)
+            ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
+            ingredients2.append(ingredient)
+            cache[ing] = ingredient
+        
+    # Code for exporting pdf will be here
+    pdfBuffer = comp.productComparePDF(product1, product1Name, product2, product2Name, expSharedIngs, expUniqueIngs, expSharedAttrs, expUniqueAttrs)
+
+    return StreamingResponse(pdfBuffer, media_type="application/pdf", headers={
+        "Content-Disposition": f"inline; filename={product1Name.capitalize()}_{product2Name.capitalize()}_Comparison.pdf"
+    })
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=args.port, reload=True)

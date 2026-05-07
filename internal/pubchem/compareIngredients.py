@@ -567,3 +567,83 @@ def productPDF(product: list[models.Ingredient], name: str, expSym: bool, expEff
     doc.build(story)
     buffer.seek(0)
     return buffer
+
+def productComparePDF(product1: list[models.Ingredient], p1Name: str, product2: list[models.Ingredient], p2Name: str, expSharedIngs: bool, expUniqueIngs: bool, expSharedAttrs: bool, expUniqueAttrs: bool):
+    p1Name = p1Name.capitalize()
+    p2Name = p2Name.capitalize()
+
+    buffer = io.BytesIO()
+
+    if expSharedIngs:
+        p1Ings = set(ingredient.name for ingredient in product1)
+        p2Ings = set(ingredient.name for ingredient in product2)
+        shared = p1Ings & p2Ings
+        sharedIngs = [f"{i+1}: {line}" for i, line in enumerate(shared)]
+    if expUniqueIngs:
+        p1Ings = set(ingredient.name for ingredient in product1)
+        p2Ings = set(ingredient.name for ingredient in product2)
+        unique1 = p1Ings - p2Ings
+        unique1 = [f"{i+1}: {line}" for i, line in enumerate(unique1)]
+        unique2 = p2Ings - p1Ings
+        unique2 = [f"{i+1}: {line}" for i, line in enumerate(unique2)]
+    if expSharedAttrs:
+        p1sym = getMassSymptomList(product1)
+        p2sym = getMassSymptomList(product2)
+        p1eff = getMassEffectList(product1)
+        p2eff = getMassEffectList(product2)
+        p1haz = getMassHazardList(product1)
+        p2haz = getMassHazardList(product2)
+        p1reg = getMassRegulationList(product1)
+        p2reg = getMassRegulationList(product2)
+        sharedSym = [f"{i+1}: {line}" for i, line in enumerate(p1sym & p2sym)]
+        sharedEff = [f"{i+1}: {line}" for i, line in enumerate(p1eff & p2eff)]
+        sharedHaz = [f"{i+1}: {line}" for i, line in enumerate(p1haz & p2haz)]
+        sharedReg = [f"{i+1}: {line}" for i, line in enumerate(p1reg & p2reg)]        
+    if expUniqueAttrs:
+        p1sym = getMassSymptomList(product1)
+        p2sym = getMassSymptomList(product2)
+        p1eff = getMassEffectList(product1)
+        p2eff = getMassEffectList(product2)
+        p1haz = getMassHazardList(product1)
+        p2haz = getMassHazardList(product2)
+        p1reg = getMassRegulationList(product1)
+        p2reg = getMassRegulationList(product2)
+        uniqueSym1 = [f"{i+1}: {line}" for i, line in enumerate(p1sym - p2sym)]
+        uniqueSym2 = [f"{i+1}: {line}" for i, line in enumerate(p2sym - p1sym)]
+        uniqueEff1 = [f"{i+1}: {line}" for i, line in enumerate(p1eff - p2eff)]
+        uniqueEff2 = [f"{i+1}: {line}" for i, line in enumerate(p2eff - p1eff)]
+        uniqueHaz1 = [f"{i+1}: {line}" for i, line in enumerate(p1haz - p2haz)]
+        uniqueHaz2 = [f"{i+1}: {line}" for i, line in enumerate(p2haz - p1haz)]
+        uniqueReg1 = [f"{i+1}: {line}" for i, line in enumerate(p1reg - p2reg)]
+        uniqueReg2 = [f"{i+1}: {line}" for i, line in enumerate(p2reg - p1reg)]
+    categories = [("Shared Ingredients", expSharedIngs), ("Unique Ingredients", expUniqueIngs), ("Shared Attributes", expSharedAttrs), ("Unique Attributes", expUniqueAttrs)]
+    subtitle = ", ".join(label for label, enabled in categories if enabled)
+    doc = SimpleDocTemplate(buffer)
+    story = []
+
+    story.append(Paragraph(f"{p1Name} and {p2Name} Comparison", titleStyle))
+    story.append(Paragraph(subtitle, subtitleStyle))
+
+    if expSharedIngs:
+        addSection("Shared Ingredients", story, sharedIngs)
+    if expUniqueIngs:
+        addSection(f"Ingredients Unique to {p1Name}", story, unique1)
+        addSection(f"Ingredients Unique to {p2Name}", story, unique2)
+    if expSharedAttrs:
+        addSection("Shared Symptoms", story, sharedSym)
+        addSection("Shared Effects", story, sharedEff)
+        addSection("Shared Hazards", story, sharedHaz)
+        addSection("Shared Regulations", story, sharedReg)
+    if expUniqueAttrs:
+        addSection(f"Symptoms Unique to {p1Name}", story, uniqueSym1)
+        addSection(f"Symptoms Unique to {p2Name}", story, uniqueSym2)
+        addSection(f"Effects Unique to {p1Name}", story, uniqueEff1)
+        addSection(f"Effects Unique to {p2Name}", story, uniqueEff2)
+        addSection(f"Hazards Unique to {p1Name}", story, uniqueHaz1)
+        addSection(f"Hazards Unique to {p2Name}", story, uniqueHaz2)
+        addSection(f"Regulations Unique to {p1Name}", story, uniqueReg1)
+        addSection(f"Regulations Unique to {p2Name}", story, uniqueReg2)
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
