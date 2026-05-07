@@ -306,7 +306,7 @@ func RouteProductPUT(w http.ResponseWriter, r *http.Request) error {
 	ingredients := []string{}
 	for _, ingredient_statement := range ingredientList {
 		for _, elem := range strings.Split(ingredient_statement, ", ") {
-			ingredients = append(ingredients, elem)
+			ingredients = append(ingredients, strings.TrimSpace(elem))
 		}
 	}
 
