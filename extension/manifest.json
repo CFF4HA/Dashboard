@@ -33,15 +33,9 @@
         "128": "github-ff-banner.png"
     
     },
-    "content_scripts": [
-        {
-            "matches": ["<all_urls>"],
-            "js": ["popup.js"],
-            "css": ["style.css"]
-        }
-    ],   
+    
     "host_permissions": [
-        "https://cff4ha.godiegogo.me"
+        "https://cff4ha.godiegogo.me/*"
     ]
 
 }
