@@ -7,15 +7,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/handlers/ai"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/chromedp/chromedp"
+	"github.com/google/uuid"
 	"github.com/ollama/ollama/api"
 )
 
 // -----------------------------------------------------------------
 
-func InsertProductAutomatedLLM(ingredient_link string, ctx context.Context) (*types.ProductDraftAutomated, error) {
+func InsertProductAutomatedLLM(ingredient_link string, ctx context.Context, u *uuid.UUID) (*types.ProductDraftAutomated, error) {
 	if ai.Client() == nil {
 		return nil, errors.New("LLM client not available for product scraping, please try again later")
 	}
@@ -75,13 +78,25 @@ func InsertProductAutomatedLLM(ingredient_link string, ctx context.Context) (*ty
 	currentAutomatedScrapesCount++
 	automatedScrapeCountLock.Unlock()
 
+	_, err = InsertProduct(productDraftData.Name, productDraftData.Origin, productDraftData.Ingredients, true, u)
+	if err != nil {
+		core.Logger.Error("there was an error doing the automated scrape", "error", err)
+		return nil, err
+	}
+
 	return productDraftData, nil
 }
 
 // -----------------------------------------------------------------
 
 func RouteInsertProductAutomatedLLM(w http.ResponseWriter, r *http.Request) error {
-	draft, err := InsertProductAutomatedLLM(r.FormValue("url"), r.Context())
+	u, _ := user.GetUserFromRequestNoRedirect(w, r)
+	var user_id *uuid.UUID
+	if user_id != nil {
+		user_id = &u.Model.Id
+	}
+
+	draft, err := InsertProductAutomatedLLM(r.FormValue("url"), r.Context(), user_id)
 	if err != nil {
 		return err
 	}

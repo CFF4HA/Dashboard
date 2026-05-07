@@ -211,7 +211,11 @@ func RemoveTagFromIngredient(ingredient_id string, tag_id string) error {
 }
 
 func DeleteIngredientById(id string) error {
-	tx := core.DB.Delete(&types.Ingredient{}, "id = ?", id)
+	tx := core.DB.Exec("DELETE FROM ingredient_tags WHERE ingredient_id = ?", id)
+	tx = core.DB.Exec("DELETE FROM ingredient_notes WHERE ingredient_id = ?", id)
+	tx = core.DB.Exec("DELETE FROM product_ingredients WHERE ingredient_id = ?", id)
+
+	tx = core.DB.Delete(&types.Ingredient{}, "id = ?", id)
 	if tx.Error != nil {
 		core.Logger.Error("failed to delete ingredient from database", "id", id, "error", tx.Error)
 		return errors.New("failed to delete ingredient from database, try again later.")
@@ -236,7 +240,7 @@ func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient
 	var ingredients []types.Ingredient
 
 	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithSearch("primary_name", name), WithOrder("id"),
-		WithPreload("Labels", "Tags"),
+		WithPreload("Labels", "Tags", "Notes"),
 	).
 		Find(&ingredients)
 	if tx.Error != nil {
@@ -272,7 +276,8 @@ func GetIngredientNotes(ingredient_id string, u uuid.UUID, cursor string) ([]typ
 }
 
 func DeleteIngredientNote(note_id string, u uuid.UUID) error {
-	tx := core.DB.Delete(&types.IngredientNote{}, "id = ?", note_id, "user_id = ?", u)
+	tx := core.DB.Exec("DELETE FROM ingredient_notes WHERE id = ? AND user_id = ?", note_id, u)
+	tx = core.DB.Delete(&types.IngredientNote{}, "id = ?", note_id, "user_id = ?", u)
 	if tx.Error != nil {
 		core.Logger.Error("failed to delete ingredient note from database", "note_id", note_id, "user_id", u, "error", tx.Error)
 		return errors.New("failed to delete ingredient note from database, try again later.")

@@ -19,7 +19,7 @@
     if (!target) return;
     const selector = '#' + target.id;
     const q = (document.querySelector('[name="query"]') || {}).value || '';
-    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
+    htmx.ajax('GET', '/htmx/ingredient-search_results?name=' + encodeURIComponent(q) + '&query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
       target: selector,
       swap: 'innerHTML',
     });
@@ -45,7 +45,7 @@
         `<div class="alert alert-danger py-1 px-3" style="font-size:0.85rem;">${text || 'Failed to retrieve ingredient.'}</div>`;
     }
 
-    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
+    htmx.ajax('GET', '/htmx/ingredient-search_results?name=' + encodeURIComponent(name) + '&query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
       target: resultsSelector,
       swap: 'innerHTML',
     });
@@ -525,8 +525,7 @@
           </button>
           {{- end }}
           <button class="btn-icon btn-danger"
-            hx-delete="/ingredient/delete"
-            hx-vals='{"id": "{{ .Id }}"}'
+            hx-delete="/ingredient/remove?id={{.Id}}"
             hx-target="closest .ingredient-card-col"
             hx-swap="outerHTML"
             title="Delete ingredient">
@@ -600,8 +599,8 @@
                 hx-swap="innerHTML"
                 hx-on::after-request="if(event.detail.successful) this.reset();"
                 style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.6rem;">
-            <input type="hidden" name="ingredient_id" value="{{ $ingId }}">
-            <textarea class="ingredient-note-input" name="body" rows="2" placeholder="Write a note…" required></textarea>
+            <input type="hidden" name="id" value="{{ $ingId }}">
+            <textarea name="note" class="ingredient-note-input" name="body" rows="2" placeholder="Write a note…" required></textarea>
             <button type="submit" class="btn-retrieve-pubchem" style="align-self:flex-end;">
               <i class="bi bi-plus-lg me-1"></i>Add note
             </button>
@@ -610,12 +609,11 @@
             {{- if and (.Notes) (gt (len .Notes) 0) }}
             {{- range .Notes }}
             <div class="ingredient-note-item" id="note-{{ .Id }}">
-              <p class="ingredient-note-body">{{ .Body }}</p>
+              <p class="ingredient-note-body">{{ .Content }}</p>
               <div class="ingredient-note-meta">
                 <span>{{ .Created.Format "Jan 2, 2006" }}</span>
                 <button class="btn-icon btn-danger"
-                        hx-delete="/ingredient/note"
-                        hx-vals='{"note_id": "{{ .Id }}"}'
+                        hx-delete="/ingredient/note?id={{.Id}}"
                         hx-target="#note-{{ .Id }}"
                         hx-swap="outerHTML"
                         title="Delete note">

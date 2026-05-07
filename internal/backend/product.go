@@ -136,7 +136,7 @@ func GetProductsByName(name string, cursor string, u *uuid.UUID) ([]types.Produc
 	var products []types.Product
 
 	// we first do a search by primary name
-	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithCursor(cursor), WithLimit(20), WithOrder("id"), WithUserBasedFiltering(u)).
+	tx := core.DB.Scopes(WithPreload("Ingredients", "Tags"), WithOrder("id"), WithUserBasedFiltering(u)).
 		Where("name ~* ?", name).Find(&products)
 	if tx.Error != nil {
 		core.Logger.Error("failed to search for products by name", "name", name, "error", tx.Error)
@@ -162,6 +162,10 @@ func DeleteProductById(id string, u *uuid.UUID) error {
 	}
 
 	tx := core.DB.Begin()
+	tx = core.DB.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id)
+	tx = core.DB.Exec("DELETE FROM product_tags WHERE product_id = ?", id)
+	tx = core.DB.Exec("DELETE FROM user_products WHERE product_id = ?", id)
+
 	if tx.Exec("DELETE FROM product_ingredients WHERE product_id = ?", id).Error != nil {
 		core.Logger.Error("failed to delete product ingredients associations", "product_id", id, "error", tx.Error)
 		return errors.New("failed to delete product ingredients associations, try again later.")
