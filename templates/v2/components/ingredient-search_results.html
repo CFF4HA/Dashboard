@@ -1,4 +1,3 @@
-{{- with .Search }}
 <script>
   /**
    * Filters synonyms within an ingredient card in real-time.
@@ -277,11 +276,6 @@
         </div>
       </div>
 
-      {{- if .Metadata.AiBlurb }}
-      <p class="ingredient-ai-blurb border-top pt-2 mt-2">
-        {{ deref .Metadata.AiBlurb }}
-      </p>
-      {{- end }}
       {{- end }}
 
       <div class="mt-auto d-flex justify-content-between align-items-center opacity-50" style="font-size: 0.6rem;">
@@ -292,5 +286,4 @@
   </div>
   {{- end }}
 </div>
-{{- end }}
 {{- end }}

@@ -56,16 +56,12 @@ func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/ingredient/scrape/config/get", backend.RouteGetPubChemLabelConfigs)
 
 	v.Page("/ingredients", "v2/pages/ingredients.html").
-		Bridge(bridges.CategorizedIngredients{}).
 		Bridge(bridges.UserFavoriteIngredientsBridge)
 
 	v.Component("v2/components/ingredient-search_results.html", htmx.Div()).
-		Bridge(bridges.CategorizedIngredients{}).
-		Bridge(bridges.IngredientSearchBridge).
-		Bridge(bridges.UserFavoriteIngredientsBridge)
+		Bridge(bridges.IngredientsByName{})
 
-	v.Component("v2/components/ingredient-detail.html", htmx.Div()).
-		Bridge(bridges.IngredientDetailBridge)
+	v.Component("v2/components/ingredient-detail.html", htmx.Div())
 }
 
 func Usage(v *verb.Verb) {
