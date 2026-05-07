@@ -39,6 +39,9 @@
             "js": ["popup.js"],
             "css": ["style.css"]
         }
-    ]   
+    ],   
+    "host_permissions": [
+        "https://cff4ha.godiegogo.me"
+    ]
 
 }
