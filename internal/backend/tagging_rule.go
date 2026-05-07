@@ -11,6 +11,7 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/types"
 	"github.com/CFF4HA/Dashboard/pkg/boolee"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -18,9 +19,18 @@ func TagAllIngredientsForTaggingRule(rule *types.TaggingRule) error {
 	// we want to first pull all the ingredients that match the pattern.
 	var ingredient_ids []string
 
+	core.Logger.Debug("tagging rule ingredient query", "sql", core.DB.ToSQL(func(tx *gorm.DB) *gorm.DB {
+		var ids []string
+		return tx.Model(&types.Ingredient{}).
+			Scopes(boolee.WithBooleeAny("primary_name", "payload", rule.Pattern, "ILIKE")).
+			Joins("LEFT JOIN labels ON ingredients.id=labels.ingredient_id").
+			Distinct("ingredients.id").
+			Pluck("ingredients.id", &ids)
+	}))
+
 	tx := core.DB.Model(&types.Ingredient{}).
-		Scopes(boolee.WithBoolee("payload", "primary_name", rule.Pattern, "ILIKE")).
-		Joins("JOIN labels ON ingredients.id=labels.ingredient_id").
+		Scopes(boolee.WithBooleeAny("primary_name", "payload", rule.Pattern, "ILIKE")).
+		Joins("LEFT JOIN labels ON ingredients.id=labels.ingredient_id").
 		Distinct("ingredients.id").
 		Pluck("ingredients.id", &ingredient_ids)
 
@@ -61,6 +71,53 @@ func TagAllIngredientsForTaggingRule(rule *types.TaggingRule) error {
 	}
 
 	core.Logger.Info("successfully tagged ingredients", "tagging_rule_id", rule.Id, "tag_id", rule.TagID, "num_tagged", len(rows))
+
+	taggedIngredientIDs := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		taggedIngredientIDs[i] = row.IngredientID
+	}
+
+	var product_ids []string
+	tx = core.DB.Table("product_ingredients").
+		Where("ingredient_id IN ?", taggedIngredientIDs).
+		Distinct("product_id").
+		Pluck("product_id", &product_ids)
+
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve products for tagging rule", "tagging_rule_id", rule.Id, "error", tx.Error)
+		return errors.New("failed to retrieve products for tagging, try again later.")
+	}
+
+	if len(product_ids) == 0 {
+		return nil
+	}
+
+	type productTag struct {
+		ProductID uuid.UUID `gorm:"column:product_id;primaryKey"`
+		TagID     uuid.UUID `gorm:"column:tag_id;primaryKey"`
+	}
+
+	productRows := make([]productTag, 0, len(product_ids))
+	for _, idStr := range product_ids {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			core.Logger.Warn("skipping product with unparseable id", "id", idStr, "error", err)
+			continue
+		}
+		productRows = append(productRows, productTag{ProductID: id, TagID: rule.TagID})
+	}
+
+	if len(productRows) == 0 {
+		return nil
+	}
+
+	tx = core.DB.Table("product_tags").Clauses(clause.OnConflict{DoNothing: true}).Create(&productRows)
+	if tx.Error != nil {
+		core.Logger.Error("failed to apply tag to products", "tagging_rule_id", rule.Id, "tag_id", rule.TagID, "error", tx.Error)
+		return errors.New("failed to apply tag to matched products, try again later.")
+	}
+
+	core.Logger.Info("successfully tagged products", "tagging_rule_id", rule.Id, "tag_id", rule.TagID, "num_tagged", len(productRows))
 	return nil
 }
 
