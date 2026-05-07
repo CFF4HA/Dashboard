@@ -19,7 +19,7 @@
     if (!target) return;
     const selector = '#' + target.id;
     const q = (document.querySelector('[name="query"]') || {}).value || '';
-    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
+    htmx.ajax('GET', '/htmx/ingredient-search_results?name=' + encodeURIComponent(q) + '&query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
       target: selector,
       swap: 'innerHTML',
     });
@@ -45,7 +45,7 @@
         `<div class="alert alert-danger py-1 px-3" style="font-size:0.85rem;">${text || 'Failed to retrieve ingredient.'}</div>`;
     }
 
-    htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
+    htmx.ajax('GET', '/htmx/ingredient-search_results?name=' + encodeURIComponent(name) + '&query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
       target: resultsSelector,
       swap: 'innerHTML',
     });

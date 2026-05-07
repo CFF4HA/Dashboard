@@ -361,7 +361,7 @@
 
 <div class="row">
   {{- range .Products }}
-  <div class="col-md-4 mb-4 sr-product-card-col">
+  <div class="col-md mb-4 sr-product-card-col">
     <div class="sr-product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} sr-product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} sr-product-card--unsafe{{ end }}">
 
       <!-- ── Header (always visible) ──────────────────────── -->

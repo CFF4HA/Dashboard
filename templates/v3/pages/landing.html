@@ -46,8 +46,8 @@
             >
               <div class="input-group mb-3">
                 <input id="product-search-input" type="text" class="form-control" placeholder="search for a product..."
-                  name="product_name"
-                  hx-include="#product-filter-ing-input, #product-tag-filter-select, #product-search-input"
+                  name="name"
+                  hx-include="#product-search-input"
                   hx-get="/htmx/product-search_results"
                   hx-target="#product-display"
                   hx-trigger="keyup changed delay:500ms"
@@ -100,21 +100,21 @@
     </div>
   </div>
 
-  <!-- This is the TESTING section -->
-  <div class="row mt-5">
-    <div class="col">
-      <div class="d-flex flex-row flex-wrap">
-
-        {{/* Form: Tagging Set Creation */}}
-        <div hx-get="/htmx/tag-set-form" hx-trigger="load"></div> 
-
-        {{/* View: This is a basic tagging set view */}}
-        <div hx-get="/htmx/tag-set-mini-view" hx-trigger="load"></div> 
-        
-
-      </div>
-    </div>
-  </div>
+  <!-- <!-- This is the TESTING section --> 
+  <!-- <div class="row mt-5"> -->
+  <!--   <div class="col"> -->
+  <!--     <div class="d-flex flex-row flex-wrap"> -->
+  <!---->
+  <!--       {{/* Form: Tagging Set Creation */}} -->
+  <!--       <div hx-get="/htmx/tag-set-form" hx-trigger="load"></div>  -->
+  <!---->
+  <!--       {{/* View: This is a basic tagging set view */}} -->
+  <!--       <div hx-get="/htmx/tag-set-mini-view" hx-trigger="load"></div>  -->
+  <!---->
+  <!---->
+  <!--     </div> -->
+  <!--   </div> -->
+  <!-- </div> -->
 
   <div class="row mt-5 growable"
     data-growable-target="#product-search-input"

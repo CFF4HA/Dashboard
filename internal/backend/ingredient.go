@@ -236,7 +236,7 @@ func GetIngredientsByPrimaryName(name string, cursor string) ([]types.Ingredient
 	var ingredients []types.Ingredient
 
 	tx := core.DB.Scopes(WithCursor(cursor), WithLimit(20), WithSearch("primary_name", name), WithOrder("id"),
-		WithPreload("Labels", "Tags"),
+		WithPreload("Labels", "Tags", "Notes"),
 	).
 		Find(&ingredients)
 	if tx.Error != nil {

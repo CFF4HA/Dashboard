@@ -5,11 +5,21 @@ import (
 	"net/http"
 
 	"github.com/CFF4HA/Dashboard/internal/backend"
+	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 )
 
 var (
 	IngredientById = DataBridge{Key: "IngredientById", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
 		return backend.GetIngredientById(r.FormValue("id"))
+	}}
+
+	IngredientNotesByIngredientId = DataBridge{Key: "IngredientNotesByIngredientId", Func: func(w http.ResponseWriter, r *http.Request) (any, error) {
+		u, err := user.GetUserFromRequestNoRedirect(w, r)
+		if err != nil || u == nil {
+			return nil, errors.New("user not authenticated")
+		}
+
+		return backend.GetIngredientNotes(r.FormValue("id"), u.Id, r.FormValue("cursor"))
 	}}
 )
 
