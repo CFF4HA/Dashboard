@@ -9,8 +9,60 @@ import (
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/CFF4HA/Dashboard/internal/handlers/user"
 	"github.com/CFF4HA/Dashboard/internal/types"
+	"github.com/CFF4HA/Dashboard/pkg/boolee"
 	"github.com/google/uuid"
+	"gorm.io/gorm/clause"
 )
+
+func TagAllIngredientsForTaggingRule(rule *types.TaggingRule) error {
+	// we want to first pull all the ingredients that match the pattern.
+	var ingredient_ids []string
+
+	tx := core.DB.Model(&types.Ingredient{}).
+		Scopes(boolee.WithBoolee("payload", "primary_name", rule.Pattern, "ILIKE")).
+		Joins("JOIN labels ON ingredients.id=labels.ingredient_id").
+		Distinct("ingredients.id").
+		Pluck("ingredients.id", &ingredient_ids)
+
+	if tx.Error != nil {
+		core.Logger.Error("failed to retrieve ingredients matching pattern for tagging rule", "tagging_rule_id", rule.Id, "pattern", rule.Pattern, "error", tx.Error)
+		return errors.New("failed to retrieve ingredients matching pattern, try again later.")
+	}
+
+	core.Logger.Info("tagging ingredients for tagging rule", "tagging_rule_id", rule.Id, "pattern", rule.Pattern, "enabled", rule.Enabled, "num_ingredients_to_check", len(ingredient_ids))
+
+	if len(ingredient_ids) == 0 {
+		return nil
+	}
+
+	type ingredientTag struct {
+		IngredientID uuid.UUID `gorm:"column:ingredient_id;primaryKey"`
+		TagID        uuid.UUID `gorm:"column:tag_id;primaryKey"`
+	}
+
+	rows := make([]ingredientTag, 0, len(ingredient_ids))
+	for _, idStr := range ingredient_ids {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			core.Logger.Warn("skipping ingredient with unparseable id", "id", idStr, "error", err)
+			continue
+		}
+		rows = append(rows, ingredientTag{IngredientID: id, TagID: rule.TagID})
+	}
+
+	if len(rows) == 0 {
+		return nil
+	}
+
+	tx = core.DB.Table("ingredient_tags").Clauses(clause.OnConflict{DoNothing: true}).Create(&rows)
+	if tx.Error != nil {
+		core.Logger.Error("failed to apply tag to ingredients", "tagging_rule_id", rule.Id, "tag_id", rule.TagID, "error", tx.Error)
+		return errors.New("failed to apply tag to matched ingredients, try again later.")
+	}
+
+	core.Logger.Info("successfully tagged ingredients", "tagging_rule_id", rule.Id, "tag_id", rule.TagID, "num_tagged", len(rows))
+	return nil
+}
 
 // ------------------------------
 // Generic Utility Functions, not Route Related
@@ -57,7 +109,28 @@ func InsertTaggingRule(userId string, tagId string, taggingSetId string, enabled
 		return nil, errors.New("failed to insert tagging rule into database, try again later.")
 	}
 
+	// TODO: Now we want to run it and tag ingredients that fall into the relevant category
+	// as done here.
+	if TagAllIngredientsForTaggingRule(rule) != nil {
+		core.Logger.Error("failed to apply tagging rule to existing ingredients", "tagging_rule_id", rule.Id)
+	}
+
 	return rule, nil
+}
+
+func RunTaggingRule(id string) error {
+	var rule *types.TaggingRule
+
+	tx := core.DB.First(&rule, "id = ?", id)
+	if tx.Error != nil {
+		return errors.New("failed to retrieve tagging rule from database, try again later.")
+	}
+
+	if !rule.Enabled {
+		return errors.New("this tagging rule is currently disabled, enable it before running.")
+	}
+
+	return TagAllIngredientsForTaggingRule(rule)
 }
 
 func DeleteTaggingRule(id string) error {
@@ -180,4 +253,8 @@ func RouteGetTaggingRulesForTag(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return json.NewEncoder(w).Encode(rules)
+}
+
+func RouteRunTaggingRule(w http.ResponseWriter, r *http.Request) error {
+	return RunTaggingRule(r.FormValue("id"))
 }

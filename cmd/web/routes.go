@@ -130,6 +130,7 @@ func Tagging(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/tag/rule/get/id", backend.RouteGetTaggingRuleById)
 	v.ActionClassic(http.MethodGet, "/tag/rule/get/user", backend.RouteGetTaggingRulesForUser)
 	v.ActionClassic(http.MethodGet, "/tag/rule/get", backend.RouteGetTaggingRules)
+	v.ActionClassic(http.MethodPost, "/tag/rule/run", backend.RouteRunTaggingRule)
 
 	v.ActionClassic(http.MethodPut, "/tag/set/create", backend.RouteInsertTaggingSet)
 	v.ActionClassic(http.MethodDelete, "/tag/set/remove", backend.RouteDeleteTaggingSet)

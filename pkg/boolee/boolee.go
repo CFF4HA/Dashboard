@@ -2,14 +2,11 @@ package boolee
 
 import (
 	"fmt"
+	"log"
+	"log/slog"
 	"strings"
 
 	"gorm.io/gorm"
-)
-
-import (
-	"log"
-	"log/slog"
 )
 
 var (
@@ -80,7 +77,7 @@ func WithBoolee(items ...string) func(*gorm.DB) *gorm.DB {
 				query.WriteString(fmt.Sprintf("%s %s '%s'", column, comparator, element_buffer.String()))
 			}
 
-			db.Where(query.String())
+			db = db.Where(query.String())
 			logger.Debug("boolee query dispatched", "query", query.String())
 		}
 
