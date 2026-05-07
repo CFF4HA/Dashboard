@@ -286,13 +286,13 @@ async def exportProductComparePDF(product1 : str, product1Name: str, product2: s
         if ing in cache:
             ingredients2.append(cache[ing])
         else:
-            _, labels = pubchem.Ingredent(ing)
+            _, labels = pubchem.Ingredient(ing)
             ingredient = models.Ingredient(Id=(uuid.uuid4()), Labels=labels)
             ingredients2.append(ingredient)
             cache[ing] = ingredient
         
     # Code for exporting pdf will be here
-    pdfBuffer = comp.productComparePDF(product1, product1Name, product2, product2Name, expSharedIngs, expUniqueIngs, expSharedAttrs, expUniqueAttrs)
+    pdfBuffer = comp.productComparePDF(ingredients1, product1Name, ingredients2, product2Name, expSharedIngs, expUniqueIngs, expSharedAttrs, expUniqueAttrs)
 
     return StreamingResponse(pdfBuffer, media_type="application/pdf", headers={
         "Content-Disposition": f"inline; filename={product1Name.capitalize()}_{product2Name.capitalize()}_Comparison.pdf"
