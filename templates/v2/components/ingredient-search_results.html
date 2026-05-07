@@ -1,34 +1,25 @@
 {{- with .Search }}
 <script>
-  /**
-   * Filters synonyms within an ingredient card in real-time.
-   */
   function filterSynonyms(input) {
     const q = input.value.toLowerCase().trim();
     const scroll = input.nextElementSibling;
     const emptyMsg = scroll.nextElementSibling;
     const pills = scroll.querySelectorAll('.ingredient-synonym-pill');
     let visible = 0;
-    
     pills.forEach(pill => {
       const match = pill.dataset.name.includes(q);
       pill.hidden = !match;
       if (match) visible++;
     });
-    
-    if (emptyMsg) emptyMsg.style.display = visible === 0 ? 'block' : 'none';
+    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
   }
 
-  /**
-   * Refreshes search results after a PubChem sync operation.
-   */
   function ingredientSyncDone(event) {
     if (!event.detail.successful) return;
     const target = document.getElementById('ingredient-results') || document.getElementById('search-results');
     if (!target) return;
     const selector = '#' + target.id;
     const q = (document.querySelector('[name="query"]') || {}).value || '';
-    
     htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(q) + '&results_target=' + encodeURIComponent(selector), {
       target: selector,
       swap: 'innerHTML',
@@ -38,10 +29,10 @@
   async function retrieveFromPubChem(name, resultsSelector) {
     const resultsEl = document.querySelector(resultsSelector);
     resultsEl.innerHTML = `
-      <div class="text-center py-5">
-        <div class="spinner-border text-success mb-3" role="status"></div>
-        <p class="text-muted">Consulting PubChem archives for <strong>${name}</strong>...</p>
-      </div>`;
+      <p style="font-size:0.88rem;color:#6c8f70;">
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Retrieving <strong>${name}</strong> from PubChem…
+      </p>`;
 
     const resp = await fetch('/ingredient', {
       method: 'PUT',
@@ -52,7 +43,7 @@
     if (!resp.ok) {
       const text = await resp.text();
       document.getElementById('notification').innerHTML =
-        `<div class="alert alert-danger py-2 px-3 shadow-sm">${text || 'Extraction failed.'}</div>`;
+        `<div class="alert alert-danger py-1 px-3" style="font-size:0.85rem;">${text || 'Failed to retrieve ingredient.'}</div>`;
     }
 
     htmx.ajax('GET', '/htmx/ingredient-search_results?query=' + encodeURIComponent(name) + '&results_target=' + encodeURIComponent(resultsSelector), {
@@ -63,234 +54,705 @@
 </script>
 
 <style>
-  /* ── Apothecary Ingredient Card ── */
+  /* ── Design tokens (mirror base.html) ───────────────────── */
+  :root {
+    --forest-green:  #1a2e1e;
+    --mint-green:    #CFF9C3;
+    --soft-white:    #fbfbfb;
+    --regular-green: #274229;
+    --border:        rgba(26, 46, 30, 0.12);
+    --muted:         #6c8f70;
+    --danger:        #c0392b;
+  }
+
+  /* ── Card shell ─────────────────────────────────────────── */
   .ingredient-card {
     background: #ffffff;
-    border: 1px solid var(--apothecary-border);
-    border-radius: 20px;
-    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1.1rem 1.2rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    height: 100%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    transition: all 0.2s ease;
-    overflow: hidden;
-    min-height: 280px;
+    gap: 0.7rem;
+    font-family: 'Lato', sans-serif;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    resize: both;
+    overflow: auto;
+    min-height: 160px;
+    min-width: 200px;
   }
 
   .ingredient-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 46, 30, 0.1);
+    transform: translateY(-1px);
   }
 
-  .ingredient-card--safe { border-top: 5px solid #4ade80; }
-  .ingredient-card--unsafe { border-top: 5px solid #f87171; }
-  .ingredient-card--failed { opacity: 0.6; background: #f8fafc; }
+  /* Safe / Unsafe accent */
+  .ingredient-card--safe {
+    border-color: rgba(39, 66, 41, 0.35);
+    border-left: 3px solid var(--regular-green);
+  }
 
-  /* ── Compact Tabs ── */
-  .card-tabs .nav-link {
-    font-size: 0.65rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #94a3b8;
-    padding: 0.4rem 0.6rem;
+  .ingredient-card--unsafe {
+    border-color: rgba(192, 57, 43, 0.3);
+    border-left: 3px solid var(--danger);
+  }
+
+  .ingredient-card--failed { opacity: 0.6; }
+
+  /* ── Icon action buttons ────────────────────────────────── */
+  .btn-icon {
+    background: none;
     border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1rem;
+    padding: 0.15rem 0.2rem;
+    line-height: 1;
+    flex-shrink: 0;
+    border-radius: 7px;
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
-  .card-tabs .nav-link.active {
+  .btn-icon:hover                { background: var(--mint-green); color: var(--forest-green); }
+  .btn-icon.btn-danger:hover     { background: #fef2f2;           color: var(--danger); }
+  .btn-icon.btn-star-active      { color: #f59e0b; }
+  .btn-icon.btn-star-active:hover{ background: #fffbeb; color: #d97706; }
+  .btn-icon.btn-monitored-active      { color: var(--regular-green); }
+  .btn-icon.btn-monitored-active:hover{ background: var(--mint-green); color: var(--forest-green); }
+
+  /* Sync spin animation */
+  .btn-icon.htmx-request i.bi-arrow-clockwise {
+    display: inline-block;
+    animation: spin-icon 0.8s linear infinite;
+  }
+  @keyframes spin-icon { to { transform: rotate(360deg); } }
+
+  /* ── Header row ─────────────────────────────────────────── */
+  .ingredient-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .ingredient-card-name {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--forest-green);
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .ingredient-card-badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    border-radius: 8px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+    margin-top: 0.1rem;
+  }
+
+  .ingredient-card-badge--failed {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+  }
+
+  /* ── Divider ─────────────────────────────────────────────── */
+  .ingredient-card-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── Section label ───────────────────────────────────────── */
+  .ingredient-card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── Synonym / shared search input ──────────────────────── */
+  .ingredient-synonym-search {
+    width: 100%;
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
+  }
+
+  .ingredient-synonym-search::placeholder { color: var(--muted); }
+  .ingredient-synonym-search:focus { border-color: var(--regular-green); }
+
+  /* ── Synonym pills ───────────────────────────────────────── */
+  .ingredient-synonym-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-synonym-scroll::-webkit-scrollbar       { width: 3px; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-track  { background: transparent; }
+  .ingredient-synonym-scroll::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
+
+  .ingredient-synonym-pill {
+    font-size: 0.74rem;
     color: var(--forest-green);
     background: var(--soft-white);
-    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+    transition: background 0.15s ease;
   }
 
-  /* ── Label & Payload Lists ── */
+  .ingredient-synonym-pill:hover { background: var(--mint-green); }
+  .ingredient-synonym-pill[hidden] { display: none; }
+
+  /* ── Metrics grid ────────────────────────────────────────── */
+  .ingredient-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .ingredient-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ingredient-stat-icon  { flex-shrink: 0; font-size: 0.75rem; color: var(--muted); width: 1rem; text-align: center; }
+  .ingredient-stat-value { flex-shrink: 0; font-weight: 700; color: var(--forest-green); }
+  .ingredient-stat-name  { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── AI blurb ────────────────────────────────────────────── */
+  .ingredient-ai-blurb {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  /* ── Card footer ─────────────────────────────────────────── */
+  .ingredient-card-footer {
+    margin-top: auto;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ── Tag pills ───────────────────────────────────────────── */
+  .ingredient-tag-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .ingredient-tag-scroll::-webkit-scrollbar       { width: 3px; }
+  .ingredient-tag-scroll::-webkit-scrollbar-track  { background: transparent; }
+  .ingredient-tag-scroll::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
+
+  .ingredient-tag-pill-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    background: var(--mint-green);
+    border: 1px solid rgba(39, 66, 41, 0.2);
+    border-radius: 20px;
+    padding: 0.15rem 0.35rem 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .ingredient-tag-pill {
+    font-size: 0.74rem;
+    color: var(--forest-green);
+    font-weight: 600;
+  }
+
+  .ingredient-tag-remove-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .ingredient-tag-remove-btn:hover { color: var(--danger); }
+
+  /* ── Label list (hazards, effects, symptoms, regulations) ── */
   .ingredient-label-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    max-height: 120px;
+    gap: 0.3rem;
+    max-height: 8rem;
     overflow-y: auto;
+    padding-right: 0.1rem;
   }
+
+  .ingredient-label-list::-webkit-scrollbar       { width: 3px; }
+  .ingredient-label-list::-webkit-scrollbar-track  { background: transparent; }
+  .ingredient-label-list::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
 
   .ingredient-label-item {
-    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.8rem;
     background: var(--soft-white);
-    border: 1px solid #edf2f7;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 0.5rem;
+    padding: 0.25rem 0.55rem;
   }
 
-  .ingredient-label-payload { color: #334155; font-weight: 500; }
-  .ingredient-label-origin { display: block; font-size: 0.6rem; color: #94a3b8; margin-top: 2px; }
+  .ingredient-label-payload { color: var(--forest-green); line-height: 1.4; }
+  .ingredient-label-origin  { font-size: 0.72rem; color: var(--muted); }
 
-  /* ── Tag Removal ── */
-  .ingredient-tag-pill-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--forest-green);
-  }
-
-  .btn-remove-tag {
+  /* ── Nav tabs ────────────────────────────────────────────── */
+  .ingredient-card .nav-link {
+    color: var(--muted);
+    font-size: 0.79rem;
+    padding: 0.25rem 0.55rem;
+    font-family: 'Lato', sans-serif;
     border: none;
     background: none;
-    padding: 0;
-    color: #cbd5e1;
-    font-size: 0.8rem;
-    line-height: 1;
   }
 
-  .btn-remove-tag:hover { color: #f87171; }
-
-  /* ── Notes Styles ── */
-  .note-item {
-    background: #fffbeb;
-    border-left: 3px solid #fbbf24;
-    padding: 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    margin-bottom: 6px;
-    position: relative;
+  .ingredient-card .nav-link:hover {
+    color: var(--forest-green);
+    background: var(--mint-green);
+    border-radius: 8px;
   }
+
+  .ingredient-card .nav-link.active {
+    color: #ffffff;
+    background: var(--forest-green);
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  /* ── Add-tag inline form ─────────────────────────────────── */
+  .btn-add-inline {
+    background: var(--forest-green);
+    border: none;
+    border-radius: 10px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.82rem;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .btn-add-inline:hover { background: var(--regular-green); }
+
+  /* ── Note input ──────────────────────────────────────────── */
+  .ingredient-note-input {
+    width: 100%;
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.82rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .ingredient-note-input::placeholder { color: var(--muted); }
+  .ingredient-note-input:focus { border-color: var(--regular-green); }
+
+  /* ── Note list items ─────────────────────────────────────── */
+  .ingredient-note-item {
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.45rem 0.65rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .ingredient-note-body {
+    font-size: 0.82rem;
+    color: var(--forest-green);
+    margin: 0 0 0.2rem 0;
+    line-height: 1.5;
+  }
+
+  .ingredient-note-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ── PubChem retrieve button ─────────────────────────────── */
+  .btn-retrieve-pubchem {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    color: var(--regular-green);
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-retrieve-pubchem:hover {
+    background: var(--mint-green);
+    border-color: rgba(39, 66, 41, 0.25);
+  }
+
+  .btn-retrieve-pubchem.loading {
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  /* ── Empty state ─────────────────────────────────────────── */
+  .ingredient-empty-state { padding: 1rem 0; }
+
+  /* ── Card column ─────────────────────────────────────────── */
+  .ingredient-card-col { position: relative; }
 </style>
 
 {{- if and (eq (len .Ingredients) 0) (ne .Query "") }}
-<div class="col-12 text-center py-5">
-  <div class="bg-light rounded-4 p-5 border border-dashed">
-    <i class="bi bi-journal-x h1 text-muted"></i>
-    <p class="h5 mt-3 fw-bold">The archives are empty for "{{ .Query }}"</p>
-    <button class="btn btn-success mt-3 px-4 rounded-pill" 
-            onclick="retrieveFromPubChem({{ .Query | js }}, {{ .ResultsTarget | js }})">
-      <i class="bi bi-cloud-download me-2"></i>Fetch from PubChem Global Database
-    </button>
-  </div>
+<div class="ingredient-empty-state">
+  <p style="font-size:0.88rem; color:var(--muted); margin-bottom:0.6rem;">No results for <strong>{{ .Query }}</strong> in the database.</p>
+  <button class="btn-retrieve-pubchem" onclick="retrieveFromPubChem({{ .Query | js }}, {{ .ResultsTarget | js }})">
+    <i class="bi bi-cloud-download me-1"></i>Retrieve from PubChem
+  </button>
 </div>
 {{- else if eq (len .Ingredients) 0 }}
-<div class="col-12 text-center py-5 text-muted">
-  <p><i class="bi bi-search me-2"></i>Enter a chemical or ingredient name above to begin.</p>
-</div>
+<p style="font-size:0.88rem; color:var(--muted);">No ingredients yet. Search above to retrieve one from PubChem.</p>
 {{- else }}
-<div class="row g-4">
+<div class="row">
   {{- range .Ingredients }}
-  <div class="col-md-6 col-xl-4 ingredient-card-col">
+  <div class="col-md-4 mb-4 ingredient-card-col">
     <div class="ingredient-card{{ if .Failed }} ingredient-card--failed{{ else if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} ingredient-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} ingredient-card--unsafe{{ end }}">
 
-      <div class="d-flex justify-content-between align-items-start">
-        <h5 class="ingredient-card-name">{{ .PrimaryName }}</h5>
-        <div class="d-flex gap-1">
-          <button class="btn-icon" 
-                  hx-get="/htmx/ingredient-detail?id={{ .Id }}" 
-                  hx-target="#side-modal_content" 
-                  hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
-            <i class="bi bi-eye"></i>
+      <!-- ── Header ────────────────────────────────────────── -->
+      <div class="ingredient-card-header">
+        <p class="ingredient-card-name">{{ .PrimaryName }}</p>
+        <div style="display:flex;align-items:center;gap:0.2rem;flex-shrink:0;">
+          <button class="btn-icon"
+            hx-get="/htmx/ingredient-detail?id={{ .Id }}"
+            hx-target="#side-modal_content"
+            hx-swap="innerHTML"
+            hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+            title="View details">
+            <i class="bi bi-arrow-right-circle"></i>
           </button>
-          <button class="btn-icon text-primary" 
-                  hx-get="/htmx/ingredient-note-form?id={{ .Id }}" 
-                  hx-target="#side-modal_content" 
-                  hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()">
-            <i class="bi bi-journal-plus"></i>
-          </button>
-          <button class="btn-icon" hx-post="/ingredient/sync" hx-vals='{"id": "{{ .Id }}"}' hx-on::after-request="ingredientSyncDone(event)">
+          <button class="btn-icon"
+            hx-post="/ingredient/sync"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-swap="none"
+            hx-on::after-request="ingredientSyncDone(event)"
+            title="Sync from PubChem">
             <i class="bi bi-arrow-clockwise"></i>
           </button>
-          <button class="btn-icon text-danger" hx-delete="/ingredient/delete" hx-vals='{"id": "{{ .Id }}"}' hx-target="closest .ingredient-card-col" hx-confirm="Remove this ingredient from local database?">
+          {{- if and ($.MonitoredIngredients) (exists $.MonitoredIngredients .Id) }}
+          <button class="btn-icon btn-monitored-active"
+            hx-delete="/user/monitor"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-swap="outerHTML"
+            title="Remove from monitor">
+            <i class="bi bi-bell-fill"></i>
+          </button>
+          {{- else }}
+          <button class="btn-icon"
+            hx-post="/user/monitor"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-swap="outerHTML"
+            title="Monitor ingredient">
+            <i class="bi bi-bell"></i>
+          </button>
+          {{- end }}
+          {{- if exists $.FavoriteIngredients .Id }}
+          <button class="btn-icon btn-star-active"
+            hx-post="/user/ingredient"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-swap="outerHTML"
+            title="Starred">
+            <i class="bi bi-star-fill"></i>
+          </button>
+          {{- else }}
+          <button class="btn-icon"
+            hx-post="/user/ingredient"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-swap="outerHTML"
+            title="Save ingredient">
+            <i class="bi bi-star"></i>
+          </button>
+          {{- end }}
+          <button class="btn-icon btn-danger"
+            hx-delete="/ingredient/delete"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-target="closest .ingredient-card-col"
+            hx-swap="outerHTML"
+            title="Delete ingredient">
             <i class="bi bi-trash"></i>
           </button>
+          {{- if .Failed }}
+          <span class="ingredient-card-badge ingredient-card-badge--failed">Retrieval failed</span>
+          {{- end }}
         </div>
       </div>
 
       {{- if not .Failed }}
-      <ul class="nav nav-tabs card-tabs border-0 gap-1" id="tabs-{{ .Id }}" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-tags-{{ .Id }}">Tags</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-syn-{{ .Id }}">Names</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-haz-{{ .Id }}">Safety</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-notes-{{ .Id }}">Notes</button></li>
+      <hr class="ingredient-card-divider">
+
+      <!-- ── Tabs ───────────────────────────────────────────── -->
+      <ul class="nav nav-tabs" id="tabs-{{ .Id }}" role="tablist" style="gap:0.2rem;border:none;">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tags-pane-{{ .Id }}" type="button" role="tab">Tags</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes-pane-{{ .Id }}" type="button" role="tab">Notes</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#synonyms-pane-{{ .Id }}" type="button" role="tab">Synonyms ({{ len .Names }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hazards-pane-{{ .Id }}" type="button" role="tab">Hazards ({{ .Metadata.NumHazards }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#effects-pane-{{ .Id }}" type="button" role="tab">Effects ({{ .Metadata.NumEffects }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#symptoms-pane-{{ .Id }}" type="button" role="tab">Symptoms ({{ .Metadata.NumSymptoms }})</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#regulations-pane-{{ .Id }}" type="button" role="tab">Regulations ({{ .Metadata.NumRegulations }})</button>
+        </li>
       </ul>
 
-      <div class="tab-content flex-grow-1 overflow-hidden">
-        <div class="tab-pane fade show active" id="t-tags-{{ .Id }}">
-          <div class="d-flex flex-wrap gap-2 py-2">
-            {{- $ingId := .Id }}
-            {{- range .Tags }}
-            <span class="ingredient-tag-pill-wrap">
-              {{ .Name }}
-              <button class="btn-remove-tag" hx-delete="/ingredient/tag" hx-vals='{"ingredient_id": "{{ $ingId }}", "tag_id": "{{ .Id }}"}' hx-target="closest .ingredient-tag-pill-wrap">
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            </span>
+      <div class="tab-content" id="tabs-content-{{ .Id }}">
+
+        <!-- Tags pane -->
+        <div class="tab-pane fade show active pt-2" id="tags-pane-{{ .Id }}" role="tabpanel">
+          {{- $ingId := .Id }}
+          <form hx-post="/ingredient/tag"
+                hx-target="#tag-list-{{ $ingId }}"
+                hx-swap="innerHTML"
+                hx-on::after-request="if(event.detail.successful){ this.reset(); htmx.trigger(document.body, 'productUpdated'); }"
+                style="display:flex;gap:0.4rem;margin-bottom:0.5rem;">
+            <input type="hidden" name="ingredient_id" value="{{ $ingId }}">
+            <input class="ingredient-synonym-search" style="margin-bottom:0;flex:1;"
+                   type="text" name="tag_name" placeholder="Add tag…" autocomplete="off" required>
+            <button type="submit" class="btn-add-inline" title="Add tag"><i class="bi bi-plus-lg"></i></button>
+          </form>
+          <div id="tag-list-{{ $ingId }}">
+            {{- if and (.Tags) (gt (len .Tags) 0) }}
+            <div class="ingredient-tag-scroll">
+              {{- range .Tags }}
+              <span class="ingredient-tag-pill-wrap"{{if .Description}} title="{{ .Description }}"{{end}}>
+                <span class="ingredient-tag-pill">{{ .Name }}</span>
+                <button class="ingredient-tag-remove-btn"
+                        hx-delete="/ingredient/tag"
+                        hx-vals='{"ingredient_id": "{{ $ingId }}", "tag_id": "{{ .Id }}"}'
+                        hx-target="closest .ingredient-tag-pill-wrap"
+                        hx-swap="outerHTML"
+                        hx-on::after-request="if(event.detail.successful) htmx.trigger(document.body, 'productUpdated')"
+                        title="Remove tag">
+                  <i class="bi bi-x"></i>
+                </button>
+              </span>
+              {{- end }}
+            </div>
             {{- else }}
-            <span class="text-muted small italic">No tags applied.</span>
+            <span style="font-size:0.78rem;color:var(--muted);">No tags applied.</span>
             {{- end }}
           </div>
         </div>
 
-        <div class="tab-pane fade" id="t-syn-{{ .Id }}">
-          <input class="ingredient-synonym-search mt-1" type="text" placeholder="Filter synonyms..." oninput="filterSynonyms(this)">
-          <div class="d-flex flex-wrap gap-1 py-1 overflow-auto" style="max-height: 80px;">
+        <!-- Notes pane -->
+        <div class="tab-pane fade pt-2" id="notes-pane-{{ .Id }}" role="tabpanel">
+          {{- $ingId := .Id }}
+          <form hx-post="/ingredient/note"
+                hx-target="#note-list-{{ $ingId }}"
+                hx-swap="innerHTML"
+                hx-on::after-request="if(event.detail.successful) this.reset();"
+                style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.6rem;">
+            <input type="hidden" name="ingredient_id" value="{{ $ingId }}">
+            <textarea class="ingredient-note-input" name="body" rows="2" placeholder="Write a note…" required></textarea>
+            <button type="submit" class="btn-retrieve-pubchem" style="align-self:flex-end;">
+              <i class="bi bi-plus-lg me-1"></i>Add note
+            </button>
+          </form>
+          <div id="note-list-{{ $ingId }}">
+            {{- if and (.Notes) (gt (len .Notes) 0) }}
+            {{- range .Notes }}
+            <div class="ingredient-note-item" id="note-{{ .Id }}">
+              <p class="ingredient-note-body">{{ .Body }}</p>
+              <div class="ingredient-note-meta">
+                <span>{{ .Created.Format "Jan 2, 2006" }}</span>
+                <button class="btn-icon btn-danger"
+                        hx-delete="/ingredient/note"
+                        hx-vals='{"note_id": "{{ .Id }}"}'
+                        hx-target="#note-{{ .Id }}"
+                        hx-swap="outerHTML"
+                        title="Delete note">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+            {{- end }}
+            {{- else }}
+            <span style="font-size:0.78rem;color:var(--muted);">No notes yet.</span>
+            {{- end }}
+          </div>
+        </div>
+
+        <!-- Synonyms pane -->
+        <div class="tab-pane fade pt-2" id="synonyms-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt (len .Names) 0 }}
+          <input class="ingredient-synonym-search" type="text" placeholder="&#128269; Filter synonyms..." autocomplete="off" oninput="filterSynonyms(this)">
+          <div class="ingredient-synonym-scroll">
             {{- range .Names }}
             <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
             {{- end }}
           </div>
+          <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:var(--muted);">No synonyms match.</span>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No synonyms on record.</span>
+          {{- end }}
         </div>
 
-        <div class="tab-pane fade" id="t-haz-{{ .Id }}">
-          <ul class="ingredient-label-list py-2">
-            {{- range .Labels }}
+        <!-- Hazards pane -->
+        <div class="tab-pane fade pt-2" id="hazards-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumHazards 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "hazard" }}
             <li class="ingredient-label-item">
               <span class="ingredient-label-payload">{{ .Payload }}</span>
               {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
             </li>
-            {{- else }}
-            <li class="text-muted small">No hazard warnings found.</li>
-            {{- end }}
+            {{- end }}{{- end }}
           </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No hazards on record.</span>
+          {{- end }}
         </div>
 
-        <div class="tab-pane fade" id="t-notes-{{ .Id }}">
-          <div class="py-2 overflow-auto" style="max-height: 120px;">
-            {{- range .Notes }}
-            <div class="note-item d-flex justify-content-between align-items-start">
-              <span>{{ .Content }}</span>
-              <button class="btn btn-sm text-danger p-0 ms-2" 
-                      hx-delete="/ingredient/note" 
-                      hx-vals='{"id": "{{ .Id }}", "ingredient_id": "{{ $ingId }}"}' 
-                      hx-confirm="Delete this note?"
-                      hx-target="closest .note-item">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-            {{- else }}
-            <p class="text-muted small italic">No notes found for this ingredient.</p>
-            {{- end }}
-          </div>
+        <!-- Effects pane -->
+        <div class="tab-pane fade pt-2" id="effects-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumEffects 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "effect" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No effects on record.</span>
+          {{- end }}
         </div>
-      </div>
+
+        <!-- Symptoms pane -->
+        <div class="tab-pane fade pt-2" id="symptoms-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumSymptoms 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "symptom" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No symptoms on record.</span>
+          {{- end }}
+        </div>
+
+        <!-- Regulations pane -->
+        <div class="tab-pane fade pt-2" id="regulations-pane-{{ .Id }}" role="tabpanel">
+          {{- if gt .Metadata.NumRegulations 0 }}
+          <ul class="ingredient-label-list">
+            {{- range .Labels }}{{- if eq .Type "regulation" }}
+            <li class="ingredient-label-item">
+              <span class="ingredient-label-payload">{{ .Payload }}</span>
+              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
+            </li>
+            {{- end }}{{- end }}
+          </ul>
+          {{- else }}
+          <span style="font-size:0.78rem;color:var(--muted);">No regulations on record.</span>
+          {{- end }}
+        </div>
+
+      </div><!-- /tab-content -->
 
       {{- if .Metadata.AiBlurb }}
-      <p class="ingredient-ai-blurb border-top pt-2 mt-2">
-        {{ deref .Metadata.AiBlurb }}
-      </p>
-      {{- end }}
+      <hr class="ingredient-card-divider">
+      <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
       {{- end }}
 
-      <div class="mt-auto d-flex justify-content-between align-items-center opacity-50" style="font-size: 0.6rem;">
-        <span>ID: {{ .Id }}</span>
-        <span>INDEXED {{ .Created.Format "02 JAN 06" }}</span>
-      </div>
+      {{- end }}{{/* /if not .Failed */}}
+
+      <div class="ingredient-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+
     </div>
   </div>
   {{- end }}
 </div>
+
+<script>
+(function () {
+  const RESET_DELAY = 300;
+  document.querySelectorAll('.ingredient-card').forEach(card => {
+    let timer = null;
+    const col = card.closest('.ingredient-card-col');
+    if (!col) return;
+    new ResizeObserver(() => {
+      col.style.zIndex = '10';
+      clearTimeout(timer);
+      timer = setTimeout(() => { col.style.zIndex = ''; }, RESET_DELAY);
+    }).observe(card);
+  });
+})();
+</script>
 {{- end }}
 {{- end }}
