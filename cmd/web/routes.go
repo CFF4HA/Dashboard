@@ -20,7 +20,7 @@ func Test(v *verb.Verb) {
 }
 
 func Index(v *verb.Verb) {
-	v.Page("", "v2/pages/index.html")
+	v.Page("", "v3/pages/landing.html")
 	v.Page("/v2", "v3/pages/landing.html")
 	v.Page("/v2/admin", "v3/pages/admin.html")
 }
@@ -168,6 +168,26 @@ func Tagging(v *verb.Verb) {
 
 	v.Component("v2/components/tag-filter.html", htmx.Div()).
 		Bridge(bridges.Tags)
+}
+
+func Admin(v *verb.Verb) {
+	v.ActionClassic(http.MethodPut, "/admin/user/role", backend.RouteAdminUserRoleAdd)
+	v.ActionClassic(http.MethodDelete, "/admin/user/role", backend.RouteAdminUserRoleRemove)
+	v.ActionClassic(http.MethodGet, "/admin/roles", backend.RouteGetRoles)
+
+	v.Component("v3/components/admin/admin-metrics-banner.html", htmx.Div()).
+		Bridge(bridges.LatestUsageMetrics)
+	v.Component("v3/components/admin/admin-tag-rule-create-form.html", htmx.Div()).
+		Bridge(bridges.TagSets)
+	v.Component("v3/components/admin/admin-tag-create-form.html", htmx.Div())
+	v.Component("v3/components/admin/admin-tags-table.html", htmx.Div()).
+		Bridge(bridges.Tags)
+	v.Component("v3/components/admin/admin-users-table.html", htmx.Div()).
+		Bridge(bridges.AllUsers).
+		Bridge(bridges.AllRoles)
+	v.Component("v3/components/admin/admin-pubchem-configs.html", htmx.Div())
+	v.Component("v3/components/admin/admin-pubchem-configs-table.html", htmx.Div()).
+		Bridge(bridges.PubChemLabelConfigs)
 }
 
 func FormsV2(v *verb.Verb) {

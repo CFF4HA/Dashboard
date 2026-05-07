@@ -57,6 +57,12 @@ func GetTaggingSets(cursor string) ([]types.TaggingSet, error) {
 		return nil, errors.New("failed to retrieve tagging sets from database, try again later")
 	}
 
+	for i := range sets {
+		for j := range sets[i].Rules {
+			core.DB.Model(&sets[i].Rules[j]).Association("Tag").Find(&sets[i].Rules[j].Tag)
+		}
+	}
+
 	core.Logger.Debug("successfully retrieved tagging sets from database", "count", len(sets))
 	return sets, nil
 }

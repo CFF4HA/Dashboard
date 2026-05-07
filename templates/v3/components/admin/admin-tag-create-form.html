@@ -1,0 +1,25 @@
+<div class="card h-100">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-tag-fill me-2"></i>Create Tag
+  </div>
+  <div class="card-body">
+    <form id="tag-create-form">
+      <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. vegan" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <input type="text" name="description" class="form-control" placeholder="Optional description">
+      </div>
+      <button type="submit" class="btn btn-primary w-100"
+        hx-put="/tag/create"
+        hx-include="#tag-create-form"
+        hx-swap="none"
+        hx-on::after-request="if(event.detail.successful){ htmx.trigger(document.body,'tag-created'); document.getElementById('tag-create-form').reset(); }"
+      >
+        <i class="bi bi-plus-lg me-1"></i>Create Tag
+      </button>
+    </form>
+  </div>
+</div>

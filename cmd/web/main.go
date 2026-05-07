@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/CFF4HA/Dashboard/internal/backend"
+	"github.com/CFF4HA/Dashboard/internal/bridges"
 	"github.com/CFF4HA/Dashboard/internal/core"
 	"github.com/DAlba-sudo/verb"
 	"github.com/google/uuid"
@@ -23,6 +24,7 @@ func main() {
 			LiveReload: Cfg.Reload,
 			Bridges: []verb.Bridge{
 				CORSBridge{},
+				bridges.UserInformation,
 			},
 		},
 	)
@@ -76,6 +78,7 @@ func main() {
 	User(v)
 	Usage(v)
 	Notifications(v)
+	Admin(v)
 
 	// The following are the general use page creation routes
 	Index(v)

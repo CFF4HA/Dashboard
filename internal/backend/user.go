@@ -222,6 +222,41 @@ func RouteUserRoleRemove(w http.ResponseWriter, r *http.Request) error {
 	return UserRoleRemove(u.Model.Id, r.FormValue("role_id"))
 }
 
+func GetAllUsers() ([]types.UserInformation, error) {
+	var users []types.User
+
+	if err := core.DB.Scopes(WithPreload("Roles")).Find(&users).Error; err != nil {
+		core.Logger.Error("failed to retrieve all users", "err", err)
+		return nil, errors.New("failed to retrieve users, try again later.")
+	}
+
+	infos := make([]types.UserInformation, len(users))
+	for i, u := range users {
+		infos[i] = types.UserInformation{
+			Id:       u.Model.Id,
+			Username: u.Username,
+			Roles:    u.Roles,
+		}
+	}
+	return infos, nil
+}
+
+func RouteAdminUserRoleAdd(w http.ResponseWriter, r *http.Request) error {
+	uid, err := uuid.Parse(r.FormValue("user_id"))
+	if err != nil {
+		return errors.New("invalid user_id")
+	}
+	return UserRoleAdd(uid, r.FormValue("role_id"))
+}
+
+func RouteAdminUserRoleRemove(w http.ResponseWriter, r *http.Request) error {
+	uid, err := uuid.Parse(r.FormValue("user_id"))
+	if err != nil {
+		return errors.New("invalid user_id")
+	}
+	return UserRoleRemove(uid, r.FormValue("role_id"))
+}
+
 func RouteGetUserInformation(w http.ResponseWriter, r *http.Request) error {
 	u, err := user.GetUserFromRequestNoRedirect(w, r)
 	if err != nil || u == nil {

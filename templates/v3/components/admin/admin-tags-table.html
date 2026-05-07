@@ -1,0 +1,49 @@
+<div class="card h-100">
+  <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+    <span><i class="bi bi-tags-fill me-2"></i>Tags</span>
+    <span class="badge bg-secondary">{{ len .Tags }}</span>
+  </div>
+  <div class="card-body">
+    <input
+      type="text"
+      class="form-control form-control-sm mb-3"
+      placeholder="Search tags..."
+      oninput="adminFilterTable('tag-table', this.value)"
+    >
+    {{ if .Tags }}
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle" id="tag-table">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>ID</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{- range .Tags }}
+          <tr id="tag-row-{{ .Id }}">
+            <td><span class="badge" style="background: var(--forest-green); color: var(--mint-green);">{{ .Name }}</span></td>
+            <td class="text-muted small">{{ .Description }}</td>
+            <td><code class="small text-muted">{{ .Id }}</code></td>
+            <td class="text-end">
+              <input type="hidden" id="tag-del-id-{{ .Id }}" name="id" value="{{ .Id }}">
+              <button class="btn btn-sm btn-outline-danger"
+                hx-delete="/tag/remove"
+                hx-include="#tag-del-id-{{ .Id }}"
+                hx-target="#tag-row-{{ .Id }}"
+                hx-swap="outerHTML"
+                hx-confirm="Delete tag '{{ .Name }}'?"
+              ><i class="bi bi-trash-fill"></i></button>
+            </td>
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+    {{ else }}
+    <p class="text-muted small mb-0">No tags yet.</p>
+    {{ end }}
+  </div>
+</div>
