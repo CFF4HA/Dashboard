@@ -1,15 +1,66 @@
 {{/*
-  Purpose: This template will render a list of search results names for products 
-  and will trigger the addition of a new product to the compare product list 
+  Purpose: This template will render a list of search results names for products
+  and will trigger the addition of a new product to the compare product list
   when clicked.
 */}}
-<ul class="list-group list-group-flush">
+<style>
+  .compare-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .compare-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #ffffff;
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    color: var(--forest-green, #1a2e1e);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    user-select: none;
+  }
+
+  .compare-result-item:hover {
+    background: var(--mint-green, #CFF9C3);
+    border-color: rgba(39, 66, 41, 0.25);
+    transform: translateX(2px);
+  }
+
+  .compare-result-item:active { transform: translateX(0); }
+
+  .compare-result-item i {
+    font-size: 0.8rem;
+    color: var(--muted, #6c8f70);
+    flex-shrink: 0;
+  }
+
+  .compare-result-empty {
+    font-size: 0.82rem;
+    color: var(--muted, #6c8f70);
+    font-family: 'Lato', sans-serif;
+    padding: 0.25rem 0.1rem;
+  }
+</style>
+
+<ul class="compare-result-list">
   {{- if and .Search .Search.Products }}
   {{- range .Search.Products }}
-  <li class="list-group-item list-group-item-action" onclick="addProductToCompare('{{ .Id }}')">{{ .Name }}</li>
+  <li class="compare-result-item" onclick="addProductToCompare('{{ .Id }}')">
+    <i class="bi bi-plus-circle"></i>{{ .Name }}
+  </li>
   {{- end }}
   {{- else }}
-  <li class="list-group-item">No products found.</li>
+  <li class="compare-result-empty">No products found.</li>
   {{- end }}
 </ul>
 

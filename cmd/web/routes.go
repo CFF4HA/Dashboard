@@ -40,6 +40,8 @@ func Notifications(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/notification/get/enabled", backend.RouteGetNotificationsByEnabled)
 }
 
+
+
 func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/ingredient/get", backend.RouteGetIngredients)
 	v.ActionClassic(http.MethodGet, "/ingredient/get/name", backend.RouteGetIngredientsByPrimaryName)

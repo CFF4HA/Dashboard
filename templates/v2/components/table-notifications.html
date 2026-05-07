@@ -1,0 +1,136 @@
+{{- with .Notifications }}
+<style>
+  .notif-admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .notif-admin-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    border: 1px solid var(--border, rgba(26, 46, 30, 0.12));
+    border-radius: 12px;
+    padding: 0.65rem 0.9rem;
+    font-family: 'Lato', sans-serif;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .notif-admin-item:hover { box-shadow: 0 4px 14px rgba(26, 46, 30, 0.07); }
+
+  /* type accent */
+  .notif-admin-item.notif--info    { border-left: 3px solid var(--regular-green, #274229); }
+  .notif-admin-item.notif--warning { border-left: 3px solid #d97706; }
+  .notif-admin-item.notif--alert   { border-left: 3px solid #c0392b; }
+
+  /* type badge */
+  .notif-type-badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 20px;
+    padding: 0.12rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  .notif-type-badge.notif--info    { background: var(--mint-green, #CFF9C3); color: var(--regular-green, #274229); border: 1px solid rgba(39,66,41,0.2); }
+  .notif-type-badge.notif--warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .notif-type-badge.notif--alert   { background: #fef2f2; color: #c0392b; border: 1px solid #fca5a5; }
+
+  /* enabled pill */
+  .notif-enabled-pill {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 0.12rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  .notif-enabled-pill.on  { background: var(--mint-green, #CFF9C3); color: var(--regular-green, #274229); border: 1px solid rgba(39,66,41,0.2); }
+  .notif-enabled-pill.off { background: var(--soft-white, #fbfbfb); color: var(--muted, #6c8f70); border: 1px solid var(--border, rgba(26,46,30,0.12)); }
+
+  .notif-admin-body { flex: 1; min-width: 0; }
+
+  .notif-admin-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--forest-green, #1a2e1e);
+    margin: 0 0 0.1rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .notif-admin-message {
+    font-size: 0.76rem;
+    color: var(--muted, #6c8f70);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .notif-admin-meta {
+    font-size: 0.68rem;
+    color: var(--muted, #6c8f70);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* delete button */
+  .notif-delete-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted, #6c8f70);
+    font-size: 0.95rem;
+    padding: 0.15rem 0.25rem;
+    border-radius: 7px;
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .notif-delete-btn:hover { background: #fef2f2; color: #c0392b; }
+</style>
+
+{{- if gt (len .) 0 }}
+<div class="notif-admin-list" id="notif-admin-list">
+  {{- range . }}
+  <div class="notif-admin-item notif--{{ .Type }}" id="notif-row-{{ .Id }}">
+
+    <span class="notif-type-badge notif--{{ .Type }}">{{ .Type }}</span>
+
+    <div class="notif-admin-body">
+      <p class="notif-admin-title" title="{{ .Title }}">{{ .Title }}</p>
+      <p class="notif-admin-message" title="{{ .Message }}">{{ .Message }}</p>
+    </div>
+
+    <span class="notif-enabled-pill {{ if .Enabled }}on{{ else }}off{{ end }}">
+      {{ if .Enabled }}Live{{ else }}Draft{{ end }}
+    </span>
+
+    <span class="notif-admin-meta">{{ .Created.Format "Jan 2, 2006" }}</span>
+
+    <button class="notif-delete-btn"
+            hx-delete="/notification/remove"
+            hx-vals='{"id": "{{ .Id }}"}'
+            hx-target="#notif-row-{{ .Id }}"
+            hx-swap="outerHTML"
+            hx-on::after-request="if(event.detail.successful) htmx.trigger(document.body, 'notificationsUpdated')"
+            title="Delete notification">
+      <i class="bi bi-trash"></i>
+    </button>
+
+  </div>
+  {{- end }}
+</div>
+{{- else }}
+<p style="font-size:0.82rem;color:var(--muted,#6c8f70);font-family:'Lato',sans-serif;">No notifications in the system.</p>
+{{- end }}
+{{- end }}
