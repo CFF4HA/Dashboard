@@ -1,242 +1,511 @@
+{{- with .Search }}
+{{- if and (eq (len .Products) 0) (ne .Query "") }}
+<p style="font-size:0.88rem; color:#6c8f70; padding: 0.5rem 0.25rem;">
+  No products found for <strong>{{ .Query }}</strong>.
+  <a href="/products" style="font-size:0.88rem; color:#1a2e1e; font-weight:600;">Create one?</a>
+</p>
+{{- else if eq (len .Products) 0 }}
+<p style="font-size:0.88rem; color:#6c8f70; padding: 0.5rem 0.25rem;">No products yet. <a href="/products" style="font-size:0.88rem; color:#1a2e1e; font-weight:600;">Create one?</a></p>
+{{- else }}
 <style>
-  /* ── Variables & Global ── */
+  /* ── Design tokens (mirror base.html) ───────────────────── */
   :root {
-    --forest-green: #1a2e1c;
-    --regular-green: #2d4a2e;
-    --soft-white: #f8f9fa;
-    --apothecary-border: rgba(39, 66, 41, 0.12);
+    --forest-green: #1a2e1e;
+    --mint-green:   #CFF9C3;
+    --soft-white:   #fbfbfb;
+    --regular-green:#274229;
+    --border:       rgba(26, 46, 30, 0.12);
+    --muted:        #6c8f70;
+    --danger:       #c0392b;
   }
 
-  .sr-container { font-family: 'Lato', sans-serif !important; }
-
-  /* ── Apothecary Result Card ── */
+  /* ── Card shell ─────────────────────────────────────────── */
   .sr-product-card {
     background: #ffffff;
-    border: 1px solid var(--apothecary-border);
-    border-radius: 20px;
-    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1.1rem 1.2rem;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
-    transition: all 0.2s ease;
-    height: 100%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    gap: 0.7rem;
+    font-family: 'Lato', sans-serif;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .sr-product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 24px rgba(26, 46, 30, 0.1);
+    transform: translateY(-1px);
   }
 
-  .sr-product-card--safe { border-left: 6px solid #4ade80; }
-  .sr-product-card--unsafe { border-left: 6px solid #e07a7a; }
+  /* Safe / Unsafe tinting */
+  .sr-product-card--safe {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 60%);
+    border-color: #86efac;
+  }
+
+  .sr-product-card--unsafe {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffffff 60%);
+    border-color: #fca5a5;
+  }
+
+  /* ── Header row ─────────────────────────────────────────── */
+  .sr-product-card-header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .sr-product-card-header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+  }
 
   .sr-product-card-name {
-    font-size: 1.1rem;
+    font-size: 0.97rem;
     font-weight: 700;
     color: var(--forest-green);
     margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
   }
 
   .sr-product-card-origin {
-    font-size: 0.75rem;
-    color: #adb5bd;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.74rem;
+    color: var(--muted);
+    min-width: 0;
+  }
+
+  .sr-product-card-origin a {
+    color: var(--regular-green);
     text-decoration: none;
-    display: block;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .sr-card-label {
-    font-size: 0.65rem;
-    font-weight: 800;
-    color: #adb5bd;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.4rem;
-  }
-
-  /* ── Tags & Pills ── */
-  .sr-tag-pill {
-    font-size: 0.7rem;
-    color: #3b5bdb;
-    background: #edf2ff;
-    border: 1px solid #d0ebff;
-    border-radius: 6px;
-    padding: 0.2rem 0.5rem;
-    font-weight: 700;
-  }
-
-  .sr-ingredient-pill {
-    font-size: 0.7rem;
-    color: var(--forest-green);
-    background: #f1f3f5;
-    border-radius: 6px;
-    padding: 0.2rem 0.5rem;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
     font-weight: 600;
   }
 
+  .sr-product-card-origin a:hover { text-decoration: underline; }
+
+  /* ── Icon action buttons (top-right cluster) ────────────── */
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1rem;
+    padding: 0.15rem 0.2rem;
+    line-height: 1;
+    flex-shrink: 0;
+    border-radius: 7px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .btn-icon:hover                { background: var(--mint-green); color: var(--forest-green); }
+  .btn-icon.btn-danger:hover     { background: #fef2f2;           color: var(--danger); }
+  .btn-icon.btn-star-active      { color: #f59e0b; }
+  .btn-icon.btn-star-active:hover{ background: #fffbeb; color: #d97706; }
+
+  /* ── Divider ─────────────────────────────────────────────── */
+  .sr-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── Section label ───────────────────────────────────────── */
+  .sr-card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.35rem;
+  }
+
+  /* ── Ingredient filter & pills ───────────────────────────── */
   .sr-ingredient-search {
     width: 100%;
     background: var(--soft-white);
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 0.3rem 0.6rem;
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
     outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.4rem;
   }
 
-  /* ── Stats Grid ── */
+  .sr-ingredient-search::placeholder { color: var(--muted); }
+  .sr-ingredient-search:focus { border-color: var(--regular-green); }
+
+  .sr-ingredient-scroll {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+  }
+
+  .sr-ingredient-scroll::-webkit-scrollbar       { width: 3px; }
+  .sr-ingredient-scroll::-webkit-scrollbar-track  { background: transparent; }
+  .sr-ingredient-scroll::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
+
+  .sr-ingredient-pill {
+    font-size: 0.74rem;
+    color: var(--forest-green);
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.15rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .sr-ingredient-pill[hidden] { display: none; }
+
+  /* ── Metrics grid ────────────────────────────────────────── */
   .sr-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
   }
 
-  .sr-stat-box {
-    padding: 0.4rem;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-align: center;
-    text-transform: uppercase;
+  .sr-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    min-width: 0;
+    overflow: hidden;
   }
-  .sr-stat-haz { background: #fce4e4; color: #e07a7a; }
-  .sr-stat-eff { background: #fef3c7; color: #d97706; }
-  .sr-stat-sym { background: #f0fdf4; color: #4ade80; }
-  .sr-stat-reg { background: #ecfccb; color: #65a30d; }
 
-  /* ── Inline Edit Form ── */
-  .pe-form { gap: 0.75rem; }
-  .pe-label { font-size: 0.65rem; font-weight: 800; color: #adb5bd; text-transform: uppercase; margin-bottom: 0.2rem; display: block;}
-  .pe-input {
-    width: 100%;
-    background: var(--soft-white);
-    border: 1px solid var(--apothecary-border);
-    border-radius: 8px;
-    padding: 0.4rem;
-    font-size: 0.85rem;
-    outline: none;
+  .sr-stat-icon  { flex-shrink: 0; font-size: 0.75rem; color: var(--muted); width: 1rem; text-align: center; }
+  .sr-stat-value { flex-shrink: 0; font-weight: 700; color: var(--forest-green); }
+  .sr-stat-name  { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── AI blurb ────────────────────────────────────────────── */
+  .sr-ai-blurb {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
   }
-  
-  .pe-tag-box {
-    background: #ffffff;
-    border: 1px solid var(--apothecary-border);
-    border-radius: 8px;
-    padding: 0.4rem;
+
+  /* ── Tags ────────────────────────────────────────────────── */
+  .sr-tag-scroll {
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem;
+    max-height: 6rem;
+    overflow-y: auto;
+    padding-right: 0.1rem;
   }
 
-  .pe-btn-save { background: var(--forest-green); color: white; border: none; border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; font-weight: 700; }
-  .pe-btn-cancel { background: transparent; border: 1px solid var(--apothecary-border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: #adb5bd; }
+  .sr-tag-scroll::-webkit-scrollbar       { width: 3px; }
+  .sr-tag-scroll::-webkit-scrollbar-track  { background: transparent; }
+  .sr-tag-scroll::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 2px; }
 
-  /* Buttons */
-  .btn-icon { background: none; border: none; color: #adb5bd; transition: color 0.2s; padding: 0; }
-  .btn-icon:hover { color: var(--forest-green); }
-  .btn-icon-danger:hover { color: #e07a7a; }
-  .btn-icon-star.starred { color: #ffc107; }
+  .sr-tag-pill {
+    font-size: 0.74rem;
+    color: var(--forest-green);
+    background: var(--mint-green);
+    border: 1px solid rgba(39, 66, 41, 0.2);
+    border-radius: 20px;
+    padding: 0.15rem 0.6rem;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  /* ── Card footer ─────────────────────────────────────────── */
+  .sr-card-footer {
+    margin-top: auto;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     Inline edit form
+  ══════════════════════════════════════════════════════════ */
+  .pe-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .pe-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.2rem;
+  }
+
+  .pe-input {
+    width: 100%;
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.82rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.3rem;
+  }
+
+  .pe-input::placeholder { color: var(--muted); }
+  .pe-input:focus { border-color: var(--regular-green); }
+
+  .pe-tag-box {
+    background: var(--soft-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.55rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+    cursor: text;
+    transition: border-color 0.2s ease;
+    margin-bottom: 0.3rem;
+  }
+
+  .pe-tag-box:focus-within { border-color: var(--regular-green); }
+
+  .pe-btn-save {
+    background: var(--forest-green);
+    border: none;
+    border-radius: 10px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.2s ease;
+  }
+
+  .pe-btn-save:hover { background: var(--regular-green); }
+
+  .pe-btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .pe-btn-cancel:hover { background: var(--mint-green); color: var(--forest-green); }
+
+  /* ── Ingredient tag pill (shared with create form) ──────── */
+  .ingredient-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--mint-green);
+    border: 1px solid rgba(39, 66, 41, 0.2);
+    border-radius: 20px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.78rem;
+    color: var(--forest-green);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .ingredient-tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.7rem;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s ease;
+  }
+
+  .ingredient-tag-remove:hover { color: var(--danger); }
+
+  .ingredient-tag-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.82rem;
+    color: var(--forest-green);
+    font-family: 'Lato', sans-serif;
+    flex: 1;
+    min-width: 6rem;
+    padding: 0.1rem 0;
+  }
+
+  .ingredient-tag-input::placeholder { color: var(--muted); }
 </style>
 
-<div class="sr-container">
-{{- if and (eq (len .Products) 0) }}
-<div class="text-center py-5">
-  <button class="btn btn-sm btn-outline-success rounded-pill" onclick="document.querySelector('.btn-create-inline').click()">Create New Product</button>
-</div>
-{{- else if eq (len .Products) 0 }}
-<div class="text-center py-5">
-  <p class="text-muted mb-2">No products in repository yet.</p>
-  <button class="btn btn-sm btn-outline-success rounded-pill" onclick="document.querySelector('.btn-create-inline').click()">Add Your First Product</button>
-</div>
-{{- else }}
-
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+<div class="row">
   {{- range .Products }}
-  <div class="col sr-product-card-col">
+  <div class="col-md-4 mb-4 sr-product-card-col">
     <div class="sr-product-card{{ if and ($.Categories) ($.Categories.Safe) (uuidExists $.Categories.Safe .Id) }} sr-product-card--safe{{ else if and ($.Categories) ($.Categories.Unsafe) (uuidExists $.Categories.Unsafe .Id) }} sr-product-card--unsafe{{ end }}">
 
-      <div class="d-flex justify-content-between align-items-start">
-        <div style="min-width: 0;">
-          <h5 class="sr-product-card-name">{{ .Name }}</h5>
+      <!-- ── Header (always visible) ──────────────────────── -->
+      <div class="sr-product-card-header">
+        <div class="sr-product-card-header-meta">
+          <p class="sr-product-card-name">{{ .Name }}</p>
           {{- if .Origin }}
-          <a href="{{ deref .Origin }}" target="_blank" class="sr-product-card-origin">{{ deref .Origin }}</a>
+          <div class="sr-product-card-origin">
+            <i class="bi bi-link-45deg" style="flex-shrink:0;"></i>
+            <a href="{{ deref .Origin }}" target="_blank" rel="noopener" title="{{ deref .Origin }}">{{ deref .Origin }}</a>
+          </div>
           {{- end }}
         </div>
-        <div class="d-flex gap-2 ms-2">
-          <button class="btn-icon" onclick="toggleProductEdit('{{ .Id }}')" title="Edit"><i class="bi bi-pencil-square"></i></button>
-          <button class="btn-icon btn-icon-danger" 
-             hx-delete="/product/delete" 
-             hx-vals='{"id": "{{ .Id }}"}' 
-             hx-target="closest .sr-product-card-col" 
-             hx-confirm="Are you sure you want to delete this product?"
-             hx-swap="outerHTML"><i class="bi bi-trash"></i></button>
-        </div>
+
+        <button class="btn-icon"
+          hx-get="/htmx/product-detail?id={{ .Id }}"
+          hx-target="#side-modal_content"
+          hx-swap="innerHTML"
+          hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"
+          title="View details">
+          <i class="bi bi-arrow-right-circle"></i>
+        </button>
+        <button class="btn-icon" onclick="toggleProductEdit('{{ .Id }}')" title="Edit product">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn-icon btn-danger"
+          hx-delete="/product/delete"
+          hx-vals='{"id": "{{ .Id }}"}'
+          hx-target="closest .sr-product-card-col"
+          hx-swap="outerHTML"
+          title="Delete product">
+          <i class="bi bi-trash"></i>
+        </button>
+        {{- if exists $.FavoriteProducts .Id }}
+        <button class="btn-icon btn-star-active" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Starred">
+          <i class="bi bi-star-fill"></i>
+        </button>
+        {{- else }}
+        <button class="btn-icon" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML" title="Save product">
+          <i class="bi bi-star"></i>
+        </button>
+        {{- end }}
       </div>
 
+      <!-- ── View mode ─────────────────────────────────────── -->
       <div id="pv-{{ .Id }}">
-        <hr class="my-1 opacity-25">
-        
-        <div class="mb-2">
+        <hr class="sr-divider">
+
+        <div>
           <div class="sr-card-label">Tags</div>
-          <div class="d-flex flex-wrap gap-1">
+          {{- if and (.Tags) (gt (len .Tags) 0) }}
+          <div class="sr-tag-scroll">
             {{- range .Tags }}
-            <span class="sr-tag-pill" title="{{ .Description }}">{{ .Name }}</span>
-            {{- else }}
-            <span class="text-muted" style="font-size: 0.7rem;">None</span>
+            <span class="sr-tag-pill"{{if .Description}} title="{{ .Description }}"{{end}}>{{ .Name }}</span>
             {{- end }}
           </div>
+          {{- else }}
+          <span style="font-size:0.78rem; color:var(--muted);">No tags applied.</span>
+          {{- end }}
         </div>
 
-        <div class="mb-2">
+        <hr class="sr-divider">
+
+        <div>
           <div class="sr-card-label">Ingredients ({{ len .Ingredients }})</div>
-          <input class="sr-ingredient-search" type="text" placeholder="Filter..." oninput="srFilterIngredients(this)">
-          <div class="d-flex flex-wrap gap-1" style="max-height: 60px; overflow-y: auto;">
+          <input class="sr-ingredient-search" type="text"
+                 placeholder="&#128269; Filter ingredients..."
+                 autocomplete="off"
+                 oninput="srFilterIngredients(this)">
+          <div class="sr-ingredient-scroll">
             {{- range .Ingredients }}
             <span class="sr-ingredient-pill" data-name="{{ .PrimaryName | lower }}">{{ .PrimaryName }}</span>
             {{- end }}
           </div>
         </div>
 
+        <hr class="sr-divider">
 
-        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-            <span class="sr-card-label" style="margin: 0;">{{ .Created.Format "Jan 02, 2006" }}</span>
-            <div class="d-flex gap-2">
-                <button class="btn-icon" hx-get="/htmx/product-detail?id={{ .Id }}" hx-target="#side-modal_content" hx-on::after-request="bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('side-modal')).show()"><i class="bi bi-eye"></i></button>
-                {{- if exists $.FavoriteProducts .Id }}
-                <button class="btn-icon btn-icon-star starred" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML"><i class="bi bi-star-fill"></i></button>
-                {{- else }}
-                <button class="btn-icon btn-icon-star" hx-post="/user/product" hx-vals='{"id": "{{ .Id }}"}' hx-swap="outerHTML"><i class="bi bi-star"></i></button>
-                {{- end }}
+        <div>
+          <div class="sr-card-label">Metrics</div>
+          <div class="sr-stats">
+            <div class="sr-stat">
+              <i class="bi bi-exclamation-triangle sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumHazard }}</span>
+              <span class="sr-stat-name">Hazards</span>
             </div>
+            <div class="sr-stat">
+              <i class="bi bi-activity sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumEffect }}</span>
+              <span class="sr-stat-name">Effects</span>
+            </div>
+            <div class="sr-stat">
+              <i class="bi bi-heart-pulse sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumSymptom }}</span>
+              <span class="sr-stat-name">Symptoms</span>
+            </div>
+            <div class="sr-stat">
+              <i class="bi bi-shield-check sr-stat-icon"></i>
+              <span class="sr-stat-value">{{ .Metadata.NumReglations }}</span>
+              <span class="sr-stat-name">Regulations</span>
+            </div>
+          </div>
         </div>
-      </div>
 
+        {{- if .Metadata.AiBlurb }}
+        <hr class="sr-divider">
+        <p class="sr-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
+        {{- end }}
+
+        <div class="sr-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
+      </div><!-- /pv -->
+
+      <!-- ── Edit mode form (hidden by default) ────────────── -->
       {{- $pid := .Id }}
       <div id="pe-{{ .Id }}" class="pe-form" style="display:none;">
         <input type="hidden" name="id" value="{{ .Id }}">
-        
+
         <div>
-          <label class="pe-label">Name</label>
-          <input type="text" name="name" class="pe-input" value="{{ .Name }}">
+          <label class="pe-label">Name *</label>
+          <input type="text" name="name" class="pe-input" value="{{ .Name }}" placeholder="Product name" autocomplete="off">
         </div>
 
         <div>
           <label class="pe-label">Origin</label>
-          <input type="text" name="origin" class="pe-input" value="{{ if .Origin }}{{ deref .Origin }}{{ end }}">
+          <input type="text" name="origin" class="pe-input" value="{{ if .Origin }}{{ deref .Origin }}{{ end }}" placeholder="Origin URL (optional)" autocomplete="off">
         </div>
 
         <div>
-          <label class="pe-label">Ingredients</label>
-          <div class="pe-tag-box" id="pe-tag-box-{{ .Id }}" onclick="document.getElementById('pe-tag-input-{{ .Id }}').focus()">
+          <label class="pe-label">Ingredients *</label>
+          <div class="pe-tag-box" id="pe-tag-box-{{ .Id }}"
+               onclick="document.getElementById('pe-tag-input-{{ .Id }}').focus()">
             {{- range .Ingredients }}
             <span class="ingredient-tag" data-name="{{ .PrimaryName | lower }}" data-hidden-id="pe-hidden-{{ $pid }}">
               {{ .PrimaryName }}<button type="button" class="ingredient-tag-remove" onclick="_removeIngredientTagEl(this)"><i class="bi bi-x"></i></button>
             </span>
             {{- end }}
-            <input id="pe-tag-input-{{ .Id }}" class="ingredient-tag-input" type="text" placeholder="..." oninput="handleEditIngredientInput(event, '{{ .Id }}')" onkeydown="handleEditIngredientKeydown(event, '{{ .Id }}')">
+            <input id="pe-tag-input-{{ .Id }}"
+                   class="ingredient-tag-input"
+                   type="text"
+                   placeholder="Type name, press Enter…"
+                   autocomplete="off"
+                   oninput="handleEditIngredientInput(event, '{{ .Id }}')"
+                   onkeydown="handleEditIngredientKeydown(event, '{{ .Id }}')">
           </div>
           <div id="pe-hidden-{{ .Id }}">
             {{- range .Ingredients }}
@@ -245,7 +514,7 @@
           </div>
         </div>
 
-        <div class="d-flex gap-2 justify-content-end mt-2">
+        <div class="d-flex gap-2 justify-content-end" style="margin-top:0.15rem;">
           <button type="button" class="pe-btn-cancel" onclick="toggleProductEdit('{{ .Id }}')">Cancel</button>
           <button type="button" class="pe-btn-save"
                   hx-post="/product/update"
@@ -253,13 +522,123 @@
                   hx-swap="none"
                   hx-on::before-request="autoCommitEditIngredient('{{ .Id }}')"
                   hx-on::after-request="if(event.detail.successful){ toggleProductEdit('{{ .Id }}'); htmx.trigger(document.body, 'productUpdated') }">
-            Save
+            <i class="bi bi-check2 me-1"></i>Save
           </button>
         </div>
-      </div>
+      </div><!-- /pe -->
+
     </div>
   </div>
   {{- end }}
 </div>
+
+<script>
+  function srFilterIngredients(input) {
+    const q = input.value.toLowerCase().trim();
+    const scroll = input.nextElementSibling;
+    scroll.querySelectorAll('.sr-ingredient-pill').forEach(pill => {
+      pill.hidden = !pill.dataset.name.includes(q);
+    });
+  }
+
+  /* ── Shared ingredient-tag-box helpers ───────────────────── */
+  function _commitIngredientToBox(boxId, hiddenId, inputId, name) {
+    if (!name) return;
+    const box = document.getElementById(boxId);
+    const hiddenCt = document.getElementById(hiddenId);
+    const input = document.getElementById(inputId);
+    if (!box || !hiddenCt || !input) return;
+    const nameLower = name.toLowerCase();
+    if (box.querySelector('.ingredient-tag[data-name="' + CSS.escape(nameLower) + '"]')) return;
+
+    const tag = document.createElement('span');
+    tag.className = 'ingredient-tag';
+    tag.dataset.name = nameLower;
+    tag.dataset.hiddenId = hiddenId;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ingredient-tag-remove';
+    btn.setAttribute('onclick', '_removeIngredientTagEl(this)');
+    btn.innerHTML = '<i class="bi bi-x"></i>';
+    tag.appendChild(document.createTextNode(name));
+    tag.appendChild(btn);
+    box.insertBefore(tag, input);
+
+    const h = document.createElement('input');
+    h.type = 'hidden';
+    h.name = 'ingredient_names';
+    h.value = name;
+    h.dataset.tag = nameLower;
+    hiddenCt.appendChild(h);
+  }
+
+  function _removeIngredientTagEl(btn) {
+    const tag = btn.parentElement;
+    const hiddenId = tag.dataset.hiddenId;
+    const name = tag.dataset.name;
+    tag.remove();
+    if (hiddenId) {
+      const ct = document.getElementById(hiddenId);
+      if (ct) {
+        const h = ct.querySelector('input[data-tag="' + CSS.escape(name) + '"]');
+        if (h) h.remove();
+      }
+    }
+  }
+
+  function _handleIngredientBoxInput(e, boxId, hiddenId, inputId) {
+    const raw = e.target.value;
+    const parts = raw.split(', ');
+    if (parts.length > 1) {
+      parts.slice(0, -1).forEach(p => _commitIngredientToBox(boxId, hiddenId, inputId, p.trim()));
+      _commitIngredientToBox(boxId, hiddenId, inputId, parts[parts.length - 1].trim());
+      e.target.value = '';
+    }
+  }
+
+  function _handleIngredientBoxKeydown(e, boxId, hiddenId, inputId) {
+    const input = e.target;
+    if ((e.key === 'Enter' || e.key === 'Tab') && input.value.trim()) {
+      e.preventDefault();
+      input.value.split(', ').forEach(p => _commitIngredientToBox(boxId, hiddenId, inputId, p.trim()));
+      input.value = '';
+    }
+    if (e.key === 'Backspace' && input.value === '') {
+      const box = document.getElementById(boxId);
+      const lastTag = box ? box.querySelector('.ingredient-tag:last-of-type') : null;
+      if (lastTag) {
+        const removeBtn = lastTag.querySelector('.ingredient-tag-remove');
+        if (removeBtn) _removeIngredientTagEl(removeBtn);
+      }
+    }
+  }
+
+  /* ── Search-card edit ────────────────────────────────────── */
+  function toggleProductEdit(id) {
+    const view = document.getElementById('pv-' + id);
+    const form = document.getElementById('pe-' + id);
+    if (!view || !form) return;
+    const editing = form.style.display !== 'none';
+    view.style.display = editing ? '' : 'none';
+    form.style.display = editing ? 'none' : 'flex';
+  }
+
+  function handleEditIngredientInput(e, id) {
+    _handleIngredientBoxInput(e, 'pe-tag-box-' + id, 'pe-hidden-' + id, 'pe-tag-input-' + id);
+  }
+
+  function handleEditIngredientKeydown(e, id) {
+    _handleIngredientBoxKeydown(e, 'pe-tag-box-' + id, 'pe-hidden-' + id, 'pe-tag-input-' + id);
+  }
+
+  function autoCommitEditIngredient(id) {
+    const input = document.getElementById('pe-tag-input-' + id);
+    if (input && input.value.trim()) {
+      _commitIngredientToBox('pe-tag-box-' + id, 'pe-hidden-' + id, 'pe-tag-input-' + id, input.value.trim());
+      input.value = '';
+    }
+  }
+</script>
 {{- end }}
-</div>
+{{- end }}
