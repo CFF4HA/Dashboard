@@ -12,7 +12,7 @@ func WithOrder(field string) func(*gorm.DB) *gorm.DB {
 
 func WithSearch(field, term string) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Where(field+" LIKE ?", term+"%")
+		return db.Where(field+" ILIKE ?", term+"%")
 	}
 }
 

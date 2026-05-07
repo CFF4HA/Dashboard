@@ -39,8 +39,6 @@ func Notifications(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/notification/get/enabled", backend.RouteGetNotificationsByEnabled)
 }
 
-
-
 func Ingredients(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/ingredient/get", backend.RouteGetIngredients)
 	v.ActionClassic(http.MethodGet, "/ingredient/get/name", backend.RouteGetIngredientsByPrimaryName)
@@ -106,6 +104,7 @@ func User(v *verb.Verb) {
 	v.Action(http.MethodPost, "/user/product", user.HandleAddUserProduct)
 	v.Action(http.MethodPost, "/user/ingredient", user.HandleAddUserIngredient)
 
+	v.ActionClassic(http.MethodGet, "/user/info", backend.RouteGetUserInformation)
 	v.ActionClassic(http.MethodPut, "/v2/user", backend.RouteInsertUser)
 	v.ActionClassic(http.MethodPost, "/v2/user/login", backend.RouteUserLogin)
 	v.ActionClassic(http.MethodDelete, "/v2/user", backend.RouteDeleteUser)
@@ -131,6 +130,7 @@ func Tagging(v *verb.Verb) {
 	v.ActionClassic(http.MethodGet, "/tag/rule/get/id", backend.RouteGetTaggingRuleById)
 	v.ActionClassic(http.MethodGet, "/tag/rule/get/user", backend.RouteGetTaggingRulesForUser)
 	v.ActionClassic(http.MethodGet, "/tag/rule/get", backend.RouteGetTaggingRules)
+	v.ActionClassic(http.MethodPost, "/tag/rule/run", backend.RouteRunTaggingRule)
 
 	v.ActionClassic(http.MethodPut, "/tag/set/create", backend.RouteInsertTaggingSet)
 	v.ActionClassic(http.MethodDelete, "/tag/set/remove", backend.RouteDeleteTaggingSet)

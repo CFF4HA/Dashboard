@@ -1,4 +1,3 @@
-{{- with .Search }}
 <script>
   function filterSynonyms(input) {
     const q = input.value.toLowerCase().trim();
@@ -551,19 +550,6 @@
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes-pane-{{ .Id }}" type="button" role="tab">Notes</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#synonyms-pane-{{ .Id }}" type="button" role="tab">Synonyms ({{ len .Names }})</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hazards-pane-{{ .Id }}" type="button" role="tab">Hazards ({{ .Metadata.NumHazards }})</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#effects-pane-{{ .Id }}" type="button" role="tab">Effects ({{ .Metadata.NumEffects }})</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#symptoms-pane-{{ .Id }}" type="button" role="tab">Symptoms ({{ .Metadata.NumSymptoms }})</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#regulations-pane-{{ .Id }}" type="button" role="tab">Regulations ({{ .Metadata.NumRegulations }})</button>
         </li>
       </ul>
 
@@ -645,91 +631,18 @@
         </div>
 
         <!-- Synonyms pane -->
-        <div class="tab-pane fade pt-2" id="synonyms-pane-{{ .Id }}" role="tabpanel">
-          {{- if gt (len .Names) 0 }}
-          <input class="ingredient-synonym-search" type="text" placeholder="&#128269; Filter synonyms..." autocomplete="off" oninput="filterSynonyms(this)">
-          <div class="ingredient-synonym-scroll">
-            {{- range .Names }}
-            <span class="ingredient-synonym-pill" data-name="{{ .Text | lower }}">{{ .Text }}</span>
-            {{- end }}
-          </div>
-          <span class="ingredient-synonym-empty" style="display:none;font-size:0.78rem;color:var(--muted);">No synonyms match.</span>
-          {{- else }}
-          <span style="font-size:0.78rem;color:var(--muted);">No synonyms on record.</span>
-          {{- end }}
-        </div>
-
+        
         <!-- Hazards pane -->
-        <div class="tab-pane fade pt-2" id="hazards-pane-{{ .Id }}" role="tabpanel">
-          {{- if gt .Metadata.NumHazards 0 }}
-          <ul class="ingredient-label-list">
-            {{- range .Labels }}{{- if eq .Type "hazard" }}
-            <li class="ingredient-label-item">
-              <span class="ingredient-label-payload">{{ .Payload }}</span>
-              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
-            </li>
-            {{- end }}{{- end }}
-          </ul>
-          {{- else }}
-          <span style="font-size:0.78rem;color:var(--muted);">No hazards on record.</span>
-          {{- end }}
-        </div>
-
+        
         <!-- Effects pane -->
-        <div class="tab-pane fade pt-2" id="effects-pane-{{ .Id }}" role="tabpanel">
-          {{- if gt .Metadata.NumEffects 0 }}
-          <ul class="ingredient-label-list">
-            {{- range .Labels }}{{- if eq .Type "effect" }}
-            <li class="ingredient-label-item">
-              <span class="ingredient-label-payload">{{ .Payload }}</span>
-              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
-            </li>
-            {{- end }}{{- end }}
-          </ul>
-          {{- else }}
-          <span style="font-size:0.78rem;color:var(--muted);">No effects on record.</span>
-          {{- end }}
-        </div>
-
+        
         <!-- Symptoms pane -->
-        <div class="tab-pane fade pt-2" id="symptoms-pane-{{ .Id }}" role="tabpanel">
-          {{- if gt .Metadata.NumSymptoms 0 }}
-          <ul class="ingredient-label-list">
-            {{- range .Labels }}{{- if eq .Type "symptom" }}
-            <li class="ingredient-label-item">
-              <span class="ingredient-label-payload">{{ .Payload }}</span>
-              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
-            </li>
-            {{- end }}{{- end }}
-          </ul>
-          {{- else }}
-          <span style="font-size:0.78rem;color:var(--muted);">No symptoms on record.</span>
-          {{- end }}
-        </div>
-
+        
         <!-- Regulations pane -->
-        <div class="tab-pane fade pt-2" id="regulations-pane-{{ .Id }}" role="tabpanel">
-          {{- if gt .Metadata.NumRegulations 0 }}
-          <ul class="ingredient-label-list">
-            {{- range .Labels }}{{- if eq .Type "regulation" }}
-            <li class="ingredient-label-item">
-              <span class="ingredient-label-payload">{{ .Payload }}</span>
-              {{- if .Origin }}<span class="ingredient-label-origin">{{ deref .Origin }}</span>{{- end }}
-            </li>
-            {{- end }}{{- end }}
-          </ul>
-          {{- else }}
-          <span style="font-size:0.78rem;color:var(--muted);">No regulations on record.</span>
-          {{- end }}
-        </div>
-
+        
       </div><!-- /tab-content -->
 
-      {{- if .Metadata.AiBlurb }}
-      <hr class="ingredient-card-divider">
-      <p class="ingredient-ai-blurb">{{ deref .Metadata.AiBlurb }}</p>
-      {{- end }}
-
+      
       {{- end }}{{/* /if not .Failed */}}
 
       <div class="ingredient-card-footer">Added {{ .Created.Format "Jan 2, 2006" }}</div>
@@ -754,5 +667,4 @@
   });
 })();
 </script>
-{{- end }}
 {{- end }}

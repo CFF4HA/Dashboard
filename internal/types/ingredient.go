@@ -38,7 +38,7 @@ type Label struct {
 	Model
 	IngredientId uuid.UUID `json:"ingredient_id" gorm:"type:uuid;not null;"`
 
-	Type    string  `json:"type" gorm:"type:text;not null;check:type IN ('hazard', 'symptom', 'general', 'effect', 'regulation');default:'general';"`
+	Type    string  `json:"type" gorm:"type:text;not null;default:'general';"`
 	Payload string  `json:"name" gorm:"type:text;not null"`
 	Origin  *string `json:"origin" gorm:"type:text;default:null"`
 }

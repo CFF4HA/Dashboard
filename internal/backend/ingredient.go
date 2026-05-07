@@ -131,6 +131,12 @@ func pullIngredientByName(name string) (*types.Ingredient, error) {
 	currentPubChemLookupsCountLock.Unlock()
 
 	core.Logger.Info("successfully pulled ingredient information from pubchem", "name", name, "cid", cid, "labels", labels)
+	tx := core.DB.Create(&ing)
+	if tx.Error != nil {
+		core.Logger.Error("failed to insert ingredient into database after pulling from pubchem", "name", name, "error", tx.Error)
+		return ing, tx.Error
+	}
+
 	return ing, nil
 }
 
