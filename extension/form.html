@@ -1,0 +1,82 @@
+<link rel="stylesheet" href="style.css">
+<!-- top of form-product_create.html -->
+
+
+<div class="modal-header" style="border-bottom: 1px solid #dee2e6; padding: 0.85rem 1.5rem;">
+  <h6 class="modal-title"
+        style="font-family: 'Segoe UI',
+        system-ui, -apple-system, 
+        sans-serif; font-size: 0.95rem; 
+        font-weight: 600; 
+        color: #495057;"
+        text-align="center">
+    <i class="bi bi-box-seam me-2" style="color: #adb5bd;"></i>Create Product
+</h6>
+</div>
+
+
+<div class="modal-body p-0">
+  <form id="form-product_create"
+      class="form-shell"
+      class="form-shell"
+      hx-put="/product"
+      hx-target="#notification"
+      hx-swap="innerHTML">
+    <!-- Product name input -->
+    <div class="mb-3">
+      <label class="form-label">Name <span style="color: #dc3545;">*</span></label>
+      <input type="text"
+            id="product-name"
+            name="name"
+            class="form-control" 
+            placeholder="e.g. Sunscreen SPF 50"
+            autocomplete="off"
+            required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Origin </label>
+      <input type="text" 
+            id="product-origin" 
+            name="origin" 
+            class="form-control" 
+            placeholder="e.g. United States" 
+            autocomplete="off">
+    </div>
+
+    <hr class="form-divider">
+
+
+    <div class="mb-1">
+        <!-- product ingredients input -->
+      <label class="form-label">Ingredients <span style="color: #dc3545;">*</span></label>
+
+      <div class="ingredient-tag-box" id="ingredient-tag-box">
+        <input id="ingredient-tag-input"
+               class="ingredient-tag-input"
+               type="text"
+               placeholder=""
+               autocomplete="off"
+               required>
+      </div>
+
+      <div id="ingredient-hidden-inputs"></div>
+      <div class="form-text mt-1">Separate multiple ingredients with a comma. At least one is required.</div>
+    </div>
+
+    <hr class="form-divider">
+
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn-form-cancel" data-bs-dismiss="modal" id="close-btn">Close</button>
+
+
+      <button type="submit" class="btn-form-submit">
+        <i class="bi bi-check2 me-1"></i>Create
+    </button>
+    </div>
+
+  </form>
+</div>
+
+<script src="popup.js"></script>
+
